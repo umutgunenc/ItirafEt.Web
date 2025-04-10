@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@inject AuthStateProvider AuthStateProvider
+
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -10,7 +13,26 @@
         </div>
 
         <article class="content px-4">
-            @Body
+            @if (AuthStateProvider.IsInitializing) 
+            {
+                <p>Initializing State ... </p>
+            }
+            else
+            {
+                @Body
+            }
+
         </article>
     </main>
 </div>
+
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        while (AuthStateProvider.IsInitializing)
+        {
+            await Task.Delay(500);
+        }
+	}
+}

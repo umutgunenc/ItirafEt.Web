@@ -10,3 +10,12 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@inject AuthStateProvider AuthStateProvider
+
+@code {
+	protected override async Task OnInitializedAsync()
+	{
+        await AuthStateProvider.InitializeAsync();
+	}
+}

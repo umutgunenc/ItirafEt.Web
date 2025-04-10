@@ -140,13 +140,12 @@ namespace ItirafEt.Api.Data
                 Email = "umutgunenc@gmail.com",
                 RoleId = RoleType.FromEnum(UserRole.SuperAdmin).Id,
                 GenderId = GenderType.FromEnum(Gender.Male).Id,
-                PasswordHash = "AQAAAAIAAYagAAAAEMMH/7QHaOQE4G24K3VWQp1WjQaa1UvQQu6ZlNIj6JTHj2cDEW1u0uvkX8Fq5ZgSwQ==",
+                PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
                 BirthDate = new DateTime(1989, 5, 29),
                 CreatedDate = new DateTime(2025, 4, 10),
                 IsActive = true,
                 IsPremium = true,
                 IsTermOfUse = true
-
             };
 
             //adminUser.PasswordHash = _passwordHasher.HashPassword(adminUser, "123456");
