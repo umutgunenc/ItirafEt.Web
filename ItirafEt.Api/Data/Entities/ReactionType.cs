@@ -5,10 +5,10 @@ namespace ItirafEt.Api.Data.Entities
 {
     public class ReactionType
     {
-        protected ReactionType()
-        {
-            Users = new HashSet<User>();
-        }
+        //protected ReactionType()
+        //{
+        //    Users = new HashSet<User>();
+        //}
 
         public static readonly ReactionType Like = new ReactionType((int)Reaction.Like, nameof(Reaction.Like));
         public static readonly ReactionType Dislike = new ReactionType((int)Reaction.Dislike, nameof(Reaction.Dislike));
@@ -31,9 +31,9 @@ namespace ItirafEt.Api.Data.Entities
         [MaxLength(64)]
         public string Name { get; private set; }
 
-        public virtual ICollection<User> Users { get; private set; }
+        //public virtual ICollection<User> Users { get; private set; }
 
-        private ReactionType(int id, string name) : this()
+        private ReactionType(int id, string name) 
         {
             Id = id;
             Name = name;

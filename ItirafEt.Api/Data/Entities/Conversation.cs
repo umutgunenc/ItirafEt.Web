@@ -14,10 +14,10 @@ namespace ItirafEt.Api.Data.Entities
         public int Id { get; set; }
 
         [Required]
-        public Guid User1Id { get; set; }  
+        public Guid InitiatorId { get; set; }  
 
         [Required]
-        public Guid User2Id { get; set; }
+        public Guid ResponderId { get; set; }
 
         [MaxLength(128)]
         public string? ConversationTitle { get; set; }
@@ -27,14 +27,16 @@ namespace ItirafEt.Api.Data.Entities
 
         [MaxLength(64)]
         public string? LastMessagePreview { get; set; } // Son mesajdan özet (64 karakter gibi)
-        public bool IsUser1SeenLastMessage { get; set; }
-        public bool IsUser2SeenLastMessage { get; set; }
+        //public bool IsUser1SeenLastMessage { get; set; }
+        //public bool IsUser2SeenLastMessage { get; set; }
+        public bool IsDeletedByUser1 { get; set; }
+        public bool IsDeletedByUser2 { get; set; }
 
-        [ForeignKey(nameof(User1Id))]
-        public virtual User User1 { get; set; }
+        [ForeignKey(nameof(InitiatorId))]
+        public virtual User Initiator { get; set; }
 
-        [ForeignKey(nameof(User2Id))]
-        public virtual User User2 { get; set; }
+        [ForeignKey(nameof(ResponderId))]
+        public virtual User Responder { get; set; }
 
         public virtual ICollection<Message> Messages { get; set; }
 

@@ -31,6 +31,8 @@ namespace ItirafEt.Api.Data.Entities
         public DateTime SentDate { get; set; }
 
         public bool IsRead { get; set; } = false;
+        public bool IsVisibleToInitiatorUser { get; set; } = true;
+        public bool IsVisibleToResponderUser { get; set; } = true;
 
         [Required]
         public int ConversationId { get; set; }

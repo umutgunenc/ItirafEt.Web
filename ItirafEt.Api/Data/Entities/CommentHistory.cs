@@ -40,10 +40,6 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(OperationByUserId))]
         public virtual User User { get; set; }
 
-        [Required]
-        public string OperationType { get; set; }
-
-        // ParentCommentId gereksiz olabilir
         public int? ParentCommentId { get; set; }
 
         [ForeignKey(nameof(ParentCommentId))]

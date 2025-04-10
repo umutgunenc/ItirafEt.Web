@@ -17,6 +17,8 @@ namespace ItirafEt.Api.Data.Entities
             ConversationsReceived = new HashSet<Conversation>();
             MessageReactions = new HashSet<MessageReaction>();
             SentMessages = new HashSet<Message>();
+            BlockedUsers = new HashSet<UserBlock>();
+            BlockedByUsers = new HashSet<UserBlock>();
         }
         [Key]
         public Guid Id { get; set; }
@@ -72,5 +74,7 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<Conversation> ConversationsReceived { get; set; }   // User2 
         public virtual ICollection<MessageReaction> MessageReactions { get; set; }
         public virtual ICollection<Message> SentMessages { get; set; }
+        public virtual ICollection<UserBlock> BlockedUsers { get; set; } // Bu kullanıcı kimi engelledi
+        public virtual ICollection<UserBlock> BlockedByUsers { get; set; } // Bu kullanıcı kim tarafından engellendi
     }
 }

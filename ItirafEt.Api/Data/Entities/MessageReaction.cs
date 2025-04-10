@@ -10,9 +10,9 @@ namespace ItirafEt.Api.Data.Entities
         public int Id { get; set; }
 
         [Required]
-        public Guid ReciverUserId { get; set; }
-        [ForeignKey(nameof(ReciverUserId))]
-        public virtual User ReceiverUser { get; set; }
+        public Guid ReactingUserId { get; set; }
+        [ForeignKey(nameof(ReactingUserId))]
+        public virtual User ReactingUser { get; set; }
 
         [Required]
         public int MessageId { get; set; }

@@ -22,6 +22,7 @@ namespace ItirafEt.Api.Data.Entities
             SuperAdmin,
             Admin,
             Moderator,
+            SuperUser,
             User
         };
 

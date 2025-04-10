@@ -10,10 +10,10 @@ namespace ItirafEt.Api.Data.Entities
         public int Id { get; set; }
 
         [Required]
-        public Guid UserId { get; set; }
+        public Guid ReactingUserId { get; set; }
 
-        [ForeignKey(nameof(UserId))]
-        public virtual User User { get; set; }
+        [ForeignKey(nameof(ReactingUserId))]
+        public virtual User ReactingUser { get; set; }
 
         [Required]
         public int CommentId { get; set; }

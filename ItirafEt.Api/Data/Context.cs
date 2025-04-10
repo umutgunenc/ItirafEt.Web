@@ -17,6 +17,7 @@ namespace ItirafEt.Api.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserBlock> UserBlocks { get; set; }
         public DbSet<RoleType> Roles { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Comment> Comments { get; set; }
@@ -40,17 +41,32 @@ namespace ItirafEt.Api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.User1)
-                .WithMany(u => u.ConversationsInitiated)
-                .HasForeignKey(c => c.User1Id)
+            modelBuilder.Entity<UserBlock>()
+                .HasOne(ub => ub.BlockerUser)
+                .WithMany(u => u.BlockedUsers)
+                .HasForeignKey(ub => ub.BlockerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserBlock>()
+                .HasOne(ub => ub.BlockedUser)
+                .WithMany(u => u.BlockedByUsers)
+                .HasForeignKey(ub => ub.BlockedUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.User2)
-                .WithMany(u => u.ConversationsReceived)
-                .HasForeignKey(c => c.User2Id)
+                .HasOne(c => c.Initiator)
+                .WithMany(u => u.ConversationsInitiated)
+                .HasForeignKey(c => c.InitiatorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.Responder)
+                .WithMany(u => u.ConversationsReceived)
+                .HasForeignKey(c => c.ResponderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Conversation>()
+                .ToTable(t => t.HasCheckConstraint("CK_Conversation_DifferentUsers", "InitiatorId != ResponderId"));
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Conversation)
@@ -58,13 +74,41 @@ namespace ItirafEt.Api.Data
                 .HasForeignKey(m => m.ConversationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Conversation>()
-                .ToTable(t => t.HasCheckConstraint("CK_Conversation_DifferentUsers", "User1Id != User2Id"));
-
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
                 .WithMany(u => u.SentMessages)
                 .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<PostHistory>()
+                .HasOne(ph => ph.User)
+                .WithMany(u => u.PostHistories)
+                .HasForeignKey(ph => ph.OperationByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CommentHistory>()
+                .HasOne(ch => ch.User)
+                .WithMany(u => u.CommentHistories)
+                .HasForeignKey(ch => ch.OperationByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PostReaction>()
+                .HasOne(pr => pr.ReactingUser)
+                .WithMany(u => u.PostReactions)
+                .HasForeignKey(pr => pr.ReactingUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CommentReaction>()
+                .HasOne(cr => cr.ReactingUser)
+                .WithMany(u => u.CommentReactions)
+                .HasForeignKey(cr => cr.ReactingUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MessageReaction>()
+                .HasOne(mr => mr.ReactingUser)
+                .WithMany(u => u.MessageReactions)
+                .HasForeignKey(mr => mr.ReactingUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<GenderType>().HasData(
