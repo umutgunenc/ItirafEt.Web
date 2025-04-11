@@ -27,7 +27,7 @@ namespace ItirafEt.Api.Services
         {
             var user = await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.UserName == dto.UserName);
+                .FirstOrDefaultAsync(u => u.UserName == dto.UserName && u.IsActive == true  && u.IsTermOfUse == true);
 
             if (user == null)
                 return new AuthResponseDto(default,"Kullanıcı Adı veya Şifre Hatalı");
@@ -38,7 +38,7 @@ namespace ItirafEt.Api.Services
                 return new AuthResponseDto(default, "Kullanıcı Adı veya Şifre Hatalı");
 
             var jwtToken = GenearteJwtToken(user);
-            var loggedInUser = new LoggedInUser(user.Id.ToString(),user.UserName,user.RoleId.ToString(), jwtToken);
+            var loggedInUser = new LoggedInUser(user.Id.ToString(),user.UserName,user.RoleName.ToString(), jwtToken);
             return new AuthResponseDto(loggedInUser);
 
         }
@@ -48,7 +48,7 @@ namespace ItirafEt.Api.Services
             Claim[] claims = [
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, user.RoleId.ToString())
+                new Claim(ClaimTypes.Role, user.RoleName)
                 ];
 
             var secretKey = _configuration.GetValue<string>("Jwt:Secret");

@@ -21,12 +21,18 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(CommentId))]
         public virtual Comment Comment { get; set; }
 
-        [Required]
-        public ReactionType ReactionType { get; set; }
+
+        public int? ReactionId { get; set; }
+
+        [ForeignKey(nameof(ReactionId))]
+        public ReactionType Reaction { get; set; }
 
         [Required]
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
+        public int? ReportName { get; set; }
+
+        [ForeignKey(nameof(ReportName))]
         public ReportType? ReportType { get; set; }
 
         [MaxLength(1024)]

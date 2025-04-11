@@ -1,4 +1,4 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿<div class="top-row ps-3 navbar navbar-dark navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="">ItirafEt.Web</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -14,14 +14,95 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="counter">
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+                <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+                <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+                <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+                <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+                <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+                <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+
+@*         <div class="nav-item px-3">
+            <a class="nav-link"  @onclick="ToggleCategories">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Categories
+            </a>
+
+            @if (showCategories)
+            {
+                <div class="ps-4">
+                    <NavLink class="nav-link" href="category1">Category 1</NavLink>
+                    <NavLink class="nav-link" href="category2">Category 2</NavLink>
+                    <NavLink class="nav-link" href="category3">Category 3</NavLink>
+                </div>
+            }
+        </div> *@
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="adminPanel">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Admin Panel
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="inbox">
+                <span class="bi bi-chat-right-text" aria-hidden="true"></span> Inbox
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="settings">
+                <span class="bi bi-gear" aria-hidden="true"></span> Settings
             </NavLink>
         </div>
     </nav>
@@ -29,11 +110,17 @@
 
 @code {
     private bool collapseNavMenu = true;
-
+    // private bool showCategories = false;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
+
+    // private void ToggleCategories()
+    // {
+    //     showCategories = !showCategories;
+    // }
 }

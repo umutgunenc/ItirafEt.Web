@@ -35,8 +35,8 @@ main {
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-@media (max-width: 640.98px) {
+/*640.98px*/
+@media (max-width: 991.98px) {
     .top-row {
         justify-content: space-between;
     }
@@ -45,8 +45,9 @@ main {
             margin-left: 0;
         }
 }
-
-@media (min-width: 641px) {
+/*641px*/
+@media (min-width: 992px) {
+   
     .page {
         flex-direction: row;
     }

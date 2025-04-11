@@ -64,8 +64,8 @@
     background-color: rgba(255,255,255,0.1);
     color: white;
 }
-
-@media (min-width: 641px) {
+/*644 veya 640px*/
+@media (min-width: 992px) {
     .navbar-toggler {
         display: none;
     }

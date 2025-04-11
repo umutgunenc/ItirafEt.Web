@@ -19,7 +19,7 @@ namespace ItirafEt.Shared
                 new Claim(nameof(Token),Token)
             };
 
-        public static LoggedInUser? FromJson(string json) => string.IsNullOrWhiteSpace(json) ? JsonSerializer.Deserialize<LoggedInUser>(json) : null;
+        public static LoggedInUser? FromJson(string json) => string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<LoggedInUser>(json);
 
 
     }

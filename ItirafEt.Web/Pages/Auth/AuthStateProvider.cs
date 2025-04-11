@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Security.Principal;
 using System.Text.Json;
 using ItirafEt.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -68,20 +69,14 @@ namespace ItirafEt.Web.Pages.Auth
         }
         private void SetAuthStateTask()
         {
+            var identity = new ClaimsIdentity();
+
             if (IsLoggedIn)
-            {
-                var identity = new ClaimsIdentity(User.ToClaims(), AuthType);
-                var principal = new ClaimsPrincipal(identity);
-                var authState = new AuthenticationState(principal);
-                _authStateTask = Task.FromResult(authState);
-            }
-            else
-            {
-                var identity = new ClaimsIdentity();
-                var principal = new ClaimsPrincipal(identity);
-                var authState = new AuthenticationState(principal);
-                _authStateTask = Task.FromResult(authState);
-            }
+                identity = new ClaimsIdentity(User.ToClaims(), AuthType);
+   
+            var principal = new ClaimsPrincipal(identity);
+            var authState = new AuthenticationState(principal);
+            _authStateTask = Task.FromResult(authState);
 
         }
     }

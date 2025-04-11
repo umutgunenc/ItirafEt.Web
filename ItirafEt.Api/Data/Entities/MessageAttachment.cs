@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ItirafEt.Api.Data.Entities
 {
@@ -10,9 +11,9 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public int MessageId { get; set; }
 
-        [Required]
-        public string PhotoUrl { get; set; }
+        public string? PhotoUrl { get; set; }
 
+        [ForeignKey(nameof(MessageId))]
         public virtual Message Message { get; set; }
     }
 }

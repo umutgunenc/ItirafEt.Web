@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Data
 {
-    public class Context :DbContext
+    public class Context : DbContext
     {
         private readonly IPasswordHasher<User> _passwordHasher;
 
-        public Context(DbContextOptions<Context> options, IPasswordHasher<User> passwordHasher) : base(options) 
+        public Context(DbContextOptions<Context> options, IPasswordHasher<User> passwordHasher) : base(options)
         {
             _passwordHasher = passwordHasher;
         }
@@ -40,6 +40,14 @@ namespace ItirafEt.Api.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.UserName)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
 
             modelBuilder.Entity<UserBlock>()
                 .HasOne(ub => ub.BlockerUser)
@@ -111,6 +119,11 @@ namespace ItirafEt.Api.Data
                 .HasForeignKey(mr => mr.ReactingUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+
+            modelBuilder.Entity<Category>()
+                .HasIndex(c => c.CategoryOrder)
+                .IsUnique();
+
             modelBuilder.Entity<GenderType>().HasData(
                GenderType.List()
                    .Select(gt => new { gt.Id, gt.Name })
@@ -118,28 +131,16 @@ namespace ItirafEt.Api.Data
 
             modelBuilder.Entity<RoleType>().HasData(
                RoleType.List()
-                   .Select(rt => new { rt.Id, rt.Name })
+                   .Select(rt => new {rt.Name })
            );
-
-            modelBuilder.Entity<ReportType>().HasData(
-               ReportType.List()
-                   .Select(rt => new { rt.Id, rt.Name })
-           ); 
-            
-           modelBuilder.Entity<ReactionType>().HasData(
-               ReactionType.List()
-                   .Select(rt => new { rt.Id, rt.Name })
-           );
-
-
 
             var adminUser = new User
             {
                 Id = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 UserName = "admin",
                 Email = "umutgunenc@gmail.com",
-                RoleId = RoleType.FromEnum(UserRole.SuperAdmin).Id,
-                GenderId = GenderType.FromEnum(Gender.Male).Id,
+                RoleName = nameof(UserRole.SuperAdmin),
+                GenderId = (int)Gender.Male,
                 PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
                 BirthDate = new DateTime(1989, 5, 29),
                 CreatedDate = new DateTime(2025, 4, 10),

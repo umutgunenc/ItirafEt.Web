@@ -21,12 +21,16 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(PostId))]
         public virtual Post Post { get; set; }
 
-        [Required]
+        public int? ReactionTypeId { get; set; }
+
+        [ForeignKey(nameof(ReactionTypeId))]
         public ReactionType ReactionType { get; set; }
 
         [Required]
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public int? ReportTypeId { get; set; }
 
+        [ForeignKey(nameof(ReportTypeId))]
         public ReportType? ReportType { get; set; }
 
         [MaxLength(1024)]

@@ -52,9 +52,9 @@ namespace ItirafEt.Api.Data.Entities
         public bool IsTermOfUse { get; set; }
 
         [Required]
-        public int RoleId { get; set; }
+        public string RoleName { get; set; }
 
-        [ForeignKey(nameof(RoleId))]
+        [ForeignKey(nameof(RoleName))]
         public virtual RoleType Role { get; set; }
 
         [Required]

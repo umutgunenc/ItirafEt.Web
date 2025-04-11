@@ -22,9 +22,6 @@ namespace ItirafEt.Api.Data.Entities
         public DateTime CreatedDate { get; set; }
 
         [Required]
-        public bool IsActive { get; set; }
-
-        [Required]
         [MaxLength(45)]
         public string IpAddress { get; set; }
 

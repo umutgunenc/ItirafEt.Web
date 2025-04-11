@@ -8,9 +8,7 @@
 <h1>Hello, world! </h1>
 
 Welcome to your new app.
-<p>@AuthStateProvider.User?.userName</p>
-<p>@AuthStateProvider.User?.id</p>
-<p>@AuthStateProvider.User?.roleId</p>
+
 
 <AuthorizeView>
 	<Authorizing>
@@ -21,6 +19,9 @@ Welcome to your new app.
 	</NotAuthorized>
 	<Authorized>
 		<p>Authorized : @context.User.Claims.FirstOrDefault(c=>c.Type == ClaimTypes.Name)?.Value</p>
+		<p>@AuthStateProvider.User?.userName</p>
+		<p>@AuthStateProvider.User?.id</p>
+		<p>@AuthStateProvider.User?.roleId</p>
 	</Authorized>
 </AuthorizeView>
 

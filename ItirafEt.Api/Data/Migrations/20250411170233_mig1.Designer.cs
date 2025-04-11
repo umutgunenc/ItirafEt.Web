@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ItirafEt.Api.Data.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20250410140901_mig1")]
+    [Migration("20250411170233_mig1")]
     partial class mig1
     {
         /// <inheritdoc />
@@ -38,7 +38,16 @@ namespace ItirafEt.Api.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<int>("CategoryOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryOrder")
+                        .IsUnique();
 
                     b.ToTable("Categories");
                 });
@@ -124,9 +133,6 @@ namespace ItirafEt.Api.Data.Migrations
                         .HasMaxLength(45)
                         .HasColumnType("nvarchar(45)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("OperationByUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -164,14 +170,14 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<Guid>("ReactingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ReactionTypeId")
+                    b.Property<int?>("ReactionId")
                         .HasColumnType("int");
 
                     b.Property<string>("ReportExplanation")
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
-                    b.Property<int?>("ReportTypeId")
+                    b.Property<int?>("ReportName")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -180,9 +186,9 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasIndex("ReactingUserId");
 
-                    b.HasIndex("ReactionTypeId");
+                    b.HasIndex("ReactionId");
 
-                    b.HasIndex("ReportTypeId");
+                    b.HasIndex("ReportName");
 
                     b.ToTable("CommentReactions");
                 });
@@ -331,7 +337,6 @@ namespace ItirafEt.Api.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("PhotoUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -358,7 +363,7 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<Guid>("ReactingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ReactionTypeId")
+                    b.Property<int?>("ReactionTypeId")
                         .HasColumnType("int");
 
                     b.Property<string>("ReportExplanation")
@@ -502,7 +507,7 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<Guid>("ReactingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ReactionTypeId")
+                    b.Property<int?>("ReactionTypeId")
                         .HasColumnType("int");
 
                     b.Property<string>("ReportExplanation")
@@ -541,23 +546,6 @@ namespace ItirafEt.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ReactionType");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Like"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Dislike"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Report"
-                        });
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.ReportType", b =>
@@ -576,76 +564,37 @@ namespace ItirafEt.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ReportType");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 4,
-                            Name = "OffTopic"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "InappropriateContent"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "AbusiveLanguage"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Harassment"
-                        },
-                        new
-                        {
-                            Id = 1,
-                            Name = "Spam"
-                        });
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.RoleType", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Name");
 
                     b.ToTable("Roles");
 
                     b.HasData(
                         new
                         {
-                            Id = 1,
                             Name = "SuperAdmin"
                         },
                         new
                         {
-                            Id = 2,
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = 3,
                             Name = "Moderator"
                         },
                         new
                         {
-                            Id = 4,
                             Name = "SuperUser"
                         },
                         new
                         {
-                            Id = 5,
                             Name = "User"
                         });
                 });
@@ -687,8 +636,9 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<string>("ProfilePictureUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -697,9 +647,15 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("GenderId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleName");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("Users");
 
@@ -714,8 +670,8 @@ namespace ItirafEt.Api.Data.Migrations
                             IsActive = true,
                             IsPremium = true,
                             IsTermOfUse = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAEMMH/7QHaOQE4G24K3VWQp1WjQaa1UvQQu6ZlNIj6JTHj2cDEW1u0uvkX8Fq5ZgSwQ==",
-                            RoleId = 1,
+                            PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
+                            RoleName = "SuperAdmin",
                             UserName = "admin"
                         });
                 });
@@ -806,21 +762,19 @@ namespace ItirafEt.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "ReactionType")
+                    b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "Reaction")
                         .WithMany()
-                        .HasForeignKey("ReactionTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ReactionId");
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
                         .WithMany()
-                        .HasForeignKey("ReportTypeId");
+                        .HasForeignKey("ReportName");
 
                     b.Navigation("Comment");
 
                     b.Navigation("ReactingUser");
 
-                    b.Navigation("ReactionType");
+                    b.Navigation("Reaction");
 
                     b.Navigation("ReportType");
                 });
@@ -890,9 +844,7 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "ReactionType")
                         .WithMany()
-                        .HasForeignKey("ReactionTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ReactionTypeId");
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
                         .WithMany()
@@ -957,9 +909,7 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "ReactionType")
                         .WithMany()
-                        .HasForeignKey("ReactionTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ReactionTypeId");
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
                         .WithMany()
@@ -984,7 +934,7 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasOne("ItirafEt.Api.Data.Entities.RoleType", "Role")
                         .WithMany("Users")
-                        .HasForeignKey("RoleId")
+                        .HasForeignKey("RoleName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
