@@ -115,7 +115,10 @@ builder.Services.AddCors(options =>
 
 });
 
-builder.Services.AddTransient<AuthService>();
+builder.Services.AddAuthorization();
+
+builder.Services.AddTransient<AuthService>()
+    .AddTransient<CategoryServices>();
 
 var app = builder.Build();
 
@@ -133,9 +136,11 @@ app.UseHttpsRedirection();
 
 app.UseCors();
 
-app.UseAuthentication();
+app.UseAuthentication()
+    .UseAuthorization();
 
-app.MapAuthEndpoints();
+app.MapAuthEndpoints()
+    .MapCategoryEndpoints();
 
 app.Run();
 

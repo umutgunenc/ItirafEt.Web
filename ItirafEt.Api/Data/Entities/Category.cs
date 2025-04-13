@@ -16,6 +16,9 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         [MaxLength(64)]
         public string CategoryName { get; set; }
+        [Required]
+        [MaxLength(128)]
+        public string CategoryIconUrl { get; set; }
 
         [Required]
         public bool isActive { get; set; }

@@ -1,3 +1,22 @@
 ﻿@inherits LayoutComponentBase
+@inject AuthStateProvider AuthStateProvider
 
-@Body
+@if (AuthStateProvider.IsInitializing)
+{
+	<p>Initializing State ... </p>
+}
+else
+{
+	<article class="content px-4">
+		@Body
+	</article>
+}
+
+
+@code{
+	protected override async Task OnInitializedAsync()
+	{
+		while (AuthStateProvider.IsInitializing)
+			await Task.Delay(500);
+	}
+}

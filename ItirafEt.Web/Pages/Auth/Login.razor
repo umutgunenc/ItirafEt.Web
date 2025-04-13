@@ -14,7 +14,7 @@
 			<hr />
 
 			<EditForm Model="_model"
-			OnValidSubmit="LoginAsync">
+					  OnValidSubmit="LoginAsync">
 
 
 				<DataAnnotationsValidator />
@@ -29,8 +29,8 @@
 					<div class="input-group">
 
 						<InputText @bind-Value="_model.Password"
-						class="form-control"
-						type="@(_showPassword ? "text" : "password")" />
+								   class="form-control"
+								   type="@(_showPassword ? "text" : "password")" />
 						<button type="button" class="btn btn-outline-secondary" @onclick="TogglePasswordVisibility">
 							<i class="@(_showPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 						</button>
@@ -72,6 +72,12 @@
 	private bool _showPassword;
 	private string? _errorMessage;
 
+	protected override async Task OnInitializedAsync()
+	{
+		if (AuthStateProvider.IsLoggedIn)
+			NavigationManager.NavigateTo("/home", replace: true);
+
+	}
 
 	private async Task LoginAsync()
 	{
@@ -89,7 +95,7 @@
 
 			var loggedInUser = authResponse.User;
 			await AuthStateProvider.SetLoginAsync(loggedInUser);
-			NavigationManager.NavigateTo("/");
+			NavigationManager.NavigateTo("/home");
 		}
 		catch (Exception ex)
 		{

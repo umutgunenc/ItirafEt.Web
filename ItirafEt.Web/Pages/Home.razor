@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/home"
 
 
 @inject AuthStateProvider AuthStateProvider
@@ -15,7 +15,7 @@ Welcome to your new app.
 		<p>Authorizing....</p>
 	</Authorizing>
 	<NotAuthorized>
-		<p>Not Authorized</p>
+		<p>Anonim User..</p>
 	</NotAuthorized>
 	<Authorized>
 		<p>Authorized : @context.User.Claims.FirstOrDefault(c=>c.Type == ClaimTypes.Name)?.Value</p>

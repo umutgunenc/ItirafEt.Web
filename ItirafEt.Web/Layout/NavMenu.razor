@@ -1,126 +1,85 @@
-﻿<div class="top-row ps-3 navbar navbar-dark navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">ItirafEt.Web</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
+﻿@inject ICategoryApi CategoryApi
+@inject AuthStateProvider AuthStateProvider
+
+
+<div class="top-row ps-3 navbar navbar-dark navbar-expand-lg">
+	<div class="container-fluid">
+		<a class="navbar-brand" href="">ItirafEt.Web</a>
+		<button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
 </div>
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+	<nav class="nav flex-column">
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categories">
-                <span class="bi bi-card-list" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
+		<AuthorizeView Context="LoggedInContext">
+			<Authorized>
+				<AuthorizeView Roles="@allowedRoles">
+					<hr class="border-3 border-white opacity-75">
 
-@*         <div class="nav-item px-3">
-            <a class="nav-link"  @onclick="ToggleCategories">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Categories
-            </a>
+					<div class="nav-item px-3">
+						<NavLink class="nav-link" href="/admin/adminastorPanel">
+							<div class="d-flex align-items-center gap-2">
+								<span class="bi bi-speedometer d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
+								<span class="fs-6">Yönetim Paneli</span>
+							</div>
+						</NavLink>
+					</div>		
+					<hr class="border-3 border-white opacity-75">
 
-            @if (showCategories)
-            {
-                <div class="ps-4">
-                    <NavLink class="nav-link" href="category1">Category 1</NavLink>
-                    <NavLink class="nav-link" href="category2">Category 2</NavLink>
-                    <NavLink class="nav-link" href="category3">Category 3</NavLink>
-                </div>
-            }
-        </div> *@
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="adminPanel">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Admin Panel
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="inbox">
-                <span class="bi bi-chat-right-text" aria-hidden="true"></span> Inbox
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="settings">
-                <span class="bi bi-gear" aria-hidden="true"></span> Settings
-            </NavLink>
-        </div>
-    </nav>
+				</AuthorizeView>
+			</Authorized>
+		</AuthorizeView>
+
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="/home">
+				<div class="d-flex align-items-center gap-2">
+					<span class="bi bi bi-house-door-fill d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
+					<span class="fs-6">Ana Sayfa</span>
+				</div>
+			</NavLink>
+		</div>
+@* 		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+				<span class="bi bi-house-door-fill" aria-hidden="true" style="font-size: 1.5rem"></span> Home
+			</NavLink>
+		</div> *@
+		
+		@foreach (var category in _categories)
+		{
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="@category.Id">
+					<div class="d-flex align-items-center gap-2">
+						<span class="@category.CategoryIconUrl d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
+						<span class="fs-6">@category.CategoryName</span>
+					</div>
+				</NavLink>
+			</div>
+		}
+
+	</nav>
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
-    // private bool showCategories = false;
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+	private bool collapseNavMenu = true;
+	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+	private List<CategoryDto> _categories = new List<CategoryDto>();
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		_categories = await CategoryApi.GetAllActiveCategoryAsycn();
+	}
 
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
 
-    // private void ToggleCategories()
-    // {
-    //     showCategories = !showCategories;
-    // }
+	private string allowedRoles = string.Join(",",
+		nameof(UserRole.SuperAdmin),
+		nameof(UserRole.Admin),
+		nameof(UserRole.Moderator));
+
 }

@@ -1,14 +1,30 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
+	<Found Context="routeData">
+		<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+			@* RouteView AuthorizeRouteView oldu *@
+			<NotAuthorized>
+				<main class="flex-fill d-flex align-items-center justify-content-center bg-light">
+					<div class="card shadow-sm" style="max-width: 500px; width: 100%;">
+						<div class="card-body text-center">
+							<i class="bi bi-lock-fill" style="font-size: 3rem; color: #dc3545;"></i>
+							<h1 class="card-title mt-3">Erişim Reddedildi</h1>
+							<p class="card-text">
+								Bu sayfaya erişim yetkiniz yok. Lütfen gerekli yetkiye sahip olduğunuzdan emin olun veya yöneticinizle iletişime geçin.
+							</p>
+							<a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+						</div>
+					</div>
+				</main>
+			</NotAuthorized>
+		</AuthorizeRouteView>
+		<FocusOnNavigate RouteData="@routeData" Selector="h1" />
+	</Found>
+	<NotFound>
+		<PageTitle>Not found</PageTitle>
+		<LayoutView Layout="@typeof(MainLayout)">
+			<p role="alert">Sorry, there's nothing at this address.</p>
+		</LayoutView>
+	</NotFound>
 </Router>
 
 @inject AuthStateProvider AuthStateProvider
@@ -16,6 +32,6 @@
 @code {
 	protected override async Task OnInitializedAsync()
 	{
-        await AuthStateProvider.InitializeAsync();
+		await AuthStateProvider.InitializeAsync();
 	}
 }
