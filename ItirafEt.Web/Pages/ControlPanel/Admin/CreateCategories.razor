@@ -7,7 +7,7 @@
 	<div class="col-lg-12 mx-auto my-auto border shadow-lg">
 
 		<EditForm Model="_model"
-		OnValidSubmit="SaveCategoryAsync">
+				  OnValidSubmit="SaveCategoryAsync">
 
 
 			<DataAnnotationsValidator />
@@ -82,9 +82,13 @@
 
 	private async Task SaveCategoryAsync()
 	{
+		if (_isBusy)
+			return;
+
+		_isBusy = true;
+
 		try
 		{
-			_isBusy = true;
 
 			var response = await CategoryApi.CreateCategoryAsync(_model);
 			if (!response.IsSuccess)
@@ -111,22 +115,8 @@
 	}
 
 
-	private async Task ToggleActiveStatus(CategoryDto category)
+	private void ToggleActiveStatus(CategoryDto category)
 	{
-		category.isActive = !category.isActive;
-
-		// // Veritabanına kaydedin veya API ile güncelleyin
-		// var response = await CategoryApi.EditCategoryAsync(category);
-
-		// if (response.IsSuccess)
-		// {
-		// 	// Başarıyla güncellendiğinde kategorileri yeniden yükle
-		// 	await LoadCategoriesAsync();
-		// }
-		// else
-		// {
-		// 	// Hata durumunda işlemleri yapabilirsiniz
-		// 	Console.WriteLine("Güncelleme başarısız oldu!");
-		// }
+		category.isActive = !category.isActive;		
 	}
 }

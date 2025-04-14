@@ -144,7 +144,8 @@ namespace ItirafEt.Api.Data
                 PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
                 BirthDate = new DateTime(1989, 5, 29),
                 CreatedDate = new DateTime(2025, 4, 10),
-                IsActive = true,
+                IsDeleted = false,
+                IsBanned =false,
                 IsPremium = true,
                 IsTermOfUse = true
             };

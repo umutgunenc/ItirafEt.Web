@@ -4,6 +4,7 @@ using ItirafEt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ItirafEt.Api.Data.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250414105714_mig3")]
+    partial class mig3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -607,13 +610,7 @@ namespace ItirafEt.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AdminastorUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("BannedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("BannedDateUntil")
+                    b.Property<DateTime>("BannedOrDeletedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("BirthDate")
@@ -630,10 +627,7 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<int>("GenderId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsBanned")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsPremium")
@@ -661,8 +655,6 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdminastorUserId");
-
                     b.HasIndex("Email")
                         .IsUnique();
 
@@ -679,12 +671,12 @@ namespace ItirafEt.Api.Data.Migrations
                         new
                         {
                             Id = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                            BannedOrDeletedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             BirthDate = new DateTime(1989, 5, 29, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedDate = new DateTime(2025, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "umutgunenc@gmail.com",
                             GenderId = 2,
-                            IsBanned = false,
-                            IsDeleted = false,
+                            IsActive = true,
                             IsPremium = true,
                             IsTermOfUse = true,
                             PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
@@ -943,10 +935,6 @@ namespace ItirafEt.Api.Data.Migrations
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.User", b =>
                 {
-                    b.HasOne("ItirafEt.Api.Data.Entities.User", "AdminastorUser")
-                        .WithMany()
-                        .HasForeignKey("AdminastorUserId");
-
                     b.HasOne("ItirafEt.Api.Data.Entities.GenderType", "Gender")
                         .WithMany("Users")
                         .HasForeignKey("GenderId")
@@ -958,8 +946,6 @@ namespace ItirafEt.Api.Data.Migrations
                         .HasForeignKey("RoleName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AdminastorUser");
 
                     b.Navigation("Gender");
 

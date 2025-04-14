@@ -1,0 +1,159 @@
+﻿@page "/admin/banUsers"
+@inject AuthStateProvider AuthStateProvider
+@inject IBanUserApi UserService
+
+<AutoCompleteComponent TItemType="BanUserDto"
+DisplayedItemsList="Users"
+SelectedItem="_selectedUser"
+SelectedItemChanged="UserSelected"
+StaticPlaceholder="Banlanacak Kullanıcıyı Seçiniz"
+DisplayProperty="@(x => x.UserName)">
+</AutoCompleteComponent>
+@if (_isUserSelected)
+{
+	<div class="col-lg-12 mx-auto my-3 border shadow-lg">
+
+		<EditForm Model="_selectedUser"
+		OnValidSubmit="() => BanUserAsync(_selectedUser)">
+
+
+			<DataAnnotationsValidator />
+			<div class="row align-items-center p-3">
+
+				<div class="col-lg-4 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-start">
+					<div class="col d-flex">
+						<label class="form-label col-lg-6 col-3 text-start pt-2 ps-1">Kullanıcı Adı</label>
+						<InputText @bind-Value="_selectedUser.UserName" disabled class="form-control" />
+					</div>
+				</div>
+
+				<div class="col-lg-2 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
+					@if (_selectedUser.IsBanned)
+					{
+						<button type="button" class="col btn btn-primary" @onclick="() => ToggleActiveStatus(_selectedUser)">
+							Banı Kaldır
+						</button>
+					}
+					else
+					{
+						<button type="button" class="col btn btn-danger" @onclick="() => ToggleActiveStatus(_selectedUser)">
+							Banla
+						</button>
+					}
+
+					<InputCheckbox class="form-check-input" @bind-Value="_selectedUser.IsBanned" style="display:none;" />
+				</div>
+
+				<div class="col-lg-4 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
+					<div class="col d-flex">
+						<label class="form-label col-lg-6 col-3 text-start pt-2 ps-1">Ban Bitiş Tarihi</label>
+						<InputDate @bind-Value="_selectedUser.BannedDateUntil" class="form-control" disabled="@(!_selectedUser.IsBanned)" />
+					</div>
+				</div>
+
+
+
+				<div class="col-lg-2 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
+					@if (!_isBusy)
+					{
+						<button type="submit" class="col btn btn-success">Kaydet</button>
+					}
+					else
+					{
+						<button class="col btn btn-success" type="button" disabled>
+							<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							İşelminiz Devam Ediyor. Lütfen Bekleyiniz.
+						</button>
+					}
+				</div>
+			</div>
+		</EditForm>
+
+		<div class="my-3">
+			<div class="d-flex mx-3">
+				@if (_isSuccess)
+				{
+					<div class="alert alert-success col">
+						İşleminiz başarıyla gerçekleşti.
+					</div>
+				}
+				else if (!_isSuccess && _selectedUser.ErrorMessage != null)
+				{
+					<div class="alert alert-danger col">
+						@_selectedUser.ErrorMessage
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+}
+
+
+@code {
+
+	private Guid _adminId;
+	private List<BanUserDto> Users = new();
+	private BanUserDto _selectedUser = new();
+	private bool _isUserSelected = false;
+	private bool _isBusy = false;
+	private bool _isSuccess = false;
+	private Timer? _timer;
+
+	protected override async Task OnInitializedAsync()
+	{
+		_adminId = Guid.Parse(AuthStateProvider.User?.id);
+
+		Users = await UserService.GetAllUserDtosAsync();
+	}
+
+	private void UserSelected(BanUserDto user)
+	{
+		_isUserSelected = true;
+		_selectedUser = user;
+	}
+
+	private async Task BanUserAsync(BanUserDto user)
+	{
+		if (_isBusy)
+			return;
+		_isBusy = true;
+		try
+		{
+			var response = await UserService.BanUserAsync(user, _adminId);
+			if (response.IsSuccess)
+			{
+				_isSuccess = true;
+				_selectedUser.ErrorMessage = null;
+			}
+			else
+			{
+				_selectedUser.ErrorMessage = response.ErrorMessage;
+				_isSuccess = false;
+			}
+		}
+		catch (Exception ex)
+		{
+			_selectedUser.ErrorMessage = ex.Message;
+		}
+		finally
+		{
+			_isBusy = false;
+
+			_timer = new Timer((e) =>
+			{
+				_isSuccess = false;
+				_selectedUser.ErrorMessage = null;
+				StateHasChanged();
+			}, null, 5000, Timeout.Infinite);
+		}
+
+	}
+
+	private void ToggleActiveStatus(BanUserDto user)
+	{
+		user.IsBanned = !user.IsBanned;
+		if (!user.IsBanned)
+			_selectedUser.BannedDateUntil = null;
+
+	}
+}

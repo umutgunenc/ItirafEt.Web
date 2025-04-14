@@ -42,8 +42,17 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public DateTime BirthDate { get; set; }
 
+        public DateTime? BannedDate { get; set; } 
+        public DateTime? BannedDateUntil { get; set; } 
+
+        [ForeignKey(nameof(AdminastorUserId))]
+        public User AdminastorUser { get; set; }
+        public Guid? AdminastorUserId { get; set; } 
+
         [Required]
-        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        [Required]
+        public bool IsBanned { get; set; }
 
         [Required]
         public bool IsPremium { get; set; }

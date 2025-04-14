@@ -4,6 +4,7 @@ using ItirafEt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ItirafEt.Api.Data.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250414110509_mig5")]
+    partial class mig5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -607,7 +610,7 @@ namespace ItirafEt.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AdminastorUserId")
+                    b.Property<Guid?>("BannedByUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("BannedDate")
@@ -661,7 +664,7 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdminastorUserId");
+                    b.HasIndex("BannedByUserId");
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -943,9 +946,9 @@ namespace ItirafEt.Api.Data.Migrations
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.User", b =>
                 {
-                    b.HasOne("ItirafEt.Api.Data.Entities.User", "AdminastorUser")
+                    b.HasOne("ItirafEt.Api.Data.Entities.User", "BannedByUser")
                         .WithMany()
-                        .HasForeignKey("AdminastorUserId");
+                        .HasForeignKey("BannedByUserId");
 
                     b.HasOne("ItirafEt.Api.Data.Entities.GenderType", "Gender")
                         .WithMany("Users")
@@ -959,7 +962,7 @@ namespace ItirafEt.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AdminastorUser");
+                    b.Navigation("BannedByUser");
 
                     b.Navigation("Gender");
 

@@ -31,6 +31,9 @@ static void ConfigureRefit(IServiceCollection services)
      .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<ICategoryApi>(GetRefitSettings)
+     .ConfigureHttpClient(SetHttpClient); 
+    
+    services.AddRefitClient<IBanUserApi>(GetRefitSettings)
      .ConfigureHttpClient(SetHttpClient);
 
     static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);

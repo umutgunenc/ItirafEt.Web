@@ -27,10 +27,28 @@ namespace ItirafEt.Api.Services
         {
             var user = await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.UserName == dto.UserName && u.IsActive == true  && u.IsTermOfUse == true);
+                .Where(u => u.UserName == dto.UserName)
+                .Select(u => new User
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    PasswordHash = u.PasswordHash,
+                    IsDeleted = u.IsDeleted,
+                    IsBanned = u.IsBanned,
+                    IsTermOfUse = u.IsTermOfUse,
+                    RoleName = u.RoleName,
+                    BannedDateUntil = u.BannedDateUntil,
+                })
+                .FirstOrDefaultAsync();
 
             if (user == null)
                 return new AuthResponseDto(default,"Kullanıcı Adı veya Şifre Hatalı");
+
+            if (user.IsDeleted)
+                return new AuthResponseDto(default, "Hesabınız silinmiş durumda.");
+
+            if (user.IsBanned)
+                return new AuthResponseDto(default, $"Hesabınız {user.BannedDateUntil?.ToString("dd/MM/yyyy")} tarihine kadar banlanmıştır.");
 
             var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 

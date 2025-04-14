@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore;
 namespace ItirafEt.Api.Services
 {
 
-    public class CategoryServices
+    public class CategoryService
     {
         private readonly Context _context;
         private readonly IHubContext<CategoryHub> _hubContext;
-        public CategoryServices(Context context, IHubContext<CategoryHub> hubContext)
+        public CategoryService(Context context, IHubContext<CategoryHub> hubContext)
         {
             _context = context;
             _hubContext = hubContext;

@@ -128,9 +128,7 @@
 				dto.ErrorMessage = null;
 			}
 			else
-			{
 				dto.ErrorMessage = response.ErrorMessage;
-			}
 		}
 		catch (Exception ex)
 		{
@@ -138,22 +136,8 @@
 		}
 	}
 
-	private async Task ToggleActiveStatus(CategoryDto category)
+	private void ToggleActiveStatus(CategoryDto category)
 	{
 		category.isActive = !category.isActive;
-
-		// // Veritabanına kaydedin veya API ile güncelleyin
-		// var response = await CategoryApi.EditCategoryAsync(category);
-
-		// if (response.IsSuccess)
-		// {
-		// 	// Başarıyla güncellendiğinde kategorileri yeniden yükle
-		// 	await LoadCategoriesAsync();
-		// }
-		// else
-		// {
-		// 	// Hata durumunda işlemleri yapabilirsiniz
-		// 	Console.WriteLine("Güncelleme başarısız oldu!");
-		// }
 	}
 }

@@ -1,0 +1,115 @@
+﻿@typeparam TItemType
+
+<div class="autocomplete-container">
+    <div class="card">
+        <div class="card-header">
+            <input type="text"
+                   @bind="CurrentDisplayValue"
+                   @bind:event="oninput"
+                   placeholder="@StaticPlaceholder"
+                   class="form-control"
+                   @onfocus="HandleFocus"
+                   @onblur="HandleBlur" />
+        </div>
+        @if (IsListVisible && FilteredItems.Any())
+        {
+            <div class="autocomplete-list-container">
+                <ul class="list-group list-group-flush autocomplete-list">
+                    @foreach (var item in FilteredItems)
+                    {
+                        <li class="list-group-item list-group-item-action autocomplete-item"
+                            @onmousedown="() => SelectItem(item)"
+                            style="cursor: pointer">
+                            @GetDisplayValue(item)
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<TItemType> DisplayedItemsList { get; set; } = new();
+
+    [Parameter]
+    public Expression<Func<TItemType, object>> DisplayProperty { get; set; }
+
+    [Parameter]
+    public string StaticPlaceholder { get; set; } = "Ara...";
+
+    [Parameter]
+    public TItemType SelectedItem { get; set; }
+
+    [Parameter]
+    public EventCallback<TItemType> SelectedItemChanged { get; set; }
+
+    private string _currentValue = "";
+    private bool _isFocused;
+    private List<TItemType> FilteredItems { get; set; } = new();
+    private bool IsListVisible { get; set; }
+
+    private string CurrentDisplayValue
+    {
+        get => _isFocused ? _currentValue :
+               SelectedItem != null ? GetDisplayValue(SelectedItem) : "";
+        set
+        {
+            _currentValue = value;
+            FilterItems(value);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        FilteredItems = new List<TItemType>(DisplayedItemsList);
+    }
+
+    private void HandleFocus()
+    {
+        _isFocused = true;
+        _currentValue = "";
+        FilteredItems = new List<TItemType>(DisplayedItemsList);
+        IsListVisible = true;
+    }
+
+    private void HandleBlur()
+    {
+        _isFocused = false;
+        IsListVisible = false;
+    }
+
+    private async Task SelectItem(TItemType item)
+    {
+        SelectedItem = item;
+        _isFocused = false;
+        IsListVisible = false;
+        await SelectedItemChanged.InvokeAsync(item);
+        StateHasChanged();
+    }
+
+    private void FilterItems(string searchText)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            FilteredItems = new List<TItemType>(DisplayedItemsList);
+        }
+        else
+        {
+            FilteredItems = DisplayedItemsList.Where(x =>
+                GetDisplayValue(x).Contains(searchText, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+        IsListVisible = FilteredItems.Any();
+    }
+
+    private string GetDisplayValue(TItemType item)
+    {
+        if (DisplayProperty == null || item == null)
+            return item?.ToString() ?? string.Empty;
+
+        var func = DisplayProperty.Compile();
+        return func(item)?.ToString() ?? string.Empty;
+    }
+}

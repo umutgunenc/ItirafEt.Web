@@ -72,7 +72,7 @@
 	private bool _showPassword;
 	private string? _errorMessage;
 
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
 	{
 		if (AuthStateProvider.IsLoggedIn)
 			NavigationManager.NavigateTo("/home", replace: true);
@@ -81,6 +81,8 @@
 
 	private async Task LoginAsync()
 	{
+		if(_isBusy)
+			return;
 		_errorMessage = null;
 		_isBusy = true;
 		try

@@ -9,18 +9,18 @@ namespace ItirafEt.Api.EndPoints
         public static IEndpointRouteBuilder MapCategoryEndpoints(this IEndpointRouteBuilder app)
         {
 
-            app.MapGet("/api/getcategory", async (CategoryServices categoryServices) =>
+            app.MapGet("/api/getcategory", async (CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.GetCategoryAsync()))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRole.SuperAdmin), nameof(UserRole.Admin)));
 
-            app.MapGet("/api/getallactivecategory", async (CategoryServices categoryServices) =>
+            app.MapGet("/api/getallactivecategory", async (CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.GetAllActiveCategoryAsycn()));
 
-            app.MapPost("/api/createcategory", async (CategoryDto dto, CategoryServices categoryServices) =>
+            app.MapPost("/api/createcategory", async (CategoryDto dto, CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.CreateCategoryAsync(dto)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRole.SuperAdmin), nameof(UserRole.Admin)));
 
-            app.MapPost("/api/editcategory", async (CategoryDto dto, CategoryServices categoryServices) =>
+            app.MapPost("/api/editcategory", async (CategoryDto dto, CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.EditCategoryAsync(dto)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRole.SuperAdmin), nameof(UserRole.Admin)));
 

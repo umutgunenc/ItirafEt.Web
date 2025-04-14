@@ -67,7 +67,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddTransient<AuthService>();
-builder.Services.AddTransient<CategoryServices>();
+builder.Services.AddTransient<CategoryService>();
+builder.Services.AddTransient<BanUserService>();
 
 var app = builder.Build();
 
@@ -96,6 +97,7 @@ app.MapHub<CategoryHub>("/categoryhub");
 
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();
+app.MapBanUserEndPoints();
 
 app.Run();
 
