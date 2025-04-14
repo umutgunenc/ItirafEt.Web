@@ -1,80 +1,26 @@
-//using ItirafEt.Api.Data;
-//using ItirafEt.Api.Data.Entities;
-//using Microsoft.AspNetCore.Identity;
-//using Microsoft.EntityFrameworkCore;
-
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Add services to the container.
-//// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-//builder.Services.AddOpenApi();
-
-//builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
-
-//builder.Services.AddDbContext<Context>(options =>
-//{
-//    string? connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
-//    options.UseSqlServer(connectionString);
-//});
-
-
-//var app = builder.Build();
-//#if DEBUG
-//ApplyDbMigrations(app.Services);
-//#endif
-
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.MapOpenApi();
-//}
-
-//app.UseHttpsRedirection();
-
-//app.Run();
-
-//static void ApplyDbMigrations(IServiceProvider serviceProvider)
-//{
-//    var scope = serviceProvider.CreateScope();
-//    var context = scope.ServiceProvider.GetRequiredService<Context>();
-
-//    if (context.Database.GetPendingMigrations().Any())
-//        context.Database.Migrate();
-//}
-
 using System.Text;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.EndPoints;
+using ItirafEt.Api.Hubs;
 using ItirafEt.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new OpenApiInfo
-//    {
-//        Title = "ItirafEt API",
-//        Version = "v1"
-//    });
-//});
-
-builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddDbContext<Context>(options =>
 {
     string? connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
     options.UseSqlServer(connectionString);
 });
+
+builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -98,17 +44,20 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddSignalR();
+
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(p =>
+    options.AddDefaultPolicy(policy =>
     {
         var allowedOriginsStr = builder.Configuration.GetValue<string>("AllowedOrigins");
         var allowedOrigins = allowedOriginsStr?.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-        p.WithOrigins(allowedOrigins)
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod();
-        //p.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        //policy.AllowAnyOrigin()
         //    .AllowAnyHeader()
         //    .AllowAnyMethod();
     });
@@ -117,8 +66,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddTransient<AuthService>()
-    .AddTransient<CategoryServices>();
+builder.Services.AddTransient<AuthService>();
+builder.Services.AddTransient<CategoryServices>();
 
 var app = builder.Build();
 
@@ -134,20 +83,21 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
 app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseAuthentication()
-    .UseAuthorization();
+//app.UseEndpoints(endpoints =>
+//{
+//    endpoints.MapHub<CategoryHub>("/categoryhub");
+//});
+app.MapHub<CategoryHub>("/categoryhub");
 
-app.MapAuthEndpoints()
-    .MapCategoryEndpoints();
+app.MapAuthEndpoints();
+app.MapCategoryEndpoints();
 
 app.Run();
-
-
-
-
-
 
 static void ApplyDbMigrations(IServiceProvider serviceProvider)
 {

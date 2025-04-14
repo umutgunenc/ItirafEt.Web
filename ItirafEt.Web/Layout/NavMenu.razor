@@ -1,4 +1,6 @@
-﻿@inject ICategoryApi CategoryApi
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@inject ICategoryApi CategoryApi
+@inject NavigationManager Navigation
 @inject AuthStateProvider AuthStateProvider
 
 
@@ -41,12 +43,12 @@
 				</div>
 			</NavLink>
 		</div>
-@* 		<div class="nav-item px-3">
+		@* 		<div class="nav-item px-3">
 			<NavLink class="nav-link" href="" Match="NavLinkMatch.All">
 				<span class="bi bi-house-door-fill" aria-hidden="true" style="font-size: 1.5rem"></span> Home
 			</NavLink>
 		</div> *@
-		
+
 		@foreach (var category in _categories)
 		{
 			<div class="nav-item px-3">
@@ -66,10 +68,24 @@
 	private bool collapseNavMenu = true;
 	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 	private List<CategoryDto> _categories = new List<CategoryDto>();
+	private HubConnection _hubConnection { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
+		_hubConnection = new HubConnectionBuilder()
+			.WithUrl("https://localhost:7292/categoryhub")
+			.Build();
+
+		_hubConnection.On("CategoryChanged", async () =>
+			{
+				_categories = await CategoryApi.GetAllActiveCategoryAsycn();
+				StateHasChanged(); 
+			});
+
+		await _hubConnection.StartAsync();
+
 		_categories = await CategoryApi.GetAllActiveCategoryAsycn();
+
 	}
 
 	private void ToggleNavMenu()

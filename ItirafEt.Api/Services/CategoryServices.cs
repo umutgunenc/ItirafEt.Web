@@ -1,6 +1,8 @@
 ﻿using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.Hubs;
 using ItirafEt.Shared.DTOs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Services
@@ -9,9 +11,11 @@ namespace ItirafEt.Api.Services
     public class CategoryServices
     {
         private readonly Context _context;
-        public CategoryServices(Context context)
+        private readonly IHubContext<CategoryHub> _hubContext;
+        public CategoryServices(Context context, IHubContext<CategoryHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         public async Task<ApiResponse> CreateCategoryAsync(CategoryDto dto)
@@ -34,6 +38,9 @@ namespace ItirafEt.Api.Services
             };
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("CategoryChanged");
+
             return ApiResponse.Success();
 
         }
@@ -59,6 +66,8 @@ namespace ItirafEt.Api.Services
 
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("CategoryChanged");
 
             return ApiResponse.Success();
 
