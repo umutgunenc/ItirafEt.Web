@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<Context>(options =>
+builder.Services.AddDbContext<dbContext>(options =>
 {
     string? connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
     options.UseSqlServer(connectionString);
@@ -104,7 +104,7 @@ app.Run();
 static void ApplyDbMigrations(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<Context>();
+    var context = scope.ServiceProvider.GetRequiredService<dbContext>();
 
     if (context.Database.GetPendingMigrations().Any())
         context.Database.Migrate();

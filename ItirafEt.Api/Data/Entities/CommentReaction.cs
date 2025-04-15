@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using ItirafEt.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Data.Entities
 {
+    [Index(nameof(ReactingUserId), nameof(CommentId), IsUnique = true)]
     public class CommentReaction
     {
         [Key]

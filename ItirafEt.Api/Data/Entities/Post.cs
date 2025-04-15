@@ -9,16 +9,16 @@ namespace ItirafEt.Api.Data.Entities
         {
             Comments = new HashSet<Comment>();
             PostReactions = new HashSet<PostReaction>();
+            PostReports = new HashSet<PostReport>();
         }
+
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        [MaxLength(256)]
+        [Required, MaxLength(256)]
         public string Title { get; set; }
 
-        [Required]
-        [MaxLength(4096)]
+        [Required, MaxLength(4096)]
         public string Content { get; set; }
 
         [Required]
@@ -27,21 +27,26 @@ namespace ItirafEt.Api.Data.Entities
         public DateTime? UpdatedDate { get; set; }
 
         public Guid UserId { get; set; }
-        [ForeignKey(nameof(UserId))]
-        public virtual User User { get; set; }
 
         [Required]
         public bool IsActive { get; set; }
 
-        [Required]
-        [MaxLength(45)]
+        [Required, MaxLength(45)]
         public string IpAddress { get; set; }
 
         [MaxLength(512)]
         public string DeviceInfo { get; set; }
+        public int ViewCount { get; set; } = 0;
+        public int LikeCount { get; set; } = 0;
+        public int DislikeCount { get; set; } = 0;
+        public int CommentCount { get; set; } = 0;
+        public int ReportCount { get; set; } = 0;
 
+        [ForeignKey(nameof(UserId))]
+        public virtual User User { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
-
         public virtual ICollection<PostReaction> PostReactions { get; set; }
+        public virtual ICollection<PostReport> PostReports { get; set; }
+
     }
 }

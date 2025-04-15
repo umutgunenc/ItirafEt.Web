@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Data
 {
-    public class Context : DbContext
+    public class dbContext : DbContext
     {
         private readonly IPasswordHasher<User> _passwordHasher;
 
-        public Context(DbContextOptions<Context> options, IPasswordHasher<User> passwordHasher) : base(options)
+        public dbContext(DbContextOptions<dbContext> options, IPasswordHasher<User> passwordHasher) : base(options)
         {
             _passwordHasher = passwordHasher;
         }
@@ -22,14 +22,17 @@ namespace ItirafEt.Api.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<CommentReaction> CommentReactions { get; set; }
+        public DbSet<CommentReport> CommentReports { get; set; }
         public DbSet<CommentHistory> CommentHistories { get; set; }
         public DbSet<GenderType> Genders { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<PostHistory> PostHistories { get; set; }
         public DbSet<PostReaction> PostReaction { get; set; }
+        public DbSet<PostReport> PostReports { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageReaction> MessageReactions { get; set; }
+        public DbSet<MessageReport> MessageReports { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -118,6 +121,25 @@ namespace ItirafEt.Api.Data
                 .WithMany(u => u.MessageReactions)
                 .HasForeignKey(mr => mr.ReactingUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PostReport>()
+                .HasOne(pr => pr.ReportingUser)
+                .WithMany(u => u.PostReports)
+                .HasForeignKey(pr => pr.ReportingUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CommentReport>()
+                .HasOne(cr => cr.ReportingUser)
+                .WithMany(u => u.CommentReports)
+                .HasForeignKey(cr => cr.ReportingUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MessageReport>()
+                .HasOne(mr => mr.ReportingUser)
+                .WithMany(u => u.MessageReports)
+                .HasForeignKey(mr => mr.ReportingUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
 
             modelBuilder.Entity<Category>()

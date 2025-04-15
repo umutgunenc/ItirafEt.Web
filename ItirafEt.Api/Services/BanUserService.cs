@@ -6,8 +6,8 @@ namespace ItirafEt.Api.Services
 {
     public class BanUserService
     {
-        private readonly Context _context;
-        public BanUserService(Context context)
+        private readonly dbContext _context;
+        public BanUserService(dbContext context)
         {
             _context = context;
         }

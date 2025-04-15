@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ItirafEt.Api.Data.Migrations
 {
-    [DbContext(typeof(Context))]
+    [DbContext(typeof(dbContext))]
     [Migration("20250414105917_mig4")]
     partial class mig4
     {

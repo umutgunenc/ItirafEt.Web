@@ -13,11 +13,11 @@ namespace ItirafEt.Api.Services
 {
     public class AuthService
     {
-        private readonly Context _context;
+        private readonly dbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IConfiguration _configuration;
 
-        public AuthService(Context context, IPasswordHasher<User> passwordHasher, IConfiguration configuration)
+        public AuthService(dbContext context, IPasswordHasher<User> passwordHasher, IConfiguration configuration)
         {
             _context = context;
             _passwordHasher = passwordHasher;

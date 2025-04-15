@@ -1,9 +1,12 @@
 ﻿using ItirafEt.Shared;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Data.Entities
 {
+    [Index(nameof(ReactingUserId), nameof(PostId), IsUnique = true)]
+
     public class PostReaction
     {
         [Key]
@@ -21,21 +24,13 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(PostId))]
         public virtual Post Post { get; set; }
 
-        public int? ReactionTypeId { get; set; }
+        public int ReactionTypeId { get; set; }
 
         [ForeignKey(nameof(ReactionTypeId))]
         public ReactionType ReactionType { get; set; }
 
         [Required]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public int? ReportTypeId { get; set; }
-
-        [ForeignKey(nameof(ReportTypeId))]
-        public ReportType? ReportType { get; set; }
-
-        [MaxLength(1024)]
-        public string? ReportExplanation { get; set; }
-
+        public DateTime CreatedDate { get; set; } 
 
     }
 }

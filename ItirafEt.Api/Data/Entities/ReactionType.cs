@@ -9,8 +9,7 @@ namespace ItirafEt.Api.Data.Entities
         [Key]
         public int Id { get; private set; }
 
-        [Required]
-        [MaxLength(64)]
+        [Required, MaxLength(16)]
         public string Name { get; private set; }
 
     }

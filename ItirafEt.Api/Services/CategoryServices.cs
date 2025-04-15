@@ -10,9 +10,9 @@ namespace ItirafEt.Api.Services
 
     public class CategoryService
     {
-        private readonly Context _context;
+        private readonly dbContext _context;
         private readonly IHubContext<CategoryHub> _hubContext;
-        public CategoryService(Context context, IHubContext<CategoryHub> hubContext)
+        public CategoryService(dbContext context, IHubContext<CategoryHub> hubContext)
         {
             _context = context;
             _hubContext = hubContext;

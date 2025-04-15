@@ -7,8 +7,9 @@ namespace ItirafEt.Api.Data.Entities
     {
         public Comment()
         {
-             Replies = new HashSet<Comment>();
-             CommentReactions = new HashSet<CommentReaction>();  
+            Replies = new HashSet<Comment>();
+            CommentReactions = new HashSet<CommentReaction>();
+            CommentReports = new HashSet<CommentReport>();
         }
 
         [Key]
@@ -37,14 +38,18 @@ namespace ItirafEt.Api.Data.Entities
         public Guid UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
-
-        public int? ParentCommentId { get; set; } 
+        public int? ParentCommentId { get; set; }
 
         [ForeignKey(nameof(ParentCommentId))]
-        public virtual Comment ParentComment { get; set; } 
-
+        public virtual Comment ParentComment { get; set; }
+        public int LikeCount { get; set; } = 0;
+        public int DislikeCount { get; set; } = 0;
+        public int CommentCount { get; set; } = 0;
+        public int ReportCount { get; set; } = 0;
         public virtual ICollection<Comment> Replies { get; set; }
         public virtual ICollection<CommentReaction> CommentReactions { get; set; }
+        public virtual ICollection<CommentReport> CommentReports { get; set; }
+
 
     }
 }
