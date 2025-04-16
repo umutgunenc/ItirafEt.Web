@@ -1,0 +1,176 @@
+﻿@page "/posts/createPosts"
+
+@inject ICategoryApi CategoryApi
+@inject IPostApi PostApi
+@inject AuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="mx-0">
+	<div class="row">
+		<div class="col-lg-8 mx-auto my-5 border shadow-lg col-12">
+
+			<div class="mt-3">
+				<h1 class="text-center h3">İtiraf Et</h1>
+			</div>
+			<hr />
+
+			<EditForm Model="_postDto" OnValidSubmit="() => CreatePostAsync(_postDto)">
+				<DataAnnotationsValidator />
+				<div class="my-3">
+					<AutoCompleteComponent TItemType="CategoryDto"
+										   DisplayedItemsList="_categories"
+										   SelectedItem="_selectedCategory"
+										   SelectedItemChanged="CategorySelected"
+										   StaticPlaceholder="Kategori Seçiniz"
+										   DisplayProperty="@(x => x.CategoryName)">
+					</AutoCompleteComponent>
+				</div>
+				<ValidationMessage For="() => _postDto.CategoryId" />
+				@if (_selectedCategory != null)
+				{
+					<div class="my-3">
+						<label class="form-label">Başlık : </label>
+						<InputText @bind-Value="_postDto.Title" class="form-control" />
+						<ValidationMessage For="() => _postDto.Title" />
+					</div>
+					<div class="my-3">
+						<label class="form-label">İçerik: </label>
+						<InputTextArea @bind-Value="_postDto.Content" class="form-control" rows="6" />
+						<ValidationMessage For="() => _postDto.Content" />
+					</div>
+
+					@if (_errorMessage != null)
+					{
+						<div class="mb-3 text-bg-danger text-white p-2">
+							<p>@_errorMessage</p>
+						</div>
+					}
+
+					<div class="row mb-3 mx-auto">
+						@if (!_isBusy && !_isSuccess)
+						{
+							<button type="submit" class="btn btn-success">İtiraf Et</button>
+						}
+						else if (_isSuccess)
+						{
+							<button class="btn btn-success" type="button" disabled>
+								İtiraf Et
+							</button>
+						}
+						else
+						{
+							<button class="btn btn-success" type="button" disabled>
+								<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+								İtiraf ediliyor.
+							</button>
+						}
+					</div>
+				}
+			</EditForm>
+
+			<div class="my-3">
+				@if (_isSuccess)
+				{
+					<div class="alert alert-success">
+						<p>İtirafınız başarıyla gönderildi.</p>
+						<p>@_successMessage</p>
+						<p>
+							Yönlendirme: @countdown saniye sonra otomatik yönlendirileceksiniz.
+							(<a href="@($"/posts/{_latestPostId}")">Hemen Gitmek İçin Tıklayın</a>)
+						</p>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	private PostDto _postDto = new();
+	private CategoryDto? _selectedCategory = new();
+	private List<CategoryDto> _categories = new();
+	private bool _isBusy = false;
+	private bool _isSuccess = false;
+	private string? _errorMessage = null;
+	private string? _successMessage;
+	private Guid _userId;
+	private string? _latestPostId;
+	private int countdown = 5;
+	private Timer? _timer;
+
+	protected override async Task OnInitializedAsync()
+	{
+		_categories = await CategoryApi.GetAllActiveCategoryAsycn();
+		_selectedCategory = null;
+	}
+
+	private async Task CreatePostAsync(PostDto dto)
+	{
+		if (_isBusy) return;
+
+		ClearMessages();
+		_isBusy = true;
+
+		try
+		{
+			_userId = Guid.Parse(AuthStateProvider.User?.id);
+
+			dto.CategoryId = _selectedCategory?.Id ?? throw new Exception("Kategori seçilmedi.");
+
+			var response = await PostApi.CreatePostAsync(dto, _userId);
+
+			if (!response.IsSuccess)
+			{
+				_errorMessage = response.ErrorMessage;
+				return;
+			}
+
+			var createdPostApiResonse = await PostApi.GetCreatedPostAsync(_userId);
+			_isSuccess = true;
+			_latestPostId = createdPostApiResonse.id;
+
+			_successMessage = "İtirafınız başarıyla gönderildi. 5 saniye içinde yönlendirileceksiniz.";
+			countdown = 5;
+
+			StartCountdown();
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+		}
+		finally
+		{
+			_isBusy = false;
+		}
+	}
+
+	private void ClearMessages()
+	{
+		_errorMessage = null;
+		_successMessage = null;
+	}
+
+	private async void StartCountdown()
+	{
+		var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+
+		try
+		{
+			while (countdown > 0 && await timer.WaitForNextTickAsync())
+			{
+				countdown--;
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+		finally
+		{
+			timer.Dispose();
+			await InvokeAsync(() => NavigationManager.NavigateTo($"/posts/{_latestPostId}"));
+		}
+	}
+
+	private void CategorySelected(CategoryDto dto)
+	{
+		_selectedCategory = dto;
+	}
+}

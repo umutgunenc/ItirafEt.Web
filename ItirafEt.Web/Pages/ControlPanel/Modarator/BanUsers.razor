@@ -1,6 +1,6 @@
 ﻿@page "/admin/banUsers"
 @inject AuthStateProvider AuthStateProvider
-@inject IBanUserApi UserService
+@inject IBanUserApi BanUserApi
 
 <AutoCompleteComponent TItemType="BanUserDto"
 DisplayedItemsList="Users"
@@ -103,7 +103,7 @@ DisplayProperty="@(x => x.UserName)">
 	{
 		_adminId = Guid.Parse(AuthStateProvider.User?.id);
 
-		Users = await UserService.GetAllUserDtosAsync();
+		Users = await BanUserApi.GetAllUserDtosAsync();
 	}
 
 	private void UserSelected(BanUserDto user)
@@ -119,7 +119,7 @@ DisplayProperty="@(x => x.UserName)">
 		_isBusy = true;
 		try
 		{
-			var response = await UserService.BanUserAsync(user, _adminId);
+			var response = await BanUserApi.BanUserAsync(user, _adminId);
 			if (response.IsSuccess)
 			{
 				_isSuccess = true;

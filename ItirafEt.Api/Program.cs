@@ -69,6 +69,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<CategoryService>();
 builder.Services.AddTransient<BanUserService>();
+builder.Services.AddTransient<PostService>();
 
 var app = builder.Build();
 
@@ -98,6 +99,7 @@ app.MapHub<CategoryHub>("/categoryhub");
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();
 app.MapBanUserEndPoints();
+app.MapPostEndPoints();
 
 app.Run();
 

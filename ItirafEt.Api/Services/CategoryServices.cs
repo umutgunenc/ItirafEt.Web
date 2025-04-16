@@ -20,6 +20,7 @@ namespace ItirafEt.Api.Services
 
         public async Task<ApiResponse> CreateCategoryAsync(CategoryDto dto)
         {
+ 
             if (await _context.Categories.AsNoTracking().AnyAsync(c => c.CategoryName == dto.CategoryName.ToUpper()))
                 return ApiResponse.Fail("Aynı isimde mevcut bir kategori bulunmaktadır.");
 
