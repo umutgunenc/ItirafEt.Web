@@ -5,55 +5,63 @@
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
-<div class="card shadow-lg rounded-4 border-1 mb-3">
-	<div class="card-body">
-		<h5 class="card-title fw-bold">@_postDto.Title</h5>
-		<h6 class="card-subtitle mb-2 text-muted">@_postDto.Title</h6>
+<div class="col-md-8 col mx-auto">
+	<div class="card shadow-lg rounded-4 border-1 mb-3 ">
+		<div class="card-body">
+			<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
+			<h6 class="card-subtitle mb-2 text-muted text-break">@_postDto.Title</h6>
 
-		<p class="card-text">@_postDto.Content</p>
+			<p class="card-text text-break"
+			   style="text-align: justify;
+					text-justify: inter-word;
+					white-space: pre-wrap;">
+				@_postDto.Content
+			</p>
 
-		<!-- Tarih -->
-		<div class="d-flex justify-content-end text-muted small mb-2">
-			@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
-		</div>
-
-		<div class="d-flex justify-content-between align-items-center pt-2 border-top mt-3">
-			<div class="d-flex align-items-center gap-4">
-
-				<div class="text-center">
-
-					<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill" : "")} fs-5 text-primary" )" style="cursor:pointer" @onclick="@LikePostAsync"></i><br />
-					<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">@_postDto.LikeCount</span>
-				</div>
-
-				<div class="text-center">
-					<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill" : "")} fs-5 text-danger" )" @onclick="@DislikePostAsync"></i><br />
-					<span class="text-muted small" style="cursor:pointer">@_postDto.DislikeCount</span>
-				</div>
-				@if (!_isPostOwner)
+			<!-- Tarih -->
+			<div class="d-flex justify-content-end text-muted small mb-2">
+				@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+				@if (_postDto.UpdatedDate.HasValue)
 				{
-					<div class="text-center">
-						<i class="bi bi-exclamation-circle fs-5 text-danger" style="cursor:pointer" @onclick="@ReportAsync"></i><br />
-						<span class="text-muted small">Şikayet</span>
-					</div>
+					@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
 				}
-
-
 			</div>
-			<div class="d-flex align-items-center gap-3">
-				<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle" width="42" height="42" style="object-fit: cover;" />
-				<span class="fs-3 fw-light">@_postDto.UserName</span>
+
+			<div class="d-flex justify-content-between align-items-center pt-2 border-top mt-3">
+				<div class="d-flex align-items-center gap-4">
+
+					<div class="text-center">
+
+						<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill" : "")} fs-5 text-primary" )" style="cursor:pointer" @onclick="@LikePostAsync"></i><br />
+						<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">@_postDto.LikeCount</span>
+					</div>
+
+					<div class="text-center">
+						<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill" : "")} fs-5 text-danger" )" @onclick="@DislikePostAsync"></i><br />
+						<span class="text-muted small" style="cursor:pointer">@_postDto.DislikeCount</span>
+					</div>
+					@if (!_isPostOwner)
+					{
+						<div class="text-center">
+							<i class="bi bi-exclamation-circle fs-5 text-danger" style="cursor:pointer" @onclick="@ReportAsync"></i><br />
+							<span class="text-muted small">Şikayet</span>
+						</div>
+					}
+
+
+				</div>
+				<div class="d-flex align-items-center gap-3">
+					<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle" width="42" height="42" style="object-fit: cover;" />
+					<span class="fs-3 fw-light">@_postDto.UserName</span>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 
-<p>_currentUserId @_currentUserId </p>
-<p>_postUserId @_postDto.UserId </p>
-<p>_isPostOwner @_isPostOwner </p>
-<p>_isUserLoggedIn @_isUserLoggedIn </p>
-<p>_isAlreadyLiked @_isAlreadyLiked </p>
-<p>_isAlreadyDisliked @_isAlreadyDisliked </p>
+
+
+
 
 
 @code {
@@ -74,9 +82,9 @@
 	protected override async Task OnInitializedAsync()
 	{
 		_hubConnection = new HubConnectionBuilder()
-				.WithUrl("https://localhost:7292/reactionhub")
-				.WithAutomaticReconnect()
-				.Build();
+		.WithUrl("https://localhost:7292/reactionhub")
+		.WithAutomaticReconnect()
+		.Build();
 
 		_hubConnection.On("LikedOrDisliked", async () =>
 		{
@@ -179,8 +187,8 @@
 			return;
 		}
 		var userReaction = _reactions
-			.Where(r => r.ReactingUserId == _currentUserId)
-			.FirstOrDefault();
+		.Where(r => r.ReactingUserId == _currentUserId)
+		.FirstOrDefault();
 
 		if (userReaction == null)
 		{
@@ -205,7 +213,5 @@
 		}
 
 	}
-
-	
 }
 
