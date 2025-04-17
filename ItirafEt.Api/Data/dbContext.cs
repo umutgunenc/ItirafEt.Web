@@ -140,11 +140,25 @@ namespace ItirafEt.Api.Data
                 .HasForeignKey(mr => mr.ReportingUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.Post)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Category>()
                 .HasIndex(c => c.CategoryOrder)
                 .IsUnique();
+
+            modelBuilder.Entity<ReactionType>().HasData(
+                Enum.GetValues(typeof(ReactionTypeEnum))
+                    .Cast<ReactionTypeEnum>()
+                    .Select(e => new ReactionType
+                    {
+                        Id = (int)e,
+                        Name = e.ToString()
+                    })
+            );
 
             modelBuilder.Entity<GenderType>().HasData(
                GenderType.List()
@@ -161,8 +175,8 @@ namespace ItirafEt.Api.Data
                 Id = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 UserName = "admin",
                 Email = "umutgunenc@gmail.com",
-                RoleName = nameof(UserRole.SuperAdmin),
-                GenderId = (int)Gender.Male,
+                RoleName = nameof(UserRoleenum.SuperAdmin),
+                GenderId = (int)GenderEnum.Male,
                 PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
                 BirthDate = new DateTime(1989, 5, 29),
                 CreatedDate = new DateTime(2025, 4, 10),

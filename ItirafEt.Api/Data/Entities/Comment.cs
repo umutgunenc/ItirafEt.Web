@@ -36,8 +36,13 @@ namespace ItirafEt.Api.Data.Entities
         public DateTime UpdatedDate { get; set; }
         [Required]
         public Guid UserId { get; set; }
+
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
+        public int PostId { get; set; }
+
+        [ForeignKey(nameof(PostId))]
+        public virtual Post Post { get; set; }
         public int? ParentCommentId { get; set; }
 
         [ForeignKey(nameof(ParentCommentId))]
@@ -49,6 +54,8 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<Comment> Replies { get; set; }
         public virtual ICollection<CommentReaction> CommentReactions { get; set; }
         public virtual ICollection<CommentReport> CommentReports { get; set; }
+
+
 
 
     }

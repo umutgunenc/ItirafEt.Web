@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.SignalR.Client
-@inject ICategoryApi CategoryApi
+﻿@inject ICategoryApi CategoryApi
 @inject NavigationManager Navigation
 @inject AuthStateProvider AuthStateProvider
 
@@ -12,7 +11,6 @@
 		</button>
 	</div>
 </div>
-
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
 	<nav class="nav flex-column">
 
@@ -72,8 +70,10 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+
 		_hubConnection = new HubConnectionBuilder()
 			.WithUrl("https://localhost:7292/categoryhub")
+			.WithAutomaticReconnect()
 			.Build();
 
 		_hubConnection.On("CategoryChanged", async () =>
@@ -94,8 +94,8 @@
 	}
 
 	private string allowedRoles = string.Join(",",
-		nameof(UserRole.SuperAdmin),
-		nameof(UserRole.Admin),
-		nameof(UserRole.Moderator));
+		nameof(UserRoleenum.SuperAdmin),
+		nameof(UserRoleenum.Admin),
+		nameof(UserRoleenum.Moderator));
 
 }

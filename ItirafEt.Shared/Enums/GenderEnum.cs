@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ItirafEt.Shared.Enums
 {
-    public enum Gender
+    public enum GenderEnum
     {
         Unknown = 1,
         Male ,

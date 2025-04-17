@@ -14,6 +14,7 @@ namespace ItirafEt.Shared.DTOs
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public string UserName { get; set; }
+        public Guid UserId { get; set; }
         public int CommentCount { get; set; }
         public int ViewCount { get; set; }
         public int LikeCount { get; set; }
@@ -31,10 +32,11 @@ namespace ItirafEt.Shared.DTOs
 
         [Required(ErrorMessage = "Lütfen Kategori Seçiniz.")]
         public int CategoryId { get; set; }
-        public CategoryDto Category { get; set; }
-
         public string DeviceInfo { get; set; }
         public string IpAddress { get; set; }
+        public List<ReactionDto>? PostReactionDtos { get; set; }
+        public List<CommentsDto>? CommentsDtos { get; set; }
+
 
     }
 }

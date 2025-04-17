@@ -11,10 +11,10 @@ namespace ItirafEt.Api.Data.Entities
             Users = new HashSet<User>();
         }
 
-        public static readonly GenderType Unknown = new GenderType((int)Gender.Unknown, nameof(Gender.Unknown));
-        public static readonly GenderType Male = new GenderType((int)Gender.Male, nameof(Gender.Male));
-        public static readonly GenderType Female = new GenderType((int)Gender.Female, nameof(Gender.Female));
-        public static readonly GenderType Other = new GenderType((int)Gender.Other, nameof(Gender.Other));
+        public static readonly GenderType Unknown = new GenderType((int)GenderEnum.Unknown, nameof(GenderEnum.Unknown));
+        public static readonly GenderType Male = new GenderType((int)GenderEnum.Male, nameof(GenderEnum.Male));
+        public static readonly GenderType Female = new GenderType((int)GenderEnum.Female, nameof(GenderEnum.Female));
+        public static readonly GenderType Other = new GenderType((int)GenderEnum.Other, nameof(GenderEnum.Other));
 
         public static IEnumerable<GenderType> List() => new[]
         {
@@ -24,7 +24,7 @@ namespace ItirafEt.Api.Data.Entities
             Other
         };
 
-        public static GenderType FromEnum(Gender g) =>
+        public static GenderType FromEnum(GenderEnum g) =>
             List().Single(x => x.Id == (int)g);
 
         [Key]

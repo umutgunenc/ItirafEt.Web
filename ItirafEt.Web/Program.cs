@@ -38,6 +38,12 @@ static void ConfigureRefit(IServiceCollection services)
     
     services.AddRefitClient<IPostApi>(GetRefitSettings)
      .ConfigureHttpClient(SetHttpClient);
+    
+    services.AddRefitClient<ICommentApi>(GetRefitSettings)
+     .ConfigureHttpClient(SetHttpClient);
+
+    services.AddRefitClient<IReactionApi>(GetRefitSettings)
+     .ConfigureHttpClient(SetHttpClient);
 
     static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
 

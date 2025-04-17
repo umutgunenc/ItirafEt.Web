@@ -83,18 +83,23 @@ namespace ItirafEt.Api.Services
                     isActive = c.isActive,
                     CategoryOrder = c.CategoryOrder,
                     CategoryIconUrl = c.CategoryIconUrl
-                }).ToListAsync();
+                })
+                .OrderBy(x => x.CategoryOrder)
+                .ToListAsync();
         }
         public async Task<List<CategoryDto>> GetAllActiveCategoryAsycn()
         {
-            return await _context.Categories.AsNoTracking()
+
+            return await _context.Categories
+                .AsNoTracking()
                 .Where(c => c.isActive)
                 .Select(c => new CategoryDto
                 {
                     Id = c.Id,
                     CategoryName = c.CategoryName,
                     CategoryOrder = c.CategoryOrder,
-                    CategoryIconUrl = c.CategoryIconUrl
+                    CategoryIconUrl = c.CategoryIconUrl,
+                    isActive = c.isActive
                 })
                 .OrderBy(x => x.CategoryOrder)
                 .ToListAsync();

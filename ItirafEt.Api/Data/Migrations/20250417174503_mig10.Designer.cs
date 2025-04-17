@@ -4,6 +4,7 @@ using ItirafEt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ItirafEt.Api.Data.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250417174503_mig10")]
+    partial class mig10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -680,11 +683,6 @@ namespace ItirafEt.Api.Data.Migrations
                         {
                             Id = 2,
                             Name = "Dislike"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Cancelled"
                         });
                 });
 

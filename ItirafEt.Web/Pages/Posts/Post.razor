@@ -1,0 +1,211 @@
+﻿@page "/posts/{postId:int}"
+@inject IPostApi PostApi
+@inject IReactionApi ReactionApi
+@inject ICommentApi CommentApi
+@inject AuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="card shadow-lg rounded-4 border-1 mb-3">
+	<div class="card-body">
+		<h5 class="card-title fw-bold">@_postDto.Title</h5>
+		<h6 class="card-subtitle mb-2 text-muted">@_postDto.Title</h6>
+
+		<p class="card-text">@_postDto.Content</p>
+
+		<!-- Tarih -->
+		<div class="d-flex justify-content-end text-muted small mb-2">
+			@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+		</div>
+
+		<div class="d-flex justify-content-between align-items-center pt-2 border-top mt-3">
+			<div class="d-flex align-items-center gap-4">
+
+				<div class="text-center">
+
+					<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill" : "")} fs-5 text-primary" )" style="cursor:pointer" @onclick="@LikePostAsync"></i><br />
+					<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">@_postDto.LikeCount</span>
+				</div>
+
+				<div class="text-center">
+					<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill" : "")} fs-5 text-danger" )" @onclick="@DislikePostAsync"></i><br />
+					<span class="text-muted small" style="cursor:pointer">@_postDto.DislikeCount</span>
+				</div>
+				@if (!_isPostOwner)
+				{
+					<div class="text-center">
+						<i class="bi bi-exclamation-circle fs-5 text-danger" style="cursor:pointer" @onclick="@ReportAsync"></i><br />
+						<span class="text-muted small">Şikayet</span>
+					</div>
+				}
+
+
+			</div>
+			<div class="d-flex align-items-center gap-3">
+				<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle" width="42" height="42" style="object-fit: cover;" />
+				<span class="fs-3 fw-light">@_postDto.UserName</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<p>_currentUserId @_currentUserId </p>
+<p>_postUserId @_postDto.UserId </p>
+<p>_isPostOwner @_isPostOwner </p>
+<p>_isUserLoggedIn @_isUserLoggedIn </p>
+<p>_isAlreadyLiked @_isAlreadyLiked </p>
+<p>_isAlreadyDisliked @_isAlreadyDisliked </p>
+
+
+@code {
+	[Parameter]
+	public int postId { get; set; }
+
+	private PostDto _postDto = new();
+	private List<CommentsDto>? _comments = new();
+	private List<ReactionDto>? _reactions = new();
+	private Guid? _currentUserId;
+	private bool _isPostOwner = false;
+	private bool _isUserLoggedIn = false;
+	private HubConnection _hubConnection;
+	private bool _isAlreadyLiked = false;
+	private bool _isAlreadyDisliked = false;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		_hubConnection = new HubConnectionBuilder()
+				.WithUrl("https://localhost:7292/reactionhub")
+				.WithAutomaticReconnect()
+				.Build();
+
+		_hubConnection.On("LikedOrDisliked", async () =>
+		{
+			_reactions = await ReactionApi.GetPostReactionsAsync(postId);
+			_postDto = await PostApi.GetPostByIdAsync(postId);
+
+			_postDto.PostReactionDtos = _reactions;
+			isAlreadyLikedOrDisliked();
+			StateHasChanged();
+		});
+
+		await _hubConnection.StartAsync();
+		var postTask = PostApi.GetPostByIdAsync(postId);
+		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
+
+		await Task.WhenAll(postTask, reactionsTask);
+
+		_postDto = await postTask;
+		_reactions = await reactionsTask;
+		isAlreadyLikedOrDisliked();
+		_postDto.CommentsDtos = _comments;
+		_postDto.PostReactionDtos = _reactions;
+
+		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
+		{
+			_currentUserId = parsedId;
+			_isPostOwner = _postDto.UserId == _currentUserId;
+		}
+		else
+			_isPostOwner = false;
+
+		CheckUserLoggedIn();
+	}
+
+	private async Task LikePostAsync()
+	{
+		if (!_isUserLoggedIn)
+		{
+			NavigateToLogin();
+			return;
+		}
+
+		await ReactionApi.LikePostAsync(postId, _currentUserId.Value);
+		await _hubConnection.SendAsync("NotifyPostLikedOrDisliked");
+	}
+
+
+	private async Task DislikePostAsync()
+	{
+		if (!_isUserLoggedIn)
+		{
+			NavigateToLogin();
+			return;
+		}
+
+		await ReactionApi.DislikePostAsync(postId, _currentUserId.Value);
+		await _hubConnection.SendAsync("NotifyPostLikedOrDisliked");
+
+	}
+	private async Task ReportAsync()
+	{
+		NavigateToLogin();
+
+		await Task.Delay(1000);
+	}
+
+	private async Task ShowLikesAsync()
+	{
+		await Task.Delay(1000);
+
+	}
+	private async Task ShowDislikesAsync()
+	{
+		await Task.Delay(1000);
+	}
+
+	private void CheckUserLoggedIn()
+	{
+		_isUserLoggedIn = AuthStateProvider.IsLoggedIn;
+	}
+
+	private void NavigateToLogin()
+	{
+		NavigationManager.NavigateTo("/auth/login");
+
+	}
+
+	private async Task ShowCommentsAsync()
+	{
+		_comments = await CommentApi.GetPostCommentsAsync(postId);
+		_postDto.CommentsDtos = _comments;
+	}
+
+	private void isAlreadyLikedOrDisliked()
+	{
+		if (_currentUserId == null || _reactions == null)
+		{
+			_isAlreadyLiked = false;
+			_isAlreadyDisliked = false;
+			return;
+		}
+		var userReaction = _reactions
+			.Where(r => r.ReactingUserId == _currentUserId)
+			.FirstOrDefault();
+
+		if (userReaction == null)
+		{
+			_isAlreadyLiked = false;
+			_isAlreadyDisliked = false;
+			return;
+		}
+		if (userReaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
+		{
+			_isAlreadyLiked = true;
+			_isAlreadyDisliked = false;
+		}
+		else if (userReaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
+		{
+			_isAlreadyLiked = false;
+			_isAlreadyDisliked = true;
+		}
+		else if (userReaction.ReactionTypeId == (int)ReactionTypeEnum.Cancelled)
+		{
+			_isAlreadyLiked = false;
+			_isAlreadyDisliked = false;
+		}
+
+	}
+
+	
+}
+

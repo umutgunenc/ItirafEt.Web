@@ -98,6 +98,7 @@ DisplayProperty="@(x => x.UserName)">
 	private bool _isBusy = false;
 	private bool _isSuccess = false;
 	private Timer? _timer;
+	private int _countdown = 5;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -139,12 +140,7 @@ DisplayProperty="@(x => x.UserName)">
 		{
 			_isBusy = false;
 
-			_timer = new Timer((e) =>
-			{
-				_isSuccess = false;
-				_selectedUser.ErrorMessage = null;
-				StateHasChanged();
-			}, null, 5000, Timeout.Infinite);
+			StartCountdown();
 		}
 
 	}
@@ -155,5 +151,29 @@ DisplayProperty="@(x => x.UserName)">
 		if (!user.IsBanned)
 			_selectedUser.BannedDateUntil = null;
 
+	}
+
+	private async void StartCountdown()
+	{
+		var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+		_countdown = 5;
+
+		try
+		{
+			while (_countdown > 0 && await timer.WaitForNextTickAsync())
+			{
+				_countdown--;
+				await InvokeAsync(StateHasChanged); 
+			}
+		}
+		finally
+		{
+			timer.Dispose();
+
+			_isSuccess = false;
+			_selectedUser.ErrorMessage = null;
+
+			await InvokeAsync(StateHasChanged); 
+		}
 	}
 }

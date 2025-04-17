@@ -11,11 +11,11 @@ namespace ItirafEt.Api.EndPoints
 
             app.MapGet("/api/getAllUsers", async (BanUserService banUserService) =>
                 Results.Ok(await banUserService.GetAllUsers()))
-                    .RequireAuthorization(p => p.RequireRole(nameof(UserRole.SuperAdmin), nameof(UserRole.Admin),nameof(UserRole.Moderator)));
+                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleenum.SuperAdmin), nameof(UserRoleenum.Admin),nameof(UserRoleenum.Moderator)));
 
             app.MapPost("/api/banUser", async (BanUserDto bannedUser,Guid adminId, BanUserService banUserService) =>
                 Results.Ok(await banUserService.BanUser(bannedUser, adminId)))
-                    .RequireAuthorization(p => p.RequireRole(nameof(UserRole.SuperAdmin), nameof(UserRole.Admin), nameof(UserRole.Moderator)));
+                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleenum.SuperAdmin), nameof(UserRoleenum.Admin), nameof(UserRoleenum.Moderator)));
 
             return app;
         }

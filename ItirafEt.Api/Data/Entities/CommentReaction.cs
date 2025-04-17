@@ -24,7 +24,7 @@ namespace ItirafEt.Api.Data.Entities
         public virtual Comment Comment { get; set; }
 
 
-        public int? ReactionId { get; set; }
+        public int ReactionId { get; set; }
 
         [ForeignKey(nameof(ReactionId))]
         public ReactionType Reaction { get; set; }

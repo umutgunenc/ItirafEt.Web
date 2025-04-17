@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ItirafEt.Shared.Enums
 {
-    public enum UserRole
+    public enum UserRoleenum
     {
         SuperAdmin =1,
         Admin,

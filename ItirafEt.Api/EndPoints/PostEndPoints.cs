@@ -19,12 +19,17 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await postService.CreatePostAsync(dto, userId));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRole.SuperAdmin), nameof(UserRole.Admin), nameof(UserRole.Moderator), nameof(UserRole.SuperUser), nameof(UserRole.User)));
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleenum.SuperAdmin), nameof(UserRoleenum.Admin), nameof(UserRoleenum.Moderator), nameof(UserRoleenum.SuperUser), nameof(UserRoleenum.User)));
 
             app.MapGet("/api/getCreatedPost", async (Guid userId, PostService postService) =>
             {
                 return Results.Ok(await postService.GetCreatedPostAsync(userId));
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRole.SuperAdmin), nameof(UserRole.Admin), nameof(UserRole.Moderator), nameof(UserRole.SuperUser), nameof(UserRole.User)));
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleenum.SuperAdmin), nameof(UserRoleenum.Admin), nameof(UserRoleenum.Moderator), nameof(UserRoleenum.SuperUser), nameof(UserRoleenum.User)));
+
+            app.MapGet("/api/getPostById", async (int postId, PostService postService) =>
+            {
+                return Results.Ok(await postService.GetPostByIdAsync(postId));
+            });
 
             return app;
         }

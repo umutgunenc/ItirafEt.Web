@@ -4,6 +4,7 @@ using ItirafEt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ItirafEt.Api.Data.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250417125658_mig9")]
+    partial class mig9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -669,23 +672,6 @@ namespace ItirafEt.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ReactionType");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Like"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Dislike"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Cancelled"
-                        });
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.ReportType", b =>
@@ -922,7 +908,7 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "Reaction")
-                        .WithMany("CommentReactions")
+                        .WithMany()
                         .HasForeignKey("ReactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1031,7 +1017,7 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "ReactionType")
-                        .WithMany("MessageReactions")
+                        .WithMany()
                         .HasForeignKey("ReactionTypeId");
 
                     b.Navigation("Message");
@@ -1121,7 +1107,7 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "ReactionType")
-                        .WithMany("PostReactions")
+                        .WithMany()
                         .HasForeignKey("ReactionTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1244,15 +1230,6 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Navigation("PostReactions");
 
                     b.Navigation("PostReports");
-                });
-
-            modelBuilder.Entity("ItirafEt.Api.Data.Entities.ReactionType", b =>
-                {
-                    b.Navigation("CommentReactions");
-
-                    b.Navigation("MessageReactions");
-
-                    b.Navigation("PostReactions");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.RoleType", b =>
