@@ -4,9 +4,11 @@ namespace ItirafEt.Api.Hubs
 {
     public class CategoryHub :Hub
     {
-        public async Task NotifyCategoryChanged()
+        public async Task NotifyActiveCategoryInformationsChanged()
         {
-            await Clients.All.SendAsync("CategoryChanged");
+            await Clients.All.SendAsync("ActiveCategoryInformationsChanged");
         }
+
+        
     }
 }

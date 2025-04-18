@@ -15,10 +15,8 @@ namespace ItirafEt.Shared.DTOs
         public DateTime? UpdatedDate { get; set; }
         public string UserName { get; set; }
         public Guid UserId { get; set; }
-        public int CommentCount { get; set; }
         public int ViewCount { get; set; }
-        public int LikeCount { get; set; }
-        public int DislikeCount { get; set; }
+
 
         [Required(ErrorMessage = "Lütfen Başlık Giriniz.")]
         [MaxLength(256, ErrorMessage = "Başlık Maksimum 256 Karakter Uzunluğunda Olabilir.")]

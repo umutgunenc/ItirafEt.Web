@@ -40,7 +40,7 @@ namespace ItirafEt.Api.Services
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
-            await _hubContext.Clients.All.SendAsync("CategoryChanged");
+            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged");
 
             return ApiResponse.Success();
 
@@ -68,7 +68,7 @@ namespace ItirafEt.Api.Services
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
 
-            await _hubContext.Clients.All.SendAsync("CategoryChanged");
+            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged");
 
             return ApiResponse.Success();
 
@@ -99,10 +99,13 @@ namespace ItirafEt.Api.Services
                     CategoryName = c.CategoryName,
                     CategoryOrder = c.CategoryOrder,
                     CategoryIconUrl = c.CategoryIconUrl,
-                    isActive = c.isActive
+                    isActive = c.isActive,
+                    PostCount =  _context.Posts.Count(p => p.CategoryId == c.Id && p.IsActive)
                 })
                 .OrderBy(x => x.CategoryOrder)
                 .ToListAsync();
+
+            
         }
     }
 }

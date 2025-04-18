@@ -53,7 +53,7 @@
 				<NavLink class="nav-link" href="@category.Id">
 					<div class="d-flex align-items-center gap-2">
 						<span class="@category.CategoryIconUrl d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
-						<span class="fs-6">@category.CategoryName</span>
+						<span class="fs-6">@category.CategoryName  (@category.PostCount)</span> 
 					</div>
 				</NavLink>
 			</div>
@@ -76,7 +76,7 @@
 			.WithAutomaticReconnect()
 			.Build();
 
-		_hubConnection.On("CategoryChanged", async () =>
+		_hubConnection.On("ActiveCategoryInformationsChanged", async () =>
 			{
 				_categories = await CategoryApi.GetAllActiveCategoryAsycn();
 				StateHasChanged(); 

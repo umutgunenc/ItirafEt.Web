@@ -32,8 +32,7 @@ namespace ItirafEt.Api.Data.Entities
         [MaxLength(512)]
         public string DeviceInfo { get; set; }
 
-        [Required]
-        public DateTime UpdatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
         [Required]
         public Guid UserId { get; set; }
 

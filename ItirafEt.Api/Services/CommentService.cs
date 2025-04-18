@@ -1,5 +1,8 @@
 ﻿using ItirafEt.Api.Data;
+using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.Hubs;
 using ItirafEt.Shared.DTOs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Services
@@ -7,9 +10,11 @@ namespace ItirafEt.Api.Services
     public class CommentService
     {
         private readonly dbContext _context;
-        public CommentService(dbContext context)
+        private readonly IHubContext<CommentHub> _commentHub;
+        public CommentService(dbContext context, IHubContext<CommentHub> commentHub)
         {
             _context = context;
+            _commentHub = commentHub;
         }
 
         public async Task<List<CommentsDto>?> GetPostCommentsAsync(int postId)
@@ -28,7 +33,7 @@ namespace ItirafEt.Api.Services
                .Include(c => c.Replies)
                    .ThenInclude(r => r.CommentReactions)
                    .ThenInclude(cr => cr.ReactingUser)
-               .Where(c => c.PostId == postId && c.IsActive)
+               .Where(c => c.PostId == postId && c.IsActive && c.ParentCommentId==null)
                .Select(c => new CommentsDto
                {
                    Id = c.Id,
@@ -77,6 +82,58 @@ namespace ItirafEt.Api.Services
                }).ToListAsync();
 
             return comments;
+
+        }
+
+        public async Task<ApiResponse> AddCommentAsync(int postId, Guid UserId, CommentsDto dto)
+        {
+            if(string.IsNullOrEmpty(dto.Content))
+                return ApiResponse.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
+
+            dto.Content = dto.Content.Trim();
+
+            if (string.IsNullOrEmpty(dto.Content))
+                return ApiResponse.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
+
+            var comment = new Comment
+            {
+                Content = dto.Content,
+                CreatedDate = DateTime.UtcNow,
+                UserId = UserId,
+                PostId = postId,
+                ParentCommentId = null,
+                LikeCount = 0,
+                DislikeCount = 0,
+                ReportCount = 0,
+                IsActive = true,
+            };
+
+            _context.Comments.Add(comment);
+
+            _context.SaveChanges();
+
+            await _commentHub
+                .Clients
+                .Group($"post-{postId}")
+                .SendAsync("CommentAdded", comment.Id);
+
+            return ApiResponse.Success();
+
+
+            //var currentPostCommentCount = await _context.Posts
+            //    .Where(p => p.Id == postId)
+            //    .Select(p => p.CommentCount)
+            //    .FirstOrDefaultAsync();
+
+            //currentPostCommentCount++;
+
+            //var post = await _context.Posts.FindAsync(postId);
+            //if (post != null)
+            //{
+            //    post.CommentCount = currentPostCommentCount;
+            //    _context.Posts.Update(post);
+            //}
+
 
         }
 

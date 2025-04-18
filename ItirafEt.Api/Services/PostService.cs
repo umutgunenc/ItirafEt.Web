@@ -13,9 +13,11 @@ namespace ItirafEt.Api.Services
     public class PostService
     {
         private readonly dbContext _context;
-        public PostService(dbContext context, IHubContext<ReactionHub> hubContext)
+        private readonly IHubContext<CategoryHub> _categoryHubContext;
+        public PostService(dbContext context, IHubContext<CategoryHub> categoryHubContext)
         {
             _context = context;
+            _categoryHubContext = categoryHubContext;
         }
 
         public async Task<ApiResponse> CreatePostAsync(PostDto dto, Guid UserId)
@@ -41,7 +43,6 @@ namespace ItirafEt.Api.Services
 
             var post = new Post
             {
-                CommentCount = 0,
                 CreatedDate = DateTime.Now,
                 Content = dto.Content,
                 Title = dto.Title.ToUpper(),
@@ -50,13 +51,11 @@ namespace ItirafEt.Api.Services
                 IpAddress = dto.IpAddress,
                 DeviceInfo = dto.DeviceInfo,
                 ViewCount = 0,
-                LikeCount = 0,
-                DislikeCount = 0,
-                ReportCount = 0,
                 CategoryId = dto.CategoryId,
             };
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
+            await _categoryHubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged");
 
             return ApiResponse.Success();
 
@@ -89,10 +88,7 @@ namespace ItirafEt.Api.Services
                     UpdatedDate = p.UpdatedDate,
                     UserName = p.User.UserName,
                     UserId = p.UserId,
-                    CommentCount = p.CommentCount,
                     ViewCount = p.ViewCount,
-                    LikeCount = p.LikeCount,
-                    DislikeCount = p.DislikeCount,
                     CategoryId = p.CategoryId
                 })
                 .FirstOrDefaultAsync();

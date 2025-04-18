@@ -43,13 +43,14 @@ namespace ItirafEt.Api.Services
             return postReactions;
         }
 
-        public async Task<ApiResponse> LikePostAsync(int postId, Guid UserId)
+        public async Task<ApiResponse<ReactionDto>> LikePostAsync(int postId, Guid UserId)
         {
             var post = await _context.Posts
+                .AsNoTracking()
                 .Include(p => p.PostReactions)
                 .FirstOrDefaultAsync(c => c.Id == postId && c.IsActive);
             if (post == null)
-                return ApiResponse.Fail("Gönderi bulunamadı.");
+                return ApiResponse<ReactionDto>.Fail("Gönderi bulunamadı.");
 
             var reaction = await _context.PostReaction
                 .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
@@ -57,26 +58,26 @@ namespace ItirafEt.Api.Services
             if (reaction != null)
             {
                 if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
-                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Cancelled;
-                    post.LikeCount--;
-
-                }
                 else if(reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
-                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Like;
-                    post.LikeCount++;
-                    post.DislikeCount--;
-                }
                 else 
-                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Like;
-                    post.LikeCount++;
-                }
 
                 reaction.CreatedDate = DateTime.Now;
                 _context.PostReaction.Update(reaction);
 
+                var reactitonDto = new ReactionDto
+                {
+                    PostId = reaction.PostId,
+                    ReactingUserId = reaction.ReactingUserId,
+                    ReactionTypeId = reaction.ReactionTypeId,
+                };
+                await _hubContext.Clients
+                    .Group($"post-{postId}")
+                    .SendAsync("NotifyPostLikedOrDisliked", postId, reactitonDto, true);
+                await _context.SaveChangesAsync();
+                return ApiResponse<ReactionDto>.Success(reactitonDto, true);
             }
             else
             {
@@ -87,22 +88,36 @@ namespace ItirafEt.Api.Services
                     ReactionTypeId = (int)ReactionTypeEnum.Like,
                     CreatedDate = DateTime.Now
                 };
-                post.LikeCount++;
                 _context.PostReaction.Add(newReaction);
+
+                var reactionDto = new ReactionDto
+                {
+                    PostId = newReaction.PostId,
+                    ReactingUserId = newReaction.ReactingUserId,
+                    ReactionTypeId = newReaction.ReactionTypeId,
+                };
+                await _hubContext.Clients
+                    .Group($"post-{postId}")
+                    .SendAsync("NotifyPostLikedOrDisliked", postId, reactionDto, false);
+                await _context.SaveChangesAsync();
+                return ApiResponse<ReactionDto>.Success(reactionDto, false);
             }
-            _context.Posts.Update(post);
-            await _context.SaveChangesAsync();
-            await _hubContext.Clients.All.SendAsync("LikedOrDisliked");
-            return ApiResponse.Success();
+
+
+            //await _hubContext.Clients
+            //    .Group($"post-{postId}")
+            //    .SendAsync("NotifyPostLikedOrDisliked", postId, newReactionId, oldReactionId);
+
         }
 
-        public async Task<ApiResponse> DislikePostAsync(int postId,Guid UserId)
+        public async Task<ApiResponse<ReactionDto>> DislikePostAsync(int postId,Guid UserId)
         {
             var post = await _context.Posts
+                .AsNoTracking()
                 .Include(p => p.PostReactions)
                 .FirstOrDefaultAsync(c => c.Id == postId && c.IsActive);
             if (post == null)
-                return ApiResponse.Fail("Gönderi bulunamadı.");
+                return ApiResponse<ReactionDto>.Fail("Gönderi bulunamadı.");
 
             var reaction = await _context.PostReaction
                 .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
@@ -110,26 +125,28 @@ namespace ItirafEt.Api.Services
             if (reaction != null)
             {
                 if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
-                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Cancelled;
-                    post.DislikeCount--;
-
-                }
                 else if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
-                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Dislike;
-                    post.LikeCount--;
-                    post.DislikeCount++;
-                }
                 else
-                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Dislike;
-                    post.DislikeCount++;
-                }
 
                 reaction.CreatedDate = DateTime.Now;
+
                 _context.PostReaction.Update(reaction);
 
+                await _hubContext.Clients
+                    .Group($"post-{postId}")
+                    .SendAsync("NotifyPostLikedOrDisliked", postId, reaction, true);
+
+                await _context.SaveChangesAsync();
+                var reactionDto = new ReactionDto
+                {
+                    PostId = reaction.PostId,
+                    ReactingUserId = reaction.ReactingUserId,
+                    ReactionTypeId = reaction.ReactionTypeId,
+                };
+                return ApiResponse<ReactionDto>.Success(reactionDto, true);
             }
             else
             {
@@ -140,13 +157,22 @@ namespace ItirafEt.Api.Services
                     ReactionTypeId = (int)ReactionTypeEnum.Dislike,
                     CreatedDate = DateTime.Now
                 };
-                post.DislikeCount++;
                 _context.PostReaction.Add(newReaction);
+
+                await _hubContext.Clients
+                    .Group($"post-{postId}")
+                    .SendAsync("NotifyPostLikedOrDisliked", postId, newReaction, false);
+
+                await _context.SaveChangesAsync();
+                var reactionDto = new ReactionDto
+                {
+                    PostId = newReaction.PostId,
+                    ReactingUserId = newReaction.ReactingUserId,
+                    ReactionTypeId = newReaction.ReactionTypeId,
+                };
+                return ApiResponse<ReactionDto>.Success(reactionDto, false);
             }
-            _context.Posts.Update(post);
-            await _context.SaveChangesAsync();
-            await _hubContext.Clients.All.SendAsync("LikedOrDisliked");
-            return ApiResponse.Success();
+
         }
     }
 }

@@ -14,4 +14,10 @@ namespace ItirafEt.Shared.DTOs
 
     }
 
+    public record ApiResponse<T>(bool IsSuccess, T? Data, string? ErrorMessage, bool? isUpdated)
+    {
+        public static ApiResponse<T> Success(T data, bool _bool) => new(true, data, null, _bool);
+        public static ApiResponse<T> Fail(string errorMessage) => new(false, default, errorMessage,null);
+    }
+
 }

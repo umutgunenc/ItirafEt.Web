@@ -98,6 +98,7 @@ app.UseAuthorization();
 //});
 app.MapHub<CategoryHub>("/categoryhub");
 app.MapHub<ReactionHub>("/reactionhub");
+app.MapHub<CommentHub>("/commenthub");
 
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();

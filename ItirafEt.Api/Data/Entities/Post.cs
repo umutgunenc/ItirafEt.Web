@@ -40,10 +40,7 @@ namespace ItirafEt.Api.Data.Entities
         [MaxLength(512)]
         public string DeviceInfo { get; set; }
         public int ViewCount { get; set; } = 0;
-        public int LikeCount { get; set; } = 0;
-        public int DislikeCount { get; set; } = 0;
-        public int CommentCount { get; set; } = 0;
-        public int ReportCount { get; set; } = 0;
+
 
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; } 

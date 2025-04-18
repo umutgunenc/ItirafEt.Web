@@ -26,6 +26,8 @@ namespace ItirafEt.Shared.DTOs
         [Required(ErrorMessage = "Kategori Iconu Boş Olamaz")]
         public string CategoryIconUrl { get; set; }
 
+        public int PostCount { get; set; }
+
 
         public string? ErrorMessage { get; set; }
     }
