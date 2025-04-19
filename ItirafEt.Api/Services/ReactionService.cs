@@ -42,7 +42,6 @@ namespace ItirafEt.Api.Services
 
             return postReactions;
         }
-
         public async Task<ApiResponse<ReactionDto>> LikePostAsync(int postId, Guid UserId)
         {
             var post = await _context.Posts
@@ -67,12 +66,7 @@ namespace ItirafEt.Api.Services
                 reaction.CreatedDate = DateTime.Now;
                 _context.PostReaction.Update(reaction);
 
-                var reactitonDto = new ReactionDto
-                {
-                    PostId = reaction.PostId,
-                    ReactingUserId = reaction.ReactingUserId,
-                    ReactionTypeId = reaction.ReactionTypeId,
-                };
+                var reactitonDto = ReactionToReactionDto(reaction);
                 await _hubContext.Clients
                     .Group($"post-{postId}")
                     .SendAsync("NotifyPostLikedOrDisliked", postId, reactitonDto, true);
@@ -90,12 +84,7 @@ namespace ItirafEt.Api.Services
                 };
                 _context.PostReaction.Add(newReaction);
 
-                var reactionDto = new ReactionDto
-                {
-                    PostId = newReaction.PostId,
-                    ReactingUserId = newReaction.ReactingUserId,
-                    ReactionTypeId = newReaction.ReactionTypeId,
-                };
+                var reactionDto = ReactionToReactionDto(newReaction);
                 await _hubContext.Clients
                     .Group($"post-{postId}")
                     .SendAsync("NotifyPostLikedOrDisliked", postId, reactionDto, false);
@@ -103,13 +92,7 @@ namespace ItirafEt.Api.Services
                 return ApiResponse<ReactionDto>.Success(reactionDto, false);
             }
 
-
-            //await _hubContext.Clients
-            //    .Group($"post-{postId}")
-            //    .SendAsync("NotifyPostLikedOrDisliked", postId, newReactionId, oldReactionId);
-
         }
-
         public async Task<ApiResponse<ReactionDto>> DislikePostAsync(int postId,Guid UserId)
         {
             var post = await _context.Posts
@@ -140,12 +123,8 @@ namespace ItirafEt.Api.Services
                     .SendAsync("NotifyPostLikedOrDisliked", postId, reaction, true);
 
                 await _context.SaveChangesAsync();
-                var reactionDto = new ReactionDto
-                {
-                    PostId = reaction.PostId,
-                    ReactingUserId = reaction.ReactingUserId,
-                    ReactionTypeId = reaction.ReactionTypeId,
-                };
+                var reactionDto = ReactionToReactionDto(reaction);
+
                 return ApiResponse<ReactionDto>.Success(reactionDto, true);
             }
             else
@@ -164,15 +143,21 @@ namespace ItirafEt.Api.Services
                     .SendAsync("NotifyPostLikedOrDisliked", postId, newReaction, false);
 
                 await _context.SaveChangesAsync();
-                var reactionDto = new ReactionDto
-                {
-                    PostId = newReaction.PostId,
-                    ReactingUserId = newReaction.ReactingUserId,
-                    ReactionTypeId = newReaction.ReactionTypeId,
-                };
+
+                var reactionDto = ReactionToReactionDto(newReaction);
+                
                 return ApiResponse<ReactionDto>.Success(reactionDto, false);
             }
 
+        }
+        private ReactionDto ReactionToReactionDto(PostReaction reaction)
+        {
+            return new ReactionDto
+            {
+                PostId = reaction.PostId,
+                ReactingUserId = reaction.ReactingUserId,
+                ReactionTypeId = reaction.ReactionTypeId,
+            };
         }
     }
 }
