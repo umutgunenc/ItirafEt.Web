@@ -15,7 +15,6 @@ namespace ItirafEt.Shared.DTOs
         public bool IsBanned { get; set; }
         public DateTime? BannedDateUntil { get; set; }
         public string? AdminUserName { get; set; }
-        public string? ErrorMessage { get; set; }
 
     }
 }

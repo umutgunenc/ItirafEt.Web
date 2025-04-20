@@ -6,25 +6,27 @@
 	<hr />
 	<div class="row">
 		<div class="col-md-12">
-			<table class="table table-success table-striped table-hover">
-				<thead>
-					<tr>
-						<th class="text-center col-md-3">Kategori Adı</th>
-						<th class="text-center col-md-2">Aktif Mi</th>
-						<th class="text-center col-md-2">Sıra No</th>
-						<th class="text-center col-md-3">İkon</th>
-						<th class="text-center col-md-2"></th>
-					</tr>
-				</thead>
-				<tbody>
-					@if (_categories.Count == 0)
-					{
+			@if (!_isAnyCategory)
+			{
+				<tr>
+					<td colspan="4" class="text-danger">@_errorMessage</td>
+				</tr>
+			}
+			else
+			{
+				<table class="table table-success table-striped table-hover">
+					<thead>
 						<tr>
-							<td colspan="4" class="text-danger">Kategori bulunamadı.</td>
+							<th class="text-center col-md-3">Kategori Adı</th>
+							<th class="text-center col-md-2">Aktif Mi</th>
+							<th class="text-center col-md-2">Sıra No</th>
+							<th class="text-center col-md-3">İkon</th>
+							<th class="text-center col-md-2"></th>
 						</tr>
-					}
-					else
-					{
+					</thead>
+					<tbody>
+
+
 						@foreach (var category in _categories)
 						{
 							<tr>
@@ -84,27 +86,42 @@
 											<div class="col-md-2 col-12 mb-2 mb-md-0 text-center d-flex justify-content-around">
 												<button class="col btn btn-success" type="submit">Kaydet</button>
 											</div>
-											@if (category.ErrorMessage != null)
-											{
-												<div class="col text-bg-danger text-white m-3 rounded align-items-center">
-													<p>@category.ErrorMessage</p>
-												</div>
 
-											}
 										</div>
 									</EditForm>
 								</td>
 							</tr>
-						}
-					}
-				</tbody>
-			</table>
+						}		
+						
+					</tbody>
+				</table>
+			}
+
+@* 			@if (!_isSuccess && _errorMessage != null)
+			{ *@
+				<ModalComponent @ref="Modal" Title="Hata">
+					<ChildContent>
+						<div class="col text-bg-danger text-white m-3 rounded align-items-center">
+							<p>@_errorMessage</p>
+						</div>
+					</ChildContent>
+					<FooterContent>
+						<button class="btn btn-primary col" @onclick="Modal.Close">Kapat</button>
+					</FooterContent>
+				</ModalComponent>
+			@* } *@
+
+
 		</div>
 	</div>
 </div>
 
 @code {
-	private List<CategoryDto> _categories = new List<CategoryDto>();
+	private List<CategoryDto>? _categories = new List<CategoryDto>();
+	private ModalComponent? Modal;
+	private string? _errorMessage;
+	private bool _isAnyCategory = false;
+	private bool _isSuccess = false;
 
 
 	protected override async Task OnInitializedAsync()
@@ -114,7 +131,28 @@
 
 	private async Task LoadCategoriesAsync()
 	{
-		_categories = await CategoryApi.GetCategoryAsync();
+		try
+		{
+			var response = await CategoryApi.GetCategoryAsync();
+			if (response.IsSuccess)
+			{
+				_categories = response.Data?
+					.OrderBy(c => c.CategoryOrder)
+					.ToList();
+				_isAnyCategory = true;
+			}
+			else
+			{
+				_errorMessage = response.ErrorMessage;
+				_isAnyCategory = false;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isAnyCategory = false;
+			_errorMessage = ex.Message;
+		}
+
 	}
 
 	private async Task SaveChangesCategoryAsync(CategoryDto dto)
@@ -125,14 +163,21 @@
 			if (response.IsSuccess)
 			{
 				await LoadCategoriesAsync();
-				dto.ErrorMessage = null;
+				_errorMessage = null;
+				_isSuccess = true;
 			}
 			else
-				dto.ErrorMessage = response.ErrorMessage;
+			{
+				_isSuccess = false;
+				_errorMessage = response.ErrorMessage;
+				Modal?.Open();
+			}
 		}
 		catch (Exception ex)
 		{
-			dto.ErrorMessage = ex.Message;
+			_errorMessage = ex.Message;
+			Modal?.Open();
+
 		}
 	}
 

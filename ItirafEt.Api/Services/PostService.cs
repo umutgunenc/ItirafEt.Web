@@ -20,25 +20,25 @@ namespace ItirafEt.Api.Services
             _categoryHubContext = categoryHubContext;
         }
 
-        public async Task<ApiResponse> CreatePostAsync(PostDto dto, Guid UserId)
+        public async Task<ApiResponses> CreatePostAsync(PostDto dto, Guid UserId)
         {
             if (await _context.Posts.AsNoTracking().AnyAsync(c => c.Title == dto.Title))
-                return ApiResponse.Fail("Aynı başlık ile mevcut bir gönderi bulunmaktadır.\nLütfen başlığınızı değiştirin.");
+                return ApiResponses.Fail("Aynı başlık ile mevcut bir gönderi bulunmaktadır.\nLütfen başlığınızı değiştirin.");
 
             var category = await _context.Categories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == dto.CategoryId && c.isActive);
             if (category == null)
-                return ApiResponse.Fail("Seçilen kategori bulunamadı.");
+                return ApiResponses.Fail("Seçilen kategori bulunamadı.");
 
             if (dto.Content.Trim().Length < 100)
-                return ApiResponse.Fail("İçerik en az 100 karakter olmalıdır.");
+                return ApiResponses.Fail("İçerik en az 100 karakter olmalıdır.");
             if (dto.Content.Trim().Length > 4096)
-                return ApiResponse.Fail("İçerik en fazla 4096 karakter olmalıdır.");
+                return ApiResponses.Fail("İçerik en fazla 4096 karakter olmalıdır.");
             if (dto.Title.Trim().Length < 10)
-                return ApiResponse.Fail("Başlık en az 10 karakter olmalıdır.");
+                return ApiResponses.Fail("Başlık en az 10 karakter olmalıdır.");
             if (dto.Title.Trim().Length > 256)
-                return ApiResponse.Fail("Başlık en fazla 256 karakter olmalıdır.");
+                return ApiResponses.Fail("Başlık en fazla 256 karakter olmalıdır.");
 
 
             var post = new Post
@@ -57,23 +57,23 @@ namespace ItirafEt.Api.Services
             await _context.SaveChangesAsync();
             await _categoryHubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged");
 
-            return ApiResponse.Success();
+            return ApiResponses.Success();
 
         }
 
-        public async Task<ApiResponse> GetCreatedPostAsync(Guid UserId)
+        public async Task<ApiResponses<int>> GetCreatedPostIdAsync(Guid UserId)
         {
-            var createdPost = await _context.Posts
+            var createdPostId = await _context.Posts
                 .AsNoTracking()
                 .Where(c => c.UserId == UserId)
                 .OrderByDescending(c => c.CreatedDate) // En son oluşturulan post en üstte gelecek
                 .Select(c => c.Id)                      // Sadece ID'yi seçiyoruz
                 .FirstOrDefaultAsync();                 // En üstteki değeri getiriyoruz 
 
-            return ApiResponse.Success(createdPost.ToString());
+            return ApiResponses<int>.Success(createdPostId);
         }
 
-        public async Task<PostDto?> GetPostByIdAsync(int postId)
+        public async Task<ApiResponses<PostDto>> GetPostByIdAsync(int postId)
         {
 
             var post = await _context.Posts
@@ -92,6 +92,10 @@ namespace ItirafEt.Api.Services
                     CategoryId = p.CategoryId
                 })
                 .FirstOrDefaultAsync();
+            if(post == null)
+                return ApiResponses<PostDto>.Fail("Gönderi bulunamadı.");
+            return ApiResponses<PostDto>.Success(post);
+
 
             //if (post == null)
             //    return null;
@@ -178,10 +182,9 @@ namespace ItirafEt.Api.Services
             //post.PostReactionDtos = postReactions;
             //post.CommentsDtos = comments;
 
-            return post;
 
         }
 
-        
+
     }
 }

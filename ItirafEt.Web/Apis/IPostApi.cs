@@ -8,14 +8,14 @@ namespace ItirafEt.Web.Apis
     {
         [Headers("Authorization: Bearer")]
         [Post("/api/createPost")]
-        Task<ApiResponse> CreatePostAsync(PostDto dto,Guid UserId);
+        Task<ApiResponses> CreatePostAsync(PostDto dto,Guid UserId);
 
         [Headers("Authorization: Bearer")]
         [Get("/api/getCreatedPost/")]
-        Task<ApiResponse> GetCreatedPostAsync(Guid UserId);
+        Task<ApiResponses<int>> GetCreatedPostIdAsync(Guid UserId);
 
         [Get("/api/getPostById/")]
-        Task<PostDto> GetPostByIdAsync(int postId);
+        Task<ApiResponses<PostDto>> GetPostByIdAsync(int postId);
 
         //[Headers("Authorization: Bearer")]
         //[Post("/api/likePost")]

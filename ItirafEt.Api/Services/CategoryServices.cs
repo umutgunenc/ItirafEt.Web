@@ -18,21 +18,21 @@ namespace ItirafEt.Api.Services
             _hubContext = hubContext;
         }
 
-        public async Task<ApiResponse> CreateCategoryAsync(CategoryDto dto)
+        public async Task<ApiResponses> CreateCategoryAsync(CategoryDto dto)
         {
  
             if (await _context.Categories.AsNoTracking().AnyAsync(c => c.CategoryName == dto.CategoryName.ToUpper()))
-                return ApiResponse.Fail("Aynı isimde mevcut bir kategori bulunmaktadır.");
+                return ApiResponses.Fail("Aynı isimde mevcut bir kategori bulunmaktadır.");
 
             if (await _context.Categories.AsNoTracking().AnyAsync(c => c.CategoryOrder == dto.CategoryOrder))
             {
                 var sameOrderCategory = await _context.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.CategoryOrder == dto.CategoryOrder);
-                return ApiResponse.Fail($"Aynı sıra numarasına sahip başka bir kategori bulunmaktadır.\nSıra Numarasını Kontrol Ediniz. Aynı Sıra Numarasına Ait Kategori: {sameOrderCategory.CategoryName}");
+                return ApiResponses.Fail($"Aynı sıra numarasına sahip başka bir kategori bulunmaktadır.\nSıra Numarasını Kontrol Ediniz. Aynı Sıra Numarasına Ait Kategori: {sameOrderCategory.CategoryName}");
             }
 
             var category = new Category
             {
-                CategoryName = dto.CategoryName.ToUpper(),
+                CategoryName = dto.CategoryName,
                 isActive = true,
                 CategoryOrder = (int)dto.CategoryOrder,
                 CategoryIconUrl = dto.CategoryIconUrl
@@ -40,42 +40,61 @@ namespace ItirafEt.Api.Services
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
-            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged");
+            var newCategoryDto = new CategoryDto
+            {
+                Id = category.Id,
+                CategoryName = category.CategoryName,
+                isActive = category.isActive,
+                CategoryOrder = category.CategoryOrder,
+                CategoryIconUrl = category.CategoryIconUrl,
+                PostCount = _context.Posts.Count(p => p.CategoryId == category.Id && p.IsActive)
+            };
 
-            return ApiResponse.Success();
+            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
+
+            return ApiResponses.Success();
 
         }
-        public async Task<ApiResponse> EditCategoryAsync(CategoryDto dto)
+        public async Task<ApiResponses> EditCategoryAsync(CategoryDto dto)
         {
             if (await _context.Categories.AsNoTracking().AnyAsync(c => c.CategoryName == dto.CategoryName.ToUpper() && c.Id != dto.Id))
-                return ApiResponse.Fail("Aynı isimde mevcut bir kategori bulunmaktadır.");
+                return ApiResponses.Fail("Aynı isimde mevcut bir kategori bulunmaktadır.");
 
             if (await _context.Categories.AsNoTracking().AnyAsync(c => c.CategoryOrder == dto.CategoryOrder && c.Id != dto.Id))
             {
                 var sameOrderCategory = await _context.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.CategoryOrder == dto.CategoryOrder && c.Id != dto.Id);
-                return ApiResponse.Fail($"Aynı sıra numarasına sahip başka bir kategori bulunmaktadır.\nSıra Numarasını Kontrol Ediniz. Aynı Sıra Numarasına Ait Kategori: {sameOrderCategory.CategoryName}");
+                return ApiResponses.Fail($"Aynı sıra numarasına sahip başka bir kategori bulunmaktadır.\nSıra Numarasını Kontrol Ediniz. Aynı Sıra Numarasına Ait Kategori: {sameOrderCategory.CategoryName}");
             }
             var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == dto.Id);
             if (category == null)
-                return ApiResponse.Fail("Kategori bulunamadı.");
+                return ApiResponses.Fail("Kategori bulunamadı.");
 
 
             category.CategoryName = dto.CategoryName;
             category.isActive = dto.isActive;
             category.CategoryOrder = (int)dto.CategoryOrder;
             category.CategoryIconUrl = dto.CategoryIconUrl;
+            
+            var newCategoryDto = new CategoryDto
+            {
+                Id = category.Id,
+                CategoryName = category.CategoryName,
+                isActive = category.isActive,
+                CategoryOrder = category.CategoryOrder,
+                CategoryIconUrl = category.CategoryIconUrl,
+                PostCount = _context.Posts.Count(p => p.CategoryId == category.Id && p.IsActive)
+            };
 
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
+            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
 
-            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged");
-
-            return ApiResponse.Success();
+            return ApiResponses.Success();
 
         }
-        public async Task<List<CategoryDto>> GetCategoryAsync()
+        public async Task<ApiResponses<List<CategoryDto>>> GetAllCategoriesAsync()
         {
-            return await _context.Categories.AsNoTracking()
+            var categories = await _context.Categories.AsNoTracking()
                 .Select(c => new CategoryDto
                 {
                     Id = c.Id,
@@ -86,11 +105,15 @@ namespace ItirafEt.Api.Services
                 })
                 .OrderBy(x => x.CategoryOrder)
                 .ToListAsync();
+
+            if (categories == null || categories.Count == 0)
+                return ApiResponses<List<CategoryDto>>.Fail("Kategori bulunamadı.");
+            return ApiResponses<List<CategoryDto>>.Success(categories);
         }
-        public async Task<List<CategoryDto>> GetAllActiveCategoryAsycn()
+        public async Task<ApiResponses<List<CategoryDto>>> GetAllActiveCategoriesAsycn()
         {
 
-            return await _context.Categories
+            var categories = await _context.Categories
                 .AsNoTracking()
                 .Where(c => c.isActive)
                 .Select(c => new CategoryDto
@@ -102,10 +125,13 @@ namespace ItirafEt.Api.Services
                     isActive = c.isActive,
                     PostCount =  _context.Posts.Count(p => p.CategoryId == c.Id && p.IsActive)
                 })
-                .OrderBy(x => x.CategoryOrder)
                 .ToListAsync();
 
-            
+            if (categories == null || categories.Count == 0)
+                return ApiResponses<List<CategoryDto>>.Fail("Kategori bulunamadı.");
+            return ApiResponses<List<CategoryDto>>.Success(categories);
+
+
         }
     }
 }

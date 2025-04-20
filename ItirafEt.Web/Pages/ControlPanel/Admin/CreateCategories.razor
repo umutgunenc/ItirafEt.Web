@@ -42,16 +42,16 @@
 
 			<div class="my-3">
 				<div class="d-flex mx-3">
-					@if (isSuccess)
+					@if (_isSuccess)
 					{
 						<div class="alert alert-success col">
 							Kategori başarıyla eklendi.
 						</div>
 					}
-					else if (_model.ErrorMessage != null)
+					@if (!_isSuccess && _errorMessage != null)
 					{
 						<div class="alert alert-danger col">
-							@_model.ErrorMessage
+							@_errorMessage
 						</div>
 					}
 				</div>
@@ -77,7 +77,8 @@
 @code {
 	private CategoryDto _model = new();
 	private bool _isBusy = false;
-	private bool isSuccess = false;
+	private bool _isSuccess = false;
+	private string? _errorMessage = null;
 
 
 	private async Task SaveCategoryAsync()
@@ -93,19 +94,19 @@
 			var response = await CategoryApi.CreateCategoryAsync(_model);
 			if (!response.IsSuccess)
 			{
-				isSuccess = false;
-				_model.ErrorMessage = response.ErrorMessage;
+				_isSuccess = false;
+				_errorMessage = response.ErrorMessage;
 			}
 			else
 			{
-				isSuccess = true;
-				_model.ErrorMessage = null;
+				_isSuccess = true;
+				_errorMessage = null;
 			}
 		}
 		catch (Exception ex)
 		{
-			isSuccess = false;
-			_model.ErrorMessage = ex.Message;
+			_isSuccess = false;
+			_errorMessage = ex.Message;
 		}
 		finally
 		{

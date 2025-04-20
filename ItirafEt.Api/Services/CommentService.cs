@@ -17,7 +17,7 @@ namespace ItirafEt.Api.Services
             _commentHub = commentHub;
         }
 
-        public async Task<List<CommentsDto>?> GetPostCommentsAsync(int postId)
+        public async Task<ApiResponses<List<CommentsDto>>> GetPostCommentsAsync(int postId)
         {
 
             var comments = await _context.Comments
@@ -33,7 +33,7 @@ namespace ItirafEt.Api.Services
                .Include(c => c.Replies)
                    .ThenInclude(r => r.CommentReactions)
                    .ThenInclude(cr => cr.ReactingUser)
-               .Where(c => c.PostId == postId && c.IsActive && c.ParentCommentId==null)
+               .Where(c => c.PostId == postId && c.IsActive && c.ParentCommentId == null)
                .Select(c => new CommentsDto
                {
                    Id = c.Id,
@@ -81,19 +81,21 @@ namespace ItirafEt.Api.Services
                    }).ToList()
                }).ToListAsync();
 
-            return comments;
 
+            if (comments == null || comments.Count == 0)
+                return ApiResponses<List<CommentsDto>>.Fail("Henüz Yorum Yok. İlk yorumu siz yapın!");
+            return ApiResponses<List<CommentsDto>>.Success(comments);
         }
 
-        public async Task<ApiResponse> AddCommentAsync(int postId, Guid UserId, CommentsDto dto)
+        public async Task<ApiResponses> AddCommentAsync(int postId, Guid UserId, CommentsDto dto)
         {
-            if(string.IsNullOrEmpty(dto.Content))
-                return ApiResponse.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
+            if (string.IsNullOrEmpty(dto.Content))
+                return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
 
             dto.Content = dto.Content.Trim();
 
             if (string.IsNullOrEmpty(dto.Content))
-                return ApiResponse.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
+                return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
 
             var comment = new Comment
             {
@@ -117,7 +119,7 @@ namespace ItirafEt.Api.Services
                 .Group($"post-{postId}")
                 .SendAsync("CommentAdded", comment.Id);
 
-            return ApiResponse.Success();
+            return ApiResponses.Success();
 
 
             //var currentPostCommentCount = await _context.Posts

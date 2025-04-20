@@ -3,19 +3,18 @@
 @inject IBanUserApi BanUserApi
 
 <AutoCompleteComponent TItemType="BanUserDto"
-DisplayedItemsList="Users"
-SelectedItem="_selectedUser"
-SelectedItemChanged="UserSelected"
-StaticPlaceholder="Banlanacak Kullanıcıyı Seçiniz"
-DisplayProperty="@(x => x.UserName)">
+					   DisplayedItemsList="Users"
+					   SelectedItem="_selectedUser"
+					   SelectedItemChanged="UserSelected"
+					   StaticPlaceholder="Banlanacak Kullanıcıyı Seçiniz"
+					   DisplayProperty="@(x => x.UserName)">
 </AutoCompleteComponent>
 @if (_isUserSelected)
 {
 	<div class="col-lg-12 mx-auto my-3 border shadow-lg">
 
 		<EditForm Model="_selectedUser"
-		OnValidSubmit="() => BanUserAsync(_selectedUser)">
-
+				  OnValidSubmit="() => BanUserAsync(_selectedUser)">
 
 			<DataAnnotationsValidator />
 			<div class="row align-items-center p-3">
@@ -47,10 +46,9 @@ DisplayProperty="@(x => x.UserName)">
 				<div class="col-lg-4 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
 					<div class="col d-flex">
 						<label class="form-label col-lg-6 col-3 text-start pt-2 ps-1">Ban Bitiş Tarihi</label>
-						<InputDate @bind-Value="_selectedUser.BannedDateUntil" class="form-control" disabled="@(!_selectedUser.IsBanned)" />
+						<InputDate @bind-Value="_selectedUser.BannedDateUntil" min="@MinBannedDate" class="form-control" disabled="@(!_selectedUser.IsBanned)" />
 					</div>
 				</div>
-
 
 
 				<div class="col-lg-2 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
@@ -67,44 +65,47 @@ DisplayProperty="@(x => x.UserName)">
 					}
 				</div>
 			</div>
-		</EditForm>
-
-		<div class="my-3">
+		</EditForm>@if (_isSuccess)
+		{
 			<div class="d-flex mx-3">
-				@if (_isSuccess)
-				{
-					<div class="alert alert-success col">
-						İşleminiz başarıyla gerçekleşti.
-					</div>
-				}
-				else if (!_isSuccess && _selectedUser.ErrorMessage != null)
-				{
-					<div class="alert alert-danger col">
-						@_selectedUser.ErrorMessage
-					</div>
-				}
+				<div class="alert alert-success col">
+					İşleminiz başarıyla gerçekleşti.
+				</div>
 			</div>
-		</div>
+		}
 	</div>
 }
 
+@if (!_isSuccess && _errorMessage != null)
+{
+<div class="col-lg-12 mx-auto my-3 border shadow-lg">
 
+	<div class="my-3">
+		<div class="d-flex mx-3">
+			<div class="alert alert-danger col">
+				@_errorMessage
+			</div>
+		</div>
+	</div>
+</div>
+
+}
 @code {
 
 	private Guid _adminId;
-	private List<BanUserDto> Users = new();
+	private List<BanUserDto>? Users = new();
 	private BanUserDto _selectedUser = new();
 	private bool _isUserSelected = false;
 	private bool _isBusy = false;
 	private bool _isSuccess = false;
 	private Timer? _timer;
-	private int _countdown = 5;
+	private string? _errorMessage = null;
+	private string MinBannedDate => DateTime.Today.ToString("yyyy-MM-dd");
+
 
 	protected override async Task OnInitializedAsync()
 	{
-		_adminId = Guid.Parse(AuthStateProvider.User?.id);
-
-		Users = await BanUserApi.GetAllUserDtosAsync();
+		await GetAllUsersAsync();
 	}
 
 	private void UserSelected(BanUserDto user)
@@ -124,23 +125,23 @@ DisplayProperty="@(x => x.UserName)">
 			if (response.IsSuccess)
 			{
 				_isSuccess = true;
-				_selectedUser.ErrorMessage = null;
+				_errorMessage = null;
 			}
 			else
 			{
-				_selectedUser.ErrorMessage = response.ErrorMessage;
 				_isSuccess = false;
+				_errorMessage = response.ErrorMessage;
 			}
 		}
 		catch (Exception ex)
 		{
-			_selectedUser.ErrorMessage = ex.Message;
+			_isSuccess = false;
+			_errorMessage = ex.Message;
 		}
 		finally
 		{
 			_isBusy = false;
-
-			StartCountdown();
+			StartCountdown(5);
 		}
 
 	}
@@ -153,17 +154,16 @@ DisplayProperty="@(x => x.UserName)">
 
 	}
 
-	private async void StartCountdown()
+	private async void StartCountdown(int countdown)
 	{
 		var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-		_countdown = 5;
 
 		try
 		{
-			while (_countdown > 0 && await timer.WaitForNextTickAsync())
+			while (countdown > 0 && await timer.WaitForNextTickAsync())
 			{
-				_countdown--;
-				await InvokeAsync(StateHasChanged); 
+				countdown--;
+				await InvokeAsync(StateHasChanged);
 			}
 		}
 		finally
@@ -171,9 +171,42 @@ DisplayProperty="@(x => x.UserName)">
 			timer.Dispose();
 
 			_isSuccess = false;
-			_selectedUser.ErrorMessage = null;
+			_errorMessage = null;
 
-			await InvokeAsync(StateHasChanged); 
+			await InvokeAsync(StateHasChanged);
 		}
+	}
+
+	private async Task GetAllUsersAsync()
+	{
+
+		try
+		{
+			var response = await BanUserApi.GetAllUserDtosAsync();
+			if (response.IsSuccess)
+			{
+				Users = response.Data;
+				_errorMessage = null;
+			}
+			else
+			{
+				_errorMessage = response.ErrorMessage;
+				_isSuccess = false;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isSuccess = false;
+			_errorMessage = ex.Message;
+		}
+		finally
+		{
+
+			_isUserSelected = false;
+			_selectedUser = new();
+			_adminId = Guid.Parse(AuthStateProvider.User?.id);
+
+		}
+
 	}
 }

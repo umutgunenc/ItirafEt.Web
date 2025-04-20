@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using ItirafEt.Shared.DTOs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.Hubs
 {
     public class CategoryHub :Hub
     {
-        public async Task NotifyActiveCategoryInformationsChanged()
+        public async Task NotifyActiveCategoryInformationsChanged(CategoryDto Category)
         {
-            await Clients.All.SendAsync("ActiveCategoryInformationsChanged");
+            await Clients.All.SendAsync("ActiveCategoryInformationsChanged", Category);
         }
 
         

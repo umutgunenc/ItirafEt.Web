@@ -8,10 +8,10 @@ namespace ItirafEt.Web.Apis
     public interface IBanUserApi
     {
         [Post("/api/banUser")]
-        Task<ApiResponse> BanUserAsync(BanUserDto bannedUser,Guid AdminId);
+        Task<ApiResponses> BanUserAsync(BanUserDto bannedUser,Guid AdminId);
 
 
         [Get("/api/getAllUsers")]
-        Task<List<BanUserDto>> GetAllUserDtosAsync();
+        Task<Shared.DTOs.ApiResponses<List<BanUserDto>>> GetAllUserDtosAsync();
     }
 }

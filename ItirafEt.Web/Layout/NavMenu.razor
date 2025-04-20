@@ -26,7 +26,7 @@
 								<span class="fs-6">Yönetim Paneli</span>
 							</div>
 						</NavLink>
-					</div>		
+					</div>
 					<hr class="border-3 border-white opacity-75">
 
 				</AuthorizeView>
@@ -41,11 +41,6 @@
 				</div>
 			</NavLink>
 		</div>
-		@* 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-				<span class="bi bi-house-door-fill" aria-hidden="true" style="font-size: 1.5rem"></span> Home
-			</NavLink>
-		</div> *@
 
 		@foreach (var category in _categories)
 		{
@@ -53,39 +48,28 @@
 				<NavLink class="nav-link" href="@category.Id">
 					<div class="d-flex align-items-center gap-2">
 						<span class="@category.CategoryIconUrl d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
-						<span class="fs-6">@category.CategoryName  (@category.PostCount)</span> 
+						<span class="fs-6">@category.CategoryName  (@category.PostCount)</span>
 					</div>
 				</NavLink>
 			</div>
 		}
 
+		<p class="text-white">@_isDeleted</p>
 	</nav>
 </div>
 
 @code {
 	private bool collapseNavMenu = true;
 	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-	private List<CategoryDto> _categories = new List<CategoryDto>();
+	private List<CategoryDto>? _categories = new List<CategoryDto>();
 	private HubConnection _hubConnection { get; set; }
+	private string? _errorMessage = null;
+	private bool _isDeleted = false;
 
 	protected override async Task OnInitializedAsync()
 	{
-
-		_hubConnection = new HubConnectionBuilder()
-			.WithUrl("https://localhost:7292/categoryhub")
-			.WithAutomaticReconnect()
-			.Build();
-
-		_hubConnection.On("ActiveCategoryInformationsChanged", async () =>
-			{
-				_categories = await CategoryApi.GetAllActiveCategoryAsycn();
-				StateHasChanged(); 
-			});
-
-		await _hubConnection.StartAsync();
-
-		_categories = await CategoryApi.GetAllActiveCategoryAsycn();
-
+		await StartHubAsync();
+		await GelAllActiveCategoryAsync();
 	}
 
 	private void ToggleNavMenu()
@@ -97,5 +81,71 @@
 		nameof(UserRoleenum.SuperAdmin),
 		nameof(UserRoleenum.Admin),
 		nameof(UserRoleenum.Moderator));
+
+	private async Task GelAllActiveCategoryAsync()
+	{
+		try
+		{
+			var response = await CategoryApi.GetAllActiveCategoryAsycn();
+			if (response.IsSuccess)
+			{
+				_categories = response.Data?
+					.OrderBy(c => c.CategoryOrder)
+					.ToList();
+			}
+			else
+				_categories = null;
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+		}
+	}
+
+	private async Task StartHubAsync()
+	{
+
+		_hubConnection = new HubConnectionBuilder()
+			.WithUrl("https://localhost:7292/categoryhub")
+			.WithAutomaticReconnect()
+			.Build();
+
+		_hubConnection.On<CategoryDto>("ActiveCategoryInformationsChanged", async (category) =>
+		{
+			UpdateCategories(category);
+			StateHasChanged();
+		});
+
+		await _hubConnection.StartAsync();
+
+	}
+
+	private void UpdateCategories(CategoryDto category)
+	{
+		var existingCategory = _categories.FirstOrDefault(c => c.Id == category.Id);
+
+		if (existingCategory != null)
+		{
+			if (!category.isActive)
+				_categories.Remove(existingCategory);
+			else
+			{
+				existingCategory.CategoryName = category.CategoryName;
+				existingCategory.CategoryIconUrl = category.CategoryIconUrl;
+				existingCategory.CategoryOrder = category.CategoryOrder;
+				existingCategory.PostCount = category.PostCount;
+			}
+		}
+		else
+		{
+			if (category.isActive)
+				_categories.Add(category);
+		}
+
+		_categories = _categories
+			.OrderBy(c => c.CategoryOrder)
+			.ToList();
+	}
+
 
 }

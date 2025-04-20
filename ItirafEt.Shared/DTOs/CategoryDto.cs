@@ -29,6 +29,5 @@ namespace ItirafEt.Shared.DTOs
         public int PostCount { get; set; }
 
 
-        public string? ErrorMessage { get; set; }
     }
 }

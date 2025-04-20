@@ -8,12 +8,12 @@ namespace ItirafEt.Web.Apis
     public interface ICategoryApi
     {
         [Post("/api/createcategory")]
-        Task<ApiResponse> CreateCategoryAsync(CategoryDto dto);
+        Task<ApiResponses> CreateCategoryAsync(CategoryDto dto);
         [Post("/api/editcategory")]
-        Task<ApiResponse> EditCategoryAsync(CategoryDto dto);
+        Task<ApiResponses> EditCategoryAsync(CategoryDto dto);
         [Get("/api/getcategory")]
-        Task<List<CategoryDto>> GetCategoryAsync();
+        Task<ApiResponses<List<CategoryDto>>> GetCategoryAsync();
         [Get("/api/getallactivecategory")]
-        Task<List<CategoryDto>> GetAllActiveCategoryAsycn();
+        Task<ApiResponses<List<CategoryDto>>> GetAllActiveCategoryAsycn();
     }
 }
