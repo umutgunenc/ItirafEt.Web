@@ -126,16 +126,16 @@
 	{
 		try
 		{
-			var response = CategoryApi.GetAllActiveCategoryAsycn();
-			if (response.Result.IsSuccess)
+			var response = await CategoryApi.GetAllActiveCategoryAsycn();
+			if (response.IsSuccess)
 			{
 				_isCategoryLoaded = true;
-				_categories = response.Result.Data;
+				_categories = response.Data;
 			}
 			else
 			{
 				_isCategoryLoaded = false;
-				_errorMessage = response.Result.ErrorMessage;
+				_errorMessage = response.ErrorMessage;
 				_categories = null;
 			}
 

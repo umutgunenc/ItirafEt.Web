@@ -15,5 +15,8 @@ namespace ItirafEt.Web.Apis
         Task<ApiResponses<List<CategoryDto>>> GetCategoryAsync();
         [Get("/api/getallactivecategory")]
         Task<ApiResponses<List<CategoryDto>>> GetAllActiveCategoryAsycn();
+
+        [Get("/api/getCategoryPosts")]
+        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
     }
 }

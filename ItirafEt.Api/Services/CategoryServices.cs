@@ -133,5 +133,31 @@ namespace ItirafEt.Api.Services
 
 
         }
+        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsAsync(int categoryId,int pageNo, int pageSize)
+        {
+            var posts = await _context.Posts
+                .Include(p => p.User)
+                .AsNoTracking()
+                .Where(p => p.CategoryId == categoryId && p.IsActive)
+                .OrderByDescending(p => p.CreatedDate)
+                .Skip((pageNo - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new PostInfoDto
+                {
+                    PostId = p.Id,
+                    PostTitle = p.Title,
+                    PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
+                    PostCreatedDate = p.CreatedDate,
+                    PostCreatorUserName = p.User.UserName,
+                    PostViewCount = p.ViewCount
+                })
+                .ToListAsync();
+
+            if (posts == null || posts.Count == 0)
+                return ApiResponses<List<PostInfoDto>>.Fail("Kategoriye ait gönderi bulunamadı.");
+
+            return ApiResponses<List<PostInfoDto>>.Success(posts);
+        }
+
     }
 }
