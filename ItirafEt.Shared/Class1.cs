@@ -9,10 +9,10 @@ namespace ItirafEt.Shared
 {
     public static class RoleNames
     {
-        public const string SuperAdmin = nameof(UserRoleenum.SuperAdmin);
-        public const string Admin = nameof(UserRoleenum.Admin);
-        public const string Moderator = nameof(UserRoleenum.Moderator);
-        public const string SuperUser = nameof(UserRoleenum.SuperUser);
-        public const string User = nameof(UserRoleenum.User);
+        public const string SuperAdmin = nameof(UserRoleEnum.SuperAdmin);
+        public const string Admin = nameof(UserRoleEnum.Admin);
+        public const string Moderator = nameof(UserRoleEnum.Moderator);
+        public const string SuperUser = nameof(UserRoleEnum.SuperUser);
+        public const string User = nameof(UserRoleEnum.User);
     }
 }

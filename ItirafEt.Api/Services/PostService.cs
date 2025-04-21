@@ -77,6 +77,7 @@ namespace ItirafEt.Api.Services
         {
 
             var post = await _context.Posts
+                .Include(p => p.User)
                 .AsNoTracking()
                 .Where(p => p.Id == postId && p.IsActive)
                 .Select(p => new PostDto
@@ -89,99 +90,15 @@ namespace ItirafEt.Api.Services
                     UserName = p.User.UserName,
                     UserId = p.UserId,
                     ViewCount = p.ViewCount,
-                    CategoryId = p.CategoryId
+                    CategoryId = p.CategoryId,
+                    UserAge = DateTime.Now.Year - p.User.BirthDate.Year,
+                    UserGenderId = p.User.Gender.Id,
+                    UserProfileImageUrl = p.User.ProfilePictureUrl
                 })
                 .FirstOrDefaultAsync();
             if(post == null)
                 return ApiResponses<PostDto>.Fail("Gönderi bulunamadı.");
             return ApiResponses<PostDto>.Success(post);
-
-
-            //if (post == null)
-            //    return null;
-
-            //var postReactions = await _context.PostReaction
-            //    .AsNoTracking()
-            //    .Include(pr => pr.ReactionType)
-            //    .Include(pr => pr.ReactingUser)
-            //    .AsNoTracking()
-            //    .Where(pr => pr.PostId == postId)
-            //    .Select(pr => new ReactionDto
-            //    {
-            //        Id = pr.Id,
-            //        PostId = pr.PostId,
-            //        ReactionTypeId = pr.ReactionTypeId,
-            //        ReactingUserId = pr.ReactingUserId,
-            //        ReactingUserUserName = pr.ReactingUser.UserName,
-            //        CreatedDate = pr.CreatedDate,
-            //        ReactionTypeName = pr.ReactionType.Name
-            //    })
-            //    .ToListAsync();
-
-            //var comments = await _context.Comments
-            //    .AsNoTracking()
-            //    .Include(c => c.User)
-            //    .Include(c => c.CommentReactions)
-            //        .ThenInclude(cr => cr.Reaction)
-            //    .Include(c => c.CommentReactions)
-            //        .ThenInclude(cr => cr.ReactingUser)
-            //    .Include(c => c.Replies)
-            //        .ThenInclude(r => r.CommentReactions)
-            //        .ThenInclude(cr => cr.Reaction)
-            //    .Include(c => c.Replies)
-            //        .ThenInclude(r => r.CommentReactions)
-            //        .ThenInclude(cr => cr.ReactingUser)
-            //    .Where(c => c.PostId == postId && c.IsActive)
-            //    .Select(c => new CommentsDto
-            //    {
-            //        Id = c.Id,
-            //        Content = c.Content,
-            //        CreatedDate = c.CreatedDate,
-            //        UpdatedDate = c.UpdatedDate,
-            //        UserName = c.User.UserName,
-            //        LikeCount = c.LikeCount,
-            //        DislikeCount = c.DislikeCount,
-            //        CommentCount = c.CommentCount,
-            //        ReportCount = c.ReportCount,
-            //        CommentRections = c.CommentReactions.Select(cr => new ReactionDto
-            //        {
-            //            Id = cr.Id,
-            //            ReactionTypeId = cr.ReactionId,
-            //            ReactingUserId = cr.ReactingUserId,
-            //            ReactingUserUserName = cr.ReactingUser.UserName,
-            //            CreatedDate = cr.CreatedDate,
-            //            ReactionTypeName = cr.Reaction.Name,
-            //            CommentId = c.Id
-            //        }).ToList(),
-            //        CommentReplies = c.Replies.Select(r => new CommentsDto
-            //        {
-            //            Id = r.Id,
-            //            ParentCommentId = r.ParentCommentId,
-            //            Content = r.Content,
-            //            CreatedDate = r.CreatedDate,
-            //            UpdatedDate = r.UpdatedDate,
-            //            UserName = r.User.UserName,
-            //            LikeCount = r.LikeCount,
-            //            DislikeCount = r.DislikeCount,
-            //            ReportCount = r.ReportCount,
-            //            CommentRections = r.CommentReactions.Select(cr => new ReactionDto
-            //            {
-            //                Id = cr.Id,
-            //                ReactionTypeId = cr.ReactionId,
-            //                ReactingUserId = cr.ReactingUserId,
-            //                ReactingUserUserName = cr.ReactingUser.UserName,
-            //                CreatedDate = cr.CreatedDate,
-            //                ReactionTypeName = cr.Reaction.Name,
-            //                CommentId = r.Id
-
-            //            }).ToList()
-
-            //        }).ToList()
-            //    }).ToListAsync();
-
-            //post.PostReactionDtos = postReactions;
-            //post.CommentsDtos = comments;
-
 
         }
 

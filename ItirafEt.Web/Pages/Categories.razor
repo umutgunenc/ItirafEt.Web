@@ -1,0 +1,22 @@
+﻿@page "/categories/{categoryId:int}"
+
+
+<h3>Categories</h3>
+
+@code {
+	[Parameter]
+	public int categoryId { get; set; }
+
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetCategoryPostsAsync(categoryId);
+	}
+
+	private async Task GetCategoryPostsAsync(int categoryId)
+	{
+		await Task.Delay(1000);
+	}
+
+}

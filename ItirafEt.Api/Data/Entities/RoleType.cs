@@ -11,11 +11,11 @@ namespace ItirafEt.Api.Data.Entities
             Users = new HashSet<User>();
         }
 
-        public static readonly RoleType SuperAdmin = new RoleType( nameof(UserRoleenum.SuperAdmin));
-        public static readonly RoleType Admin = new RoleType( nameof(UserRoleenum.Admin));
-        public static readonly RoleType Moderator = new RoleType( nameof(UserRoleenum.Moderator));
-        public static readonly RoleType SuperUser = new RoleType( nameof(UserRoleenum.SuperUser));
-        public static readonly RoleType User = new RoleType( nameof(UserRoleenum.User));
+        public static readonly RoleType SuperAdmin = new RoleType( nameof(UserRoleEnum.SuperAdmin));
+        public static readonly RoleType Admin = new RoleType( nameof(UserRoleEnum.Admin));
+        public static readonly RoleType Moderator = new RoleType( nameof(UserRoleEnum.Moderator));
+        public static readonly RoleType SuperUser = new RoleType( nameof(UserRoleEnum.SuperUser));
+        public static readonly RoleType User = new RoleType( nameof(UserRoleEnum.User));
 
         public static IEnumerable<RoleType> List() => new[]
         {

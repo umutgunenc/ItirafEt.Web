@@ -15,11 +15,11 @@ namespace ItirafEt.Api.EndPoints
 
             app.MapPost("/api/likePost", async (int postId,Guid UserId, ReactionService reactionService) =>
                 Results.Ok(await reactionService.LikePostAsync(postId, UserId)))
-                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleenum.SuperAdmin), nameof(UserRoleenum.Admin), nameof(UserRoleenum.Moderator), nameof(UserRoleenum.SuperUser),nameof(UserRoleenum.User)));
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser),nameof(UserRoleEnum.User)));
 
             app.MapPost("/api/dislikePost", async (int postId, Guid UserId, ReactionService reactionService) =>
                 Results.Ok(await reactionService.DislikePostAsync(postId, UserId)))
-                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleenum.SuperAdmin), nameof(UserRoleenum.Admin), nameof(UserRoleenum.Moderator), nameof(UserRoleenum.SuperUser), nameof(UserRoleenum.User)));
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             return app;
         }

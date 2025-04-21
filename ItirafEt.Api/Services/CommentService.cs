@@ -55,30 +55,32 @@ namespace ItirafEt.Api.Services
                        ReactionTypeName = cr.Reaction.Name,
                        CommentId = c.Id
                    }).ToList(),
-                   CommentReplies = c.Replies.Select(r => new CommentsDto
-                   {
-                       Id = r.Id,
-                       ParentCommentId = r.ParentCommentId,
-                       Content = r.Content,
-                       CreatedDate = r.CreatedDate,
-                       UpdatedDate = r.UpdatedDate,
-                       UserName = r.User.UserName,
-                       LikeCount = r.LikeCount,
-                       DislikeCount = r.DislikeCount,
-                       ReportCount = r.ReportCount,
-                       CommentRections = r.CommentReactions.Select(cr => new ReactionDto
-                       {
-                           Id = cr.Id,
-                           ReactionTypeId = cr.ReactionId,
-                           ReactingUserId = cr.ReactingUserId,
-                           ReactingUserUserName = cr.ReactingUser.UserName,
-                           CreatedDate = cr.CreatedDate,
-                           ReactionTypeName = cr.Reaction.Name,
-                           CommentId = r.Id
+                   CommentReplies = c.Replies
+                        .Where(r => r.IsActive)
+                        .Select(r => new CommentsDto
+                        {
+                            Id = r.Id,
+                            ParentCommentId = r.ParentCommentId,
+                            Content = r.Content,
+                            CreatedDate = r.CreatedDate,
+                            UpdatedDate = r.UpdatedDate,
+                            UserName = r.User.UserName,
+                            LikeCount = r.LikeCount,
+                            DislikeCount = r.DislikeCount,
+                            ReportCount = r.ReportCount,
+                            CommentRections = r.CommentReactions.Select(cr => new ReactionDto
+                            {
+                                Id = cr.Id,
+                                ReactionTypeId = cr.ReactionId,
+                                ReactingUserId = cr.ReactingUserId,
+                                ReactingUserUserName = cr.ReactingUser.UserName,
+                                CreatedDate = cr.CreatedDate,
+                                ReactionTypeName = cr.Reaction.Name,
+                                CommentId = r.Id
 
-                       }).ToList()
+                            }).ToList()
 
-                   }).ToList()
+                        }).ToList()
                }).ToListAsync();
 
 

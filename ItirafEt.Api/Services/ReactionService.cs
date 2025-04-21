@@ -40,8 +40,8 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            if (postReactions == null || postReactions.Count == 0)
-                return ApiResponses<List<ReactionDto>>.Fail("");
+            //if (postReactions == null || postReactions.Count == 0)
+            //    return ApiResponses<List<ReactionDto>>.Fail("");
 
             return ApiResponses<List<ReactionDto>>.Success(postReactions);
 

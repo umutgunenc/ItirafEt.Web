@@ -175,7 +175,7 @@ namespace ItirafEt.Api.Data
                 Id = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 UserName = "admin",
                 Email = "umutgunenc@gmail.com",
-                RoleName = nameof(UserRoleenum.SuperAdmin),
+                RoleName = nameof(UserRoleEnum.SuperAdmin),
                 GenderId = (int)GenderEnum.Male,
                 PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
                 BirthDate = new DateTime(1989, 5, 29),

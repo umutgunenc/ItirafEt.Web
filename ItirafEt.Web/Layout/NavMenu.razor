@@ -45,7 +45,7 @@
 		@foreach (var category in _categories)
 		{
 			<div class="nav-item px-3">
-				<NavLink class="nav-link" href="@category.Id">
+				<NavLink class="nav-link" href=@($"categories/{category.Id}")>
 					<div class="d-flex align-items-center gap-2">
 						<span class="@category.CategoryIconUrl d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
 						<span class="fs-6">@category.CategoryName  (@category.PostCount)</span>
@@ -54,7 +54,6 @@
 			</div>
 		}
 
-		<p class="text-white">@_isDeleted</p>
 	</nav>
 </div>
 
@@ -64,7 +63,6 @@
 	private List<CategoryDto>? _categories = new List<CategoryDto>();
 	private HubConnection _hubConnection { get; set; }
 	private string? _errorMessage = null;
-	private bool _isDeleted = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -78,9 +76,9 @@
 	}
 
 	private string allowedRoles = string.Join(",",
-		nameof(UserRoleenum.SuperAdmin),
-		nameof(UserRoleenum.Admin),
-		nameof(UserRoleenum.Moderator));
+		nameof(UserRoleEnum.SuperAdmin),
+		nameof(UserRoleEnum.Admin),
+		nameof(UserRoleEnum.Moderator));
 
 	private async Task GelAllActiveCategoryAsync()
 	{

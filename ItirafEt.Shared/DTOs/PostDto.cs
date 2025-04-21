@@ -16,6 +16,9 @@ namespace ItirafEt.Shared.DTOs
         public string UserName { get; set; }
         public Guid UserId { get; set; }
         public int ViewCount { get; set; }
+        public int UserAge { get; set; }
+        public int UserGenderId { get; set; }
+        public string? UserProfileImageUrl { get; set; }
 
 
         [Required(ErrorMessage = "Lütfen Başlık Giriniz.")]
@@ -32,8 +35,7 @@ namespace ItirafEt.Shared.DTOs
         public int CategoryId { get; set; }
         public string DeviceInfo { get; set; }
         public string IpAddress { get; set; }
-        public List<ReactionDto>? PostReactionDtos { get; set; }
-        public List<CommentsDto>? CommentsDtos { get; set; }
+
 
 
     }

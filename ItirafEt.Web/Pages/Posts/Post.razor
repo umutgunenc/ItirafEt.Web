@@ -7,75 +7,78 @@
 
 <div class="col-md-8 col mx-auto">
 	<div class="card shadow-lg rounded-4 border-1 mb-3 ">
-
-		@if (_isBusy)
+		<p>_errorMessage @_errorMessage</p>
+		@if (_isPostHaveError)
 		{
-			<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
-				<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
-					<span class="visually-hidden">Loading...</span>
-				</div>
+			<div class="alert alert-danger m-3" role="alert">
+				@_errorMessage
 			</div>
 		}
 		else
 		{
-			<div class="card-body">
-				<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
-				<h6 class="card-subtitle mb-2 text-muted text-break">@_postDto.Title</h6>
+			@if (_isBusy)
+			{
+				<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
+					<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
+			}
+			else
+			{
+				<div class="card-body">
+					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
+					<h6 class="card-subtitle mb-2 text-muted text-break">@_postDto.Title</h6>
 
-				<p class="card-text text-break"
-				style="text-align: justify;
+					<p class="card-text text-break"
+					style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
-					@_postDto.Content
-				</p>
+						@_postDto.Content
+					</p>
 
-				<div class="d-flex justify-content-end text-muted small mb-2">
-					@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
-					@if (_postDto.UpdatedDate.HasValue)
-					{
-						@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
-					}
-				</div>
-
-				@* 				<div class="d-flex flex-column flex-md-row align-items-end align-items-md-center justify-content-md-between pt-2 border-top mt-3">
-					<!-- 1) Kullanıcı: XS–SM üstte, MD+ sağda -->
-					<div class="d-flex align-items-center gap-3 order-1 order-md-2 mb-2 mb-md-0">
-						<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-							 class="rounded-circle" width="42" height="42" style="object-fit: cover;" />
-						<span class="fs-3 fw-light">@_postDto.UserName</span>
-					</div>
-
-					<!-- 2) İkonlar: XS–SM altta, MD+ solda -->
-					<div class="d-flex align-items-center gap-4
-                order-2 order-md-1">
-						<div class="text-center">
-							<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill" : "")} fs-5 text-primary" )"
-							   style="cursor:pointer" @onclick="LikePostAsync"></i><br />
-							<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
-								@_likeCount
-							</span>
-						</div>
-						<div class="text-center">
-							<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill" : "")} fs-5 text-danger" )"
-							   style="cursor:pointer" @onclick="DislikePostAsync"></i><br />
-							<span class="text-muted small" style="cursor:pointer">
-								@_dislikeCount
-							</span>
-						</div>
-						@if (!_isPostOwner)
-						{
-							<div class="text-center">
-								<i class="bi bi-exclamation-circle fs-5 text-danger"
-								   style="cursor:pointer" @onclick="ReportAsync"></i><br />
-								<span class="text-muted small">Şikayet</span>
+					<div class="d-flex justify-content-between">
+						<div class="d-flex gap-4 justify-content-start">
+							<!-- Beğeni -->
+							<div class="d-flex flex-column align-items-center">
+								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
+								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
+									@_likeCount
+								</span>
 							</div>
-						}
+							<!-- Beğenmeme -->
+							<div class="d-flex flex-column align-items-center">
+								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
+								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikesAsync">
+									@_dislikeCount
+								</span>
+							</div>
+							<!-- Şikayet (sahip değilse) -->
+							@if (!_isPostOwner)
+							{
+								<div class="d-flex flex-column align-items-center">
+									<i class="bi bi-exclamation-circle fs-5 text-danger"
+									style="cursor:pointer" @onclick="ReportAsync"></i>
+									<span class="text-muted small">Şikayet</span>
+								</div>
+							}
+						</div>
+
+						<div class="d-flex justify-content-end text-muted small mb-2">
+							@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+							@if (_postDto.UpdatedDate.HasValue)
+							{
+								@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
+							}
+						</div>
 					</div>
-				</div> *@
-				<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center pt-2 border-top mt-3">
+
+					<hr />
 
 					<!-- 1) Kullanıcı Bilgileri Grubu -->
-					<div class="d-flex flex-column align-items-center align-items-md-end gap-2 order-1 order-md-2 mb-3 mb-md-0">
+					<div class="d-flex align-items-end gap-2 mb-3">
 						<!-- Foto & İsim -->
 						<div class="d-flex align-items-center gap-2">
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
@@ -83,167 +86,137 @@
 							width="42" height="42"
 							style="object-fit: cover;" />
 							<span class="fs-5 fw-semibold">@_postDto.UserName</span>
-						</div>
-						<!-- Yaş & Cinsiyet (profilin altında) -->
-						<div class="d-flex align-items-center gap-2">
-							<small class="text-muted">20 Yaşında</small>
-							<small class="text-muted">Erkek</small>
+							<small class="text-muted">@_postDto.UserAge Yaşında</small>
+							<small class="text-muted">@_userGender</small>
+							<span class="text-muted small" style="cursor:pointer" @onclick="SendMessage">
+								Mesaj At
+							</span>
+							<i class="bi bi-chat-right-heart text-danger-emphasis"
+							style="cursor:pointer" @onclick="SendMessage"></i>
 						</div>
 					</div>
 
-					<!-- 2) İkonlar Grubu -->
-					<div class="d-flex gap-4 order-2 order-md-1">
-						<!-- Beğeni -->
-						<div class="d-flex flex-column align-items-center">
-							<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-							style="cursor:pointer" @onclick="LikePostAsync"></i>
-							<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
-								@_likeCount
-							</span>
-						</div>
-						<!-- Beğenmeme -->
-						<div class="d-flex flex-column align-items-center">
-							<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-							style="cursor:pointer" @onclick="DislikePostAsync"></i>
-							<span class="text-muted small">
-								@_dislikeCount
-							</span>
-						</div>
-						<!-- Şikayet (sahip değilse) -->
-						@if (!_isPostOwner)
-						{
-							<div class="d-flex flex-column align-items-center">
-								<i class="bi bi-exclamation-circle fs-5 text-danger"
-								style="cursor:pointer" @onclick="ReportAsync"></i>
-								<span class="text-muted small">Şikayet</span>
-							</div>
-						}
+					<div class="mt-4">
+						<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
+							Yorumlar @($"({_comments?.Count ?? 0})")
+						</h6>
 					</div>
+					@if (_showComments)
+					{
+						<div class="m-4">
+							@if (_comments?.Count > 0)
+							{
+								<EditForm Model="_commentModel" OnValidSubmit="AddCommentAsync">
+									<DataAnnotationsValidator />
 
-				</div>
-				<div class="mt-4">
-					<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
-						Yorumlar @($"({_comments?.Count ?? 0})")
+									<div class="mb-3">
+										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
+										<InputTextArea id="yorum"
+										class="form-control"
+										placeholder="Yorum yazın..."
+										@bind-Value="_commentModel.Content"
+										rows="4" />
+										<ValidationMessage For="@(() => _commentModel.Content)" />
+									</div>
 
-					</h6>
-				</div>
-				@if (_showComments)
-				{
-					<div class="m-4">
-						@if (_comments?.Count > 0)
-						{
-							<EditForm Model="_commentModel" OnValidSubmit="AddCommentAsync">
-								<DataAnnotationsValidator />
+									<div class="my-3">
+										<button type="submit" class="btn btn-primary col-12">Gönder</button>
+									</div>
+								</EditForm>
 
-								<div class="mb-3">
-									<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
-									<InputTextArea id="yorum"
-									class="form-control"
-									placeholder="Yorum yazın..."
-									@bind-Value="_commentModel.Content"
-									rows="4" />
-									<ValidationMessage For="@(() => _commentModel.Content)" />
-								</div>
-
-								<div class="my-3">
-									<button type="submit" class="btn btn-primary col-12">Gönder</button>
-								</div>
-							</EditForm>
-
-
-							<div class="card mb-2 shadow-sm">
-								<div class="card-body p-2">
-									<!-- Yorum listesi -->
-									@foreach (var comment in _comments)
-									{
-										<div class="d-flex justify-content-between">
-											<div>
-												<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle" width="24" height="24" style="object-fit: cover;" />
-
-												<strong class="ms-2">@comment.UserName</strong>
-
-												<small class="text-muted ms-2">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
-											</div>
-											<button class="btn btn-sm btn-link text-primary" @onclick="() => ToggleReplyBox(comment.Id)">
-												Cevapla
-											</button>
-										</div>
-										<p class="mb-1" style="white-space: pre-wrap;">@comment.Content</p>
-
-										<!-- Reply input -->
-										@if (_replyToCommentId == comment.Id)
+								<div class="card mb-2 shadow-sm">
+									<div class="card-body p-2">
+										<!-- Yorum listesi -->
+										@foreach (var comment in _comments)
 										{
-											<div class="input-group mb-2">
-												<input type="text" class="form-control form-control-sm" placeholder="Cevabınızı yazın..."
-												@bind="_replyText"
-												@onkeypress="@(e => e.Key == "Enter" ? AddReplyAsync(comment.Id) : Task.CompletedTask)" />
-												<div class="input-group-append">
-													<button class="btn btn-sm btn-outline-primary" @onclick="() => AddReplyAsync(comment.Id)">
-														Cevapla
-													</button>
+											<div class="d-flex justify-content-between">
+												<div>
+													<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle" width="24" height="24" style="object-fit: cover;" />
+
+													<strong class="ms-2">@comment.UserName</strong>
+
+													<small class="text-muted ms-2">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
 												</div>
+												<button class="btn btn-sm btn-link text-primary" @onclick="() => ToggleReplyBox(comment.Id)">
+													Cevapla
+												</button>
 											</div>
-										}
+											<p class="mb-1" style="white-space: pre-wrap;">@comment.Content</p>
 
-										<!-- Alt yorumlar (replies) -->
-										@if (comment.CommentReplies?.Any() == true)
-										{
-											<div class="ms-5">
-												@foreach (var reply in comment.CommentReplies)
-												{
-													<div class="mb-1">
-														<div class="card-text p-2">
-															<div class="d-flex justify-content-between">
-																<div>
-																	<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle ms-2" width="24" height="24" style="object-fit: cover;" />
-
-																	<strong class="ms-2">@comment.UserName</strong>															<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
-																</div>
-															</div>
-															<p class="mb-0" style="white-space: pre-wrap;">@reply.Content</p>
-														</div>
+											<!-- Reply input -->
+											@if (_replyToCommentId == comment.Id)
+											{
+												<div class="input-group mb-2">
+													<input type="text" class="form-control form-control-sm" placeholder="Cevabınızı yazın..."
+													@bind="_replyText"
+													@onkeypress="@(e => e.Key == "Enter" ? AddReplyAsync(comment.Id) : Task.CompletedTask)" />
+													<div class="input-group-append">
+														<button class="btn btn-sm btn-outline-primary" @onclick="() => AddReplyAsync(comment.Id)">
+															Cevapla
+														</button>
 													</div>
-												}
-											</div>
+												</div>
+											}
+
+											<!-- Alt yorumlar (replies) -->
+											@if (comment.CommentReplies?.Any() == true)
+											{
+												<div class="ms-5">
+													@foreach (var reply in comment.CommentReplies)
+													{
+														<div class="mb-1">
+															<div class="card-text p-2">
+																<div class="d-flex justify-content-between">
+																	<div>
+																		<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle ms-2" width="24" height="24" style="object-fit: cover;" />
+
+																		<strong class="ms-2">@comment.UserName</strong>															<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
+																	</div>
+																</div>
+																<p class="mb-0" style="white-space: pre-wrap;">@reply.Content</p>
+															</div>
+														</div>
+													}
+												</div>
+											}
 										}
-									}
+									</div>
 								</div>
-							</div>
-						}
-						@if(_comments?.Count == null)
-						{
-							<div class="alert alert-info" role="alert">
-								@_commentErrorMessage
-							</div>
-
-							<EditForm Model="_commentModel" OnValidSubmit="AddCommentAsync">
-								<DataAnnotationsValidator />
-
-								<div class="mb-3">
-									<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
-									<InputTextArea id="yorum"
-									class="form-control"
-									placeholder="Yorum yazın..."
-									@bind-Value="_commentModel.Content"
-									rows="4" />
-									<ValidationMessage For="@(() => _commentModel.Content)" />
+							}
+							@if (_comments?.Count == null)
+							{
+								<div class="alert alert-info" role="alert">
+									@_commentErrorMessage
 								</div>
 
-								<div class="my-3">
-									<button type="submit" class="btn btn-primary col-12">Gönder</button>
-								</div>
-							</EditForm>
-						}
-						else if (_isCommentsHaveError)
-						{
-							<div class="alert alert-danger" role="alert">
-								@_commentErrorMessage
-							</div>
-						}
+								<EditForm Model="_commentModel" OnValidSubmit="AddCommentAsync">
+									<DataAnnotationsValidator />
 
-					</div>
-				}
-			</div>
+									<div class="mb-3">
+										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
+										<InputTextArea id="yorum"
+										class="form-control"
+										placeholder="Yorum yazın..."
+										@bind-Value="_commentModel.Content"
+										rows="4" />
+										<ValidationMessage For="@(() => _commentModel.Content)" />
+									</div>
+
+									<div class="my-3">
+										<button type="submit" class="btn btn-primary col-12">Gönder</button>
+									</div>
+								</EditForm>
+							}
+							else if (_isCommentsHaveError)
+							{
+								<div class="alert alert-danger" role="alert">
+									@_commentErrorMessage
+								</div>
+							}
+						</div>
+					}
+				</div>
+			}
 		}
 	</div>
 </div>
@@ -273,17 +246,24 @@
 	private bool _isAlreadyDisliked = false;
 	private bool _showComments = false;
 	private bool _isCommentsHaveError = false;
+	private bool _isPostHaveError = false;
 	private string _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
-
-
+	private string? _userGender;
+	private List<string> allowedRoles = new List<string>
+	{
+		nameof(UserRoleEnum.SuperAdmin),
+		nameof(UserRoleEnum.Admin),
+		nameof(UserRoleEnum.Moderator),
+		nameof(UserRoleEnum.SuperUser)
+	};
 
 	protected override async Task OnInitializedAsync()
 	{
 		await StartReactionHubConnectionAsync();
 		await StartTasksAsync();
-		IsUserPostOwner();
+		IsUserPostOwner(_isPostHaveError);
 		CheckUserLoggedIn();
 		UpdatePostReactionCounts();
 		UpdatePostReactionButtons();
@@ -307,7 +287,6 @@
 				var isUpdated = result.isUpdated;
 				await _reactionHubConnection.SendAsync("NotifyPostLikedOrDisliked", postId, reaction, isUpdated);
 				UpdateReactions(reaction, (bool)isUpdated);
-
 			}
 			else
 				_errorMessage = result.ErrorMessage;
@@ -376,30 +355,6 @@
 		_showComments = !_showComments;
 	}
 
-	private void GetComments(ApiResponses<List<CommentsDto>?> response)
-	{
-		try
-		{
-			if (response.IsSuccess)
-			{
-				_comments = response.Data;
-				_commentErrorMessage = null;
-			}
-			else
-			{
-				_comments = null;
-				_commentErrorMessage = response.ErrorMessage;
-
-			}
-			_isCommentsHaveError = false;
-
-		}
-		catch (Exception ex)
-		{
-			_isCommentsHaveError = true;
-			_commentErrorMessage = ex.Message;
-		}
-	}
 
 	private void UpdatePostReactionCounts()
 	{
@@ -450,33 +405,24 @@
 	{
 		var postTask = PostApi.GetPostByIdAsync(postId);
 		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
-		// postTask ve reactionTasklar için fonksiyon yaz try catch olsun alttaki ifleri kaldır
 		var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+
 		await Task.WhenAll(postTask, reactionsTask, commentsTask);
-		var postTaskResult = await postTask;
+
 		var reactionsTaskResult = await reactionsTask;
+		GetPost(postTask.Result);
 		GetComments(commentsTask.Result);
-
-
-		if (postTaskResult.IsSuccess)
-			_postDto = postTaskResult.Data;
-		else
-		{
-			_errorMessage = postTaskResult.ErrorMessage;
-			return;
-		}
-
-		if (reactionsTaskResult.IsSuccess)
-			_reactions = reactionsTaskResult.Data;
-		else
-		{
-			_errorMessage = reactionsTaskResult.ErrorMessage;
-			return;
-		}
+		GetReactions(reactionsTask.Result);
 	}
 
-	private void IsUserPostOwner()
+	private void IsUserPostOwner(bool IsPostError)
 	{
+		if (IsPostError)
+			return ;
+
+		if (_postDto == null)
+			return ;
+
 		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
 		{
 			_currentUserId = parsedId;
@@ -486,6 +432,116 @@
 			_isPostOwner = false;
 	}
 
+	private string GetUserGenderName(int genderId)
+	{
+		switch (genderId)
+		{
+			case (int)GenderEnum.Male:
+				return "Erkek";
+			case (int)GenderEnum.Female:
+				return "Kadın";
+			default:
+				return "";
+		}
+	}
+
+	private void GetPost(ApiResponses<PostDto> response)
+	{
+		try
+		{
+			if (response.IsSuccess)
+			{
+				_postDto = response.Data;
+				_userGender = GetUserGenderName(_postDto.UserGenderId);
+				_errorMessage = null;
+				_isPostHaveError = false;
+
+			}
+			else
+			{
+				_postDto = null;
+				_isPostHaveError = true;
+				_errorMessage = response.ErrorMessage;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
+		}
+	}
+	private void GetReactions(ApiResponses<List<ReactionDto>> response)
+	{
+		if(_isPostHaveError)
+			return;
+		try
+		{
+			if (response.IsSuccess)
+			{
+				_reactions = response.Data;
+				if (_errorMessage != null)
+					_errorMessage = null;
+				_isPostHaveError = false;
+			}
+			else
+			{
+				_reactions = null;
+				_errorMessage = response.ErrorMessage;
+				_isPostHaveError = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
+		}
+	}
+	private void GetComments(ApiResponses<List<CommentsDto>> response)
+	{
+		if (_isPostHaveError)
+			return;
+		try
+		{
+			if (response.IsSuccess)
+			{
+				_comments = response.Data;
+				_commentErrorMessage = null;
+			}
+			else
+			{
+				_comments = null;
+				_commentErrorMessage = response.ErrorMessage;
+
+			}
+			_isCommentsHaveError = false;
+
+		}
+		catch (Exception ex)
+		{
+			_isCommentsHaveError = true;
+			_commentErrorMessage = ex.Message;
+		}
+	}
+
+
+
+
+	private void SendMessage()
+	{
+		var userRole = AuthStateProvider.User?.roleId;
+
+		if (allowedRoles.Contains(userRole))
+		{
+			// Mesaj gönderme işlemi
+			// Mesaj gönderme API çağrısı yapılabilir
+			// Örnek: await MessageApi.SendMessageAsync(_postDto.UserId, messageContent);
+		}
+		else
+		{
+			// Kullanıcı yetkisi yoksa hata mesajı göster
+			// Örnek: ShowErrorMessage("Mesaj göndermek için yeterli yetkiniz yok.");
+		}
+	}
 
 	// Hangi yoruma cevap kutusu açık
 	private int? _replyToCommentId;
