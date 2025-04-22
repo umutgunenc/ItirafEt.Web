@@ -72,6 +72,7 @@ builder.Services.AddTransient<BanUserService>();
 builder.Services.AddTransient<PostService>();
 builder.Services.AddTransient<CommentService>();
 builder.Services.AddTransient<ReactionService>();
+builder.Services.AddTransient<PostViewService>();
 
 var app = builder.Build();
 
@@ -99,6 +100,7 @@ app.UseAuthorization();
 app.MapHub<CategoryHub>("/categoryhub");
 app.MapHub<ReactionHub>("/reactionhub");
 app.MapHub<CommentHub>("/commenthub");
+app.MapHub<PostViewHub>("/postviewhub");
 
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();
@@ -106,6 +108,7 @@ app.MapBanUserEndPoints();
 app.MapPostEndPoints();
 app.MapCommentEndpoints();
 app.MapReactionEndpoints();
+app.MapPostViewEndpoints();
 
 app.Run();
 

@@ -15,7 +15,6 @@ namespace ItirafEt.Shared.DTOs
         public DateTime? UpdatedDate { get; set; }
         public string UserName { get; set; }
         public Guid UserId { get; set; }
-        public int ViewCount { get; set; }
         public int UserAge { get; set; }
         public int UserGenderId { get; set; }
         public string? UserProfileImageUrl { get; set; }

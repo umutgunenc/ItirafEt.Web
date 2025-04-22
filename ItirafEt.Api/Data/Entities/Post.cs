@@ -10,6 +10,7 @@ namespace ItirafEt.Api.Data.Entities
             Comments = new HashSet<Comment>();
             PostReactions = new HashSet<PostReaction>();
             PostReports = new HashSet<PostReport>();
+            Readers = new HashSet<UserReadPost>();
         }
 
         [Key]
@@ -39,8 +40,6 @@ namespace ItirafEt.Api.Data.Entities
 
         [MaxLength(512)]
         public string DeviceInfo { get; set; }
-        public int ViewCount { get; set; } = 0;
-
 
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; } 
@@ -49,6 +48,7 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<PostReaction> PostReactions { get; set; }
         public virtual ICollection<PostReport> PostReports { get; set; }
+        public virtual ICollection<UserReadPost> Readers { get; set; }
 
     }
 }

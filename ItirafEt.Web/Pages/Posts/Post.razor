@@ -2,12 +2,15 @@
 @inject IPostApi PostApi
 @inject IReactionApi ReactionApi
 @inject ICommentApi CommentApi
+@inject IPostViewApi PostViewApi
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
+
 
 <div class="col-md-8 col mx-auto">
 	<div class="card shadow-lg rounded-4 border-1 mb-3 ">
 		<p>_errorMessage @_errorMessage</p>
+		<p>_postViewCount @_postViewCount</p>
 		@if (_isPostHaveError)
 		{
 			<div class="alert alert-danger m-3" role="alert">
@@ -31,7 +34,7 @@
 					<h6 class="card-subtitle mb-2 text-muted text-break">@_postDto.Title</h6>
 
 					<p class="card-text text-break"
-					style="text-align: justify;
+					   style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
@@ -42,7 +45,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
 									@_likeCount
 								</span>
@@ -50,7 +53,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikesAsync">
 									@_dislikeCount
 								</span>
@@ -60,7 +63,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="ReportAsync"></i>
+									   style="cursor:pointer" @onclick="ReportAsync"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -82,9 +85,9 @@
 						<!-- Foto & İsim -->
 						<div class="d-flex align-items-center gap-2">
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-							class="rounded-circle"
-							width="42" height="42"
-							style="object-fit: cover;" />
+								 class="rounded-circle"
+								 width="42" height="42"
+								 style="object-fit: cover;" />
 							<span class="fs-5 fw-semibold">@_postDto.UserName</span>
 							<small class="text-muted">@_postDto.UserAge Yaşında</small>
 							<small class="text-muted">@_userGender</small>
@@ -92,7 +95,7 @@
 								Mesaj At
 							</span>
 							<i class="bi bi-chat-right-heart text-danger-emphasis"
-							style="cursor:pointer" @onclick="SendMessage"></i>
+							   style="cursor:pointer" @onclick="SendMessage"></i>
 						</div>
 					</div>
 
@@ -112,10 +115,10 @@
 									<div class="mb-3">
 										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -148,8 +151,8 @@
 											{
 												<div class="input-group mb-2">
 													<input type="text" class="form-control form-control-sm" placeholder="Cevabınızı yazın..."
-													@bind="_replyText"
-													@onkeypress="@(e => e.Key == "Enter" ? AddReplyAsync(comment.Id) : Task.CompletedTask)" />
+														   @bind="_replyText"
+														   @onkeypress="@(e => e.Key == "Enter" ? AddReplyAsync(comment.Id) : Task.CompletedTask)" />
 													<div class="input-group-append">
 														<button class="btn btn-sm btn-outline-primary" @onclick="() => AddReplyAsync(comment.Id)">
 															Cevapla
@@ -195,10 +198,10 @@
 									<div class="mb-3">
 										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -232,6 +235,7 @@
 	private List<ReactionDto>? _reactions = new();
 	private HubConnection _reactionHubConnection;
 	private HubConnection _commentHubConnection;
+	private HubConnection _postViewHubConnection;
 
 	private Guid? _currentUserId;
 	private int? _likeCount;
@@ -239,6 +243,7 @@
 	private int? _newReactionId;
 	private int? _oldReactionId;
 	private int? _loggedInUserLastReaction;
+	private int? _postViewCount;
 	private bool _isBusy = true;
 	private bool _isPostOwner = false;
 	private bool _isUserLoggedIn = false;
@@ -262,12 +267,14 @@
 	protected override async Task OnInitializedAsync()
 	{
 		await StartReactionHubConnectionAsync();
+		await StartPostViewHubConnectionAsync();
 		await StartTasksAsync();
-		IsUserPostOwner(_isPostHaveError);
+		await GetPostViewCountAsync();
 		CheckUserLoggedIn();
+		IsUserPostOwner(_isPostHaveError);
 		UpdatePostReactionCounts();
 		UpdatePostReactionButtons();
-
+		await ReadPostAsync();
 		_isBusy = false;
 	}
 
@@ -311,7 +318,7 @@
 				var reaction = result.Data;
 				var isUpdated = result.isUpdated;
 				await _reactionHubConnection.SendAsync("NotifyPostLikedOrDisliked", postId, reaction, isUpdated);
-				UpdateReactions(reaction, (bool)isUpdated);
+				UpdateReactions(reaction, isUpdated);
 			}
 			else
 				_errorMessage = result.ErrorMessage;
@@ -341,6 +348,27 @@
 		await Task.Delay(1000);
 	}
 
+	private async Task ReadPostAsync()
+	{
+		if (!_isUserLoggedIn)
+			return;
+		try
+		{
+			var response = await PostViewApi.ReadPostAsync(postId, _currentUserId);
+			if (response.IsSuccess)
+			{
+				var (viewCount, id) = response.Data;
+				await _postViewHubConnection.SendAsync("NotifyPostRead", postId, viewCount);
+				// await _postViewHubConnection.SendAsync("NotifyPostRead", postId);
+			}
+		}
+		catch (Exception ex)
+		{
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
+		}
+	}
+
 	private void CheckUserLoggedIn()
 	{
 		_isUserLoggedIn = AuthStateProvider.IsLoggedIn;
@@ -348,6 +376,10 @@
 	private void NavigateToLogin()
 	{
 		NavigationManager.NavigateTo("/auth/login");
+	}
+	private void NavigateToPricing()
+	{
+		NavigationManager.NavigateTo("/pricing");
 	}
 
 	private void ShowComments()
@@ -369,9 +401,9 @@
 		_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 	}
 
-	private void UpdateReactions(ReactionDto reaction, bool isReactionUpdated)
+	private void UpdateReactions(ReactionDto? reaction, bool? isReactionUpdated)
 	{
-		if (isReactionUpdated)
+		if (isReactionUpdated == true)
 		{
 			var index = _reactions?.FindIndex(r => r.ReactingUserId == reaction.ReactingUserId) ?? -1;
 			if (index >= 0 && _reactions != null)
@@ -398,15 +430,38 @@
 		});
 
 		await _reactionHubConnection.StartAsync();
-		await _reactionHubConnection.SendAsync("JoinPostGroup", postId);
+		await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
+
 	}
+
+	private async Task StartPostViewHubConnectionAsync()
+	{
+		_postViewHubConnection = new HubConnectionBuilder()
+					.WithUrl("https://localhost:7292/postviewhub")
+					.WithAutomaticReconnect()
+					.Build();
+
+
+
+		_postViewHubConnection.On<int, int>("PostRead", (updatedPostId, viewCount) =>
+		{
+			if (updatedPostId == postId)
+			{
+				_postViewCount = viewCount;
+				StateHasChanged();
+			}
+		});
+
+		await _postViewHubConnection.StartAsync();
+		await _postViewHubConnection.SendAsync("JoinPostPostCountGroup", postId);
+	}
+
 
 	private async Task StartTasksAsync()
 	{
 		var postTask = PostApi.GetPostByIdAsync(postId);
 		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
 		var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-
 		await Task.WhenAll(postTask, reactionsTask, commentsTask);
 
 		var reactionsTaskResult = await reactionsTask;
@@ -415,13 +470,20 @@
 		GetReactions(reactionsTask.Result);
 	}
 
+	private async Task GetPostViewCountAsync()
+	{
+		var response = await PostViewApi.GetPostReadCountAsync(postId);
+		if (response.IsSuccess)
+			_postViewCount = response.Data;
+	}
+
 	private void IsUserPostOwner(bool IsPostError)
 	{
 		if (IsPostError)
-			return ;
+			return;
 
 		if (_postDto == null)
-			return ;
+			return;
 
 		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
 		{
@@ -472,7 +534,7 @@
 	}
 	private void GetReactions(ApiResponses<List<ReactionDto>> response)
 	{
-		if(_isPostHaveError)
+		if (_isPostHaveError)
 			return;
 		try
 		{
@@ -511,10 +573,8 @@
 			{
 				_comments = null;
 				_commentErrorMessage = response.ErrorMessage;
-
 			}
 			_isCommentsHaveError = false;
-
 		}
 		catch (Exception ex)
 		{
@@ -528,6 +588,12 @@
 
 	private void SendMessage()
 	{
+
+		if (!_isUserLoggedIn)
+		{
+			NavigateToLogin();
+			return;
+		}
 		var userRole = AuthStateProvider.User?.roleId;
 
 		if (allowedRoles.Contains(userRole))
@@ -538,8 +604,7 @@
 		}
 		else
 		{
-			// Kullanıcı yetkisi yoksa hata mesajı göster
-			// Örnek: ShowErrorMessage("Mesaj göndermek için yeterli yetkiniz yok.");
+			NavigateToPricing();
 		}
 	}
 

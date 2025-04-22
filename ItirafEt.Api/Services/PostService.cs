@@ -50,7 +50,6 @@ namespace ItirafEt.Api.Services
                 IsActive = true,
                 IpAddress = dto.IpAddress,
                 DeviceInfo = dto.DeviceInfo,
-                ViewCount = 0,
                 CategoryId = dto.CategoryId,
             };
             _context.Posts.Add(post);
@@ -89,7 +88,6 @@ namespace ItirafEt.Api.Services
                     UpdatedDate = p.UpdatedDate,
                     UserName = p.User.UserName,
                     UserId = p.UserId,
-                    ViewCount = p.ViewCount,
                     CategoryId = p.CategoryId,
                     UserAge = DateTime.Now.Year - p.User.BirthDate.Year,
                     UserGenderId = p.User.Gender.Id,
@@ -102,6 +100,44 @@ namespace ItirafEt.Api.Services
 
         }
 
+        //public async Task<ApiResponses<int?>> IncreaseViewCountAsync(int postId, string? ipAddress)
+        //{
+        //    if (string.IsNullOrEmpty(ipAddress))
+        //        return ApiResponses<int?>.Fail("IP adresi alınamadı.");
+
+        //    var now = DateTime.UtcNow;
+
+        //    var tracker = await _context.PostViewTrackers
+        //        .FirstOrDefaultAsync(x => x.PostId == postId && x.IPAddress == ipAddress);
+
+        //    var post = await _context.Posts.FindAsync(postId);
+        //    if (post == null)
+        //        return ApiResponses<null>.Fail("Post bulunamadı.");
+
+        //    if (tracker == null)
+        //    {
+        //        tracker = new PostViewTracker
+        //        {
+        //            PostId = postId,
+        //            IPAddress = ipAddress,
+        //            LastViewedAt = now
+        //        };
+        //        _context.PostViewTrackers.Add(tracker);
+        //        post.ViewCount++;
+        //    }
+        //    else if ((now - tracker.LastViewedAt).TotalMinutes > 60)
+        //    {
+        //        tracker.LastViewedAt = now;
+        //        post.ViewCount++;
+        //    }
+        //    else
+        //    {
+        //        return ApiResponses<bool>.Fail("Yakın zamanda görüntülendi.");
+        //    }
+
+        //    await _context.SaveChangesAsync();
+        //    return ApiResponses<bool>.Success();
+        //}
 
     }
 }

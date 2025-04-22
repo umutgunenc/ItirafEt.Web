@@ -14,5 +14,6 @@ namespace ItirafEt.Shared.DTOs
         public string? PostContentReview { get; set; }
         public int? PostViewCount { get; set; }
         public DateTime PostCreatedDate { get; set; }
+        public bool IsPostReadByUser { get; set; }
     }
 }

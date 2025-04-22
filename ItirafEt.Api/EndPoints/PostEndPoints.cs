@@ -18,8 +18,8 @@ namespace ItirafEt.Api.EndPoints
                 dto.DeviceInfo = userAgent;
 
                 return Results.Ok(await postService.CreatePostAsync(dto, userId));
-
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+            })
+            .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             app.MapGet("/api/getCreatedPost", async (Guid userId, PostService postService) =>
             {
@@ -30,6 +30,14 @@ namespace ItirafEt.Api.EndPoints
             {
                 return Results.Ok(await postService.GetPostByIdAsync(postId));
             });
+
+            //app.MapPost("/api/increaseViewCount", async (HttpContext httpContext,int postId,PostService postService) =>
+            //{
+            //    var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+            //    var response = await postService.IncreaseViewCountAsync(postId, ipAddress);
+
+            //    return Results.Ok(response);
+            //});
 
             return app;
         }

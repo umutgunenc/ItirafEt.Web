@@ -4,7 +4,7 @@ namespace ItirafEt.Api.Hubs
 {
     public class CommentHub : Hub
     {
-        public Task JoinPostGroup(int postId)
+        public Task JoinCommentGroup(int postId)
             => Groups.AddToGroupAsync(Context.ConnectionId, $"post-{postId}");
 
         public async Task NotifyCommentAdded(int postId, int commentId)

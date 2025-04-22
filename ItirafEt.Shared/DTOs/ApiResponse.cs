@@ -18,6 +18,7 @@ namespace ItirafEt.Shared.DTOs
         public static ApiResponses<T> Success(T data) => new(true, data, null, null);
         public static ApiResponses<T> Success(T data, bool? IsUpdated) => new(true, data, null, IsUpdated);
         public static ApiResponses<T> Fail(string errorMessage) => new(false, default, errorMessage, null);
+        public static ApiResponses<T> Fail(string errorMessage,T data) => new(false, data, errorMessage, null);
     }
 
 }

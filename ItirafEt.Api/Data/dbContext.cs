@@ -33,6 +33,7 @@ namespace ItirafEt.Api.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageReaction> MessageReactions { get; set; }
         public DbSet<MessageReport> MessageReports { get; set; }
+        public DbSet<UserReadPost> UserReadPosts { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -167,8 +168,29 @@ namespace ItirafEt.Api.Data
 
             modelBuilder.Entity<RoleType>().HasData(
                RoleType.List()
-                   .Select(rt => new {rt.Name })
+                   .Select(rt => new { rt.Name })
            );
+
+
+
+            modelBuilder.Entity<UserReadPost>(entity =>
+            {
+                entity.HasKey(e => new
+                {
+                    e.UserId,
+                    e.PostId
+                });
+
+                entity.HasOne(e => e.User)
+                      .WithMany(u => u.ReadPosts)
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Post)
+                          .WithMany(p => p.Readers)
+                          .HasForeignKey(e => e.PostId)
+                          .OnDelete(DeleteBehavior.Restrict);
+            });
 
             var adminUser = new User
             {
@@ -181,7 +203,7 @@ namespace ItirafEt.Api.Data
                 BirthDate = new DateTime(1989, 5, 29),
                 CreatedDate = new DateTime(2025, 4, 10),
                 IsDeleted = false,
-                IsBanned =false,
+                IsBanned = false,
                 IsPremium = true,
                 IsTermOfUse = true
             };

@@ -12,7 +12,7 @@ namespace ItirafEt.Api.Services
     {
         private readonly dbContext _context;
         private readonly IHubContext<CategoryHub> _hubContext;
-        public CategoryService(dbContext context, IHubContext<CategoryHub> hubContext)
+        public CategoryService(dbContext context, IHubContext<CategoryHub> hubContext, PostViewService postReadService)
         {
             _context = context;
             _hubContext = hubContext;
@@ -133,7 +133,7 @@ namespace ItirafEt.Api.Services
 
 
         }
-        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsAsync(int categoryId,int pageNo, int pageSize)
+        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByCreatedDateAsync(int categoryId,int pageNo, int pageSize)
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
@@ -148,8 +148,7 @@ namespace ItirafEt.Api.Services
                     PostTitle = p.Title,
                     PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
                     PostCreatedDate = p.CreatedDate,
-                    PostCreatorUserName = p.User.UserName,
-                    PostViewCount = p.ViewCount
+                    PostCreatorUserName = p.User.UserName
                 })
                 .ToListAsync();
 

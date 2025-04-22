@@ -25,7 +25,7 @@ namespace ItirafEt.Api.EndPoints
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin)));
 
             app.MapGet("/api/getCategoryPosts", async (CategoryService categoryServices, int categoryId,int pageNo,int pageSize) =>
-                Results.Ok(await categoryServices.GetCategoryPostsAsync(categoryId, pageNo, pageSize)));
+                Results.Ok(await categoryServices.GetCategoryPostsOrderByCreatedDateAsync(categoryId, pageNo, pageSize)));
 
             return app;
         }
