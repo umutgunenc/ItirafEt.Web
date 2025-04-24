@@ -16,7 +16,13 @@ namespace ItirafEt.Web.Apis
         [Get("/api/getallactivecategory")]
         Task<ApiResponses<List<CategoryDto>>> GetAllActiveCategoryAsycn();
 
-        [Get("/api/getCategoryPosts")]
-        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
+        [Get("/api/getCategoryPostsOrderByDate")]
+        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByDateAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
+
+        [Get("/api/getCategoryPostsOrderByViewCount")]
+        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByViewCountAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
+
+        [Get("/api/getCategoryPostsOrderByLikeCount")]
+        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByLikeCountAsync([Query] int categoryId, [Query] int pageNo, [Query] int pageSize);
     }
 }

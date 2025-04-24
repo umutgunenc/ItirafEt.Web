@@ -2,6 +2,7 @@
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -137,7 +138,6 @@ namespace ItirafEt.Api.Services
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
-                .Include(p=>p.Readers)
                 .AsNoTracking()
                 .Where(p => p.CategoryId == categoryId && p.IsActive)
                 .OrderByDescending(p => p.CreatedDate)
@@ -151,6 +151,69 @@ namespace ItirafEt.Api.Services
                     PostCreatedDate = p.CreatedDate,
                     PostCreatorUserName = p.User.UserName,
                     PostViewCount = p.Readers.Count,
+                    PostLikeCount = p.PostReactions
+                        .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                        .Count()
+                })
+                .ToListAsync();
+
+            if (posts == null || posts.Count == 0)
+                return ApiResponses<List<PostInfoDto>>.Fail("Kategoriye ait gönderi bulunamadı.");
+
+            return ApiResponses<List<PostInfoDto>>.Success(posts);
+        }
+        
+        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByViewCountAsync(int categoryId,int pageNo, int pageSize)
+        {
+            var posts = await _context.Posts
+                .Include(p => p.User)
+                .AsNoTracking()
+                .Where(p => p.CategoryId == categoryId && p.IsActive)
+                .OrderByDescending(p => p.Readers.Count)
+                .Skip((pageNo - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new PostInfoDto
+                {
+                    PostId = p.Id,
+                    PostTitle = p.Title,
+                    PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
+                    PostCreatedDate = p.CreatedDate,
+                    PostCreatorUserName = p.User.UserName,
+                    PostViewCount = p.Readers.Count,
+                    PostLikeCount = p.PostReactions
+                        .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                        .Count()
+                })
+                .ToListAsync();
+
+            if (posts == null || posts.Count == 0)
+                return ApiResponses<List<PostInfoDto>>.Fail("Kategoriye ait gönderi bulunamadı.");
+
+            return ApiResponses<List<PostInfoDto>>.Success(posts);
+        }
+
+        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByLikeCountAsync(int categoryId, int pageNo, int pageSize)
+        {
+            var posts = await _context.Posts
+                .Include(p => p.User)
+                .AsNoTracking()
+                .Where(p => p.CategoryId == categoryId && p.IsActive)
+                .OrderByDescending(p => p.PostReactions
+                        .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                        .Count())
+                .Skip((pageNo - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new PostInfoDto
+                {
+                    PostId = p.Id,
+                    PostTitle = p.Title,
+                    PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
+                    PostCreatedDate = p.CreatedDate,
+                    PostCreatorUserName = p.User.UserName,
+                    PostViewCount = p.Readers.Count,
+                    PostLikeCount = p.PostReactions
+                        .Where(pr=>pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                        .Count()
                 })
                 .ToListAsync();
 

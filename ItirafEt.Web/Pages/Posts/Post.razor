@@ -150,11 +150,13 @@
 											@if (_replyToCommentId == comment.Id)
 											{
 												<div class="input-group mb-2">
-													<input type="text" class="form-control form-control-sm" placeholder="Cevabınızı yazın..."
-														   @bind="_replyText"
-														   @onkeypress="@(e => e.Key == "Enter" ? AddReplyAsync(comment.Id) : Task.CompletedTask)" />
+													<input type="text"
+														   class="form-control form-control-sm"
+														   placeholder="Cevabınızı yazın..."
+														   @bind="_replyText" />
 													<div class="input-group-append">
-														<button class="btn btn-sm btn-outline-primary" @onclick="() => AddReplyAsync(comment.Id)">
+														<button class="btn btn-sm btn-outline-primary"
+																@onclick="() => AddReplyAsync(comment.Id)">
 															Cevapla
 														</button>
 													</div>
@@ -347,7 +349,8 @@
 	{
 		await Task.Delay(1000);
 	}
-	private async Task ShowViewsAsync(){
+	private async Task ShowViewsAsync()
+	{
 		await Task.Delay(1000);
 
 	}
@@ -448,7 +451,7 @@
 
 
 
-		_postViewHubConnection.On<int, int,int>("PostRead", (categoryId, updatedPostId, viewCount) =>
+		_postViewHubConnection.On<int, int, int>("PostRead", (categoryId, updatedPostId, viewCount) =>
 		{
 			if (updatedPostId == postId)
 			{
@@ -686,6 +689,7 @@
 		// _replyToCommentId = null;
 		// _replyText = string.Empty;
 	}
+
 }
 
 

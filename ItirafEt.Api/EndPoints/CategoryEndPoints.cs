@@ -24,8 +24,14 @@ namespace ItirafEt.Api.EndPoints
                 Results.Ok(await categoryServices.EditCategoryAsync(dto)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin)));
 
-            app.MapGet("/api/getCategoryPosts", async (CategoryService categoryServices, int categoryId,int pageNo,int pageSize) =>
-                Results.Ok(await categoryServices.GetCategoryPostsOrderByCreatedDateAsync(categoryId, pageNo, pageSize)));
+            app.MapGet("/api/getCategoryPostsOrderByDate", async (CategoryService categoryServices, int categoryId,int pageNo,int pageSize) =>
+                Results.Ok(await categoryServices.GetCategoryPostsOrderByCreatedDateAsync(categoryId, pageNo, pageSize))); 
+            
+            app.MapGet("/api/getCategoryPostsOrderByViewCount", async (CategoryService categoryServices, int categoryId,int pageNo,int pageSize) =>
+                Results.Ok(await categoryServices.GetCategoryPostsOrderByViewCountAsync(categoryId, pageNo, pageSize)));
+
+            app.MapGet("/api/getCategoryPostsOrderByLikeCount", async (CategoryService categoryServices, int categoryId, int pageNo, int pageSize) =>
+                Results.Ok(await categoryServices.GetCategoryPostsOrderByLikeCountAsync(categoryId, pageNo, pageSize)));
 
             return app;
         }

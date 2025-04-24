@@ -5,7 +5,6 @@ namespace ItirafEt.Api.Hubs
 {
     public class ReactionHub : Hub
     {
-
         public Task JoinPostReactionGroup(int postId) => Groups.AddToGroupAsync(Context.ConnectionId, $"post-{postId}");
 
         public async Task NotifyPostLikedOrDisliked(int postId, ReactionDto reaction, bool isReactionUpdated)
