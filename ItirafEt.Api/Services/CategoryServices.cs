@@ -137,6 +137,7 @@ namespace ItirafEt.Api.Services
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
+                .Include(p=>p.Readers)
                 .AsNoTracking()
                 .Where(p => p.CategoryId == categoryId && p.IsActive)
                 .OrderByDescending(p => p.CreatedDate)
@@ -148,7 +149,8 @@ namespace ItirafEt.Api.Services
                     PostTitle = p.Title,
                     PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
                     PostCreatedDate = p.CreatedDate,
-                    PostCreatorUserName = p.User.UserName
+                    PostCreatorUserName = p.User.UserName,
+                    PostViewCount = p.Readers.Count,
                 })
                 .ToListAsync();
 

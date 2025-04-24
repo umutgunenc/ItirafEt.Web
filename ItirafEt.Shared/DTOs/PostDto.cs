@@ -19,7 +19,6 @@ namespace ItirafEt.Shared.DTOs
         public int UserGenderId { get; set; }
         public string? UserProfileImageUrl { get; set; }
 
-
         [Required(ErrorMessage = "Lütfen Başlık Giriniz.")]
         [MaxLength(256, ErrorMessage = "Başlık Maksimum 256 Karakter Uzunluğunda Olabilir.")]
         [MinLength(10, ErrorMessage = "Başlık en az 10 karakter olmalıdır.")]

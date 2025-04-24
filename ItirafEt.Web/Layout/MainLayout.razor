@@ -107,6 +107,6 @@
 	private async Task LogOutAsync()
 	{
 		await AuthStateProvider.SetLogoutAsync();
-		NavigationManager.NavigateTo("/", replace: true);
+		NavigationManager.NavigateTo("/home", replace: true);
 	}
 }

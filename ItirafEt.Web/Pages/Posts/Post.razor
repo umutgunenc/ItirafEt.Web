@@ -9,8 +9,6 @@
 
 <div class="col-md-8 col mx-auto">
 	<div class="card shadow-lg rounded-4 border-1 mb-3 ">
-		<p>_errorMessage @_errorMessage</p>
-		<p>_postViewCount @_postViewCount</p>
 		@if (_isPostHaveError)
 		{
 			<div class="alert alert-danger m-3" role="alert">
@@ -31,7 +29,6 @@
 			{
 				<div class="card-body">
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
-					<h6 class="card-subtitle mb-2 text-muted text-break">@_postDto.Title</h6>
 
 					<p class="card-text text-break"
 					   style="text-align: justify;
@@ -75,6 +72,9 @@
 							{
 								@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
 							}
+							<span class="text-muted small" style="cursor:pointer" @onclick="ShowViewsAsync">
+								Görüntülenme : @_postViewCount
+							</span>
 						</div>
 					</div>
 
@@ -347,6 +347,11 @@
 	{
 		await Task.Delay(1000);
 	}
+	private async Task ShowViewsAsync(){
+		await Task.Delay(1000);
+
+	}
+
 
 	private async Task ReadPostAsync()
 	{
@@ -443,7 +448,7 @@
 
 
 
-		_postViewHubConnection.On<int, int>("PostRead", (updatedPostId, viewCount) =>
+		_postViewHubConnection.On<int, int,int>("PostRead", (categoryId, updatedPostId, viewCount) =>
 		{
 			if (updatedPostId == postId)
 			{
@@ -454,6 +459,7 @@
 
 		await _postViewHubConnection.StartAsync();
 		await _postViewHubConnection.SendAsync("JoinPostPostCountGroup", postId);
+		await _postViewHubConnection.SendAsync("JoinCategoryPostCountGroup", _postDto.CategoryId);
 	}
 
 

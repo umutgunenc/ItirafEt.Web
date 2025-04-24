@@ -64,11 +64,11 @@ namespace ItirafEt.Api.Services
 
             await _postViewHub.Clients
                 .Group($"post-{postId}")
-                .SendAsync("PostRead", postId, postViewCount);
+                .SendAsync("PostRead", postCategoryId, postId, postViewCount);
 
             await _postViewHub.Clients
                 .Group($"category-{postCategoryId}")
-                .SendAsync("PostRead", postId, postViewCount);
+                .SendAsync("PostRead", postCategoryId, postId, postViewCount);
 
             return ApiResponses<(int?, int?)>.Success((postViewCount, postId));
         }

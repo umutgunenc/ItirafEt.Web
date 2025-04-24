@@ -9,22 +9,14 @@ namespace ItirafEt.Api.Hubs
         public Task JoinPostPostCountGroup(int postId) => Groups.AddToGroupAsync(Context.ConnectionId, $"post-{postId}");
         public Task JoinCategoryPostCountGroup(int categoryId) => Groups.AddToGroupAsync(Context.ConnectionId, $"category-{categoryId}");
 
-        public async Task NotifyPostRead(int postId, int postViewCount)
+        public async Task NotifyPostRead(int categoryId, int postId, int postViewCount)
         {
             await Clients.Group($"post-{postId}")
-                .SendAsync("PostRead", postId, postViewCount);
+                .SendAsync("PostRead", postId, postViewCount, categoryId);
 
-            //var categoryId = await GetCategoryIdFromPostId(postId);
-
-            //await Clients.Group($"category-{categoryId}")
-            //    .SendAsync("PostRead", postId, postViewCount);
+            await Clients.Group($"category-{categoryId}")
+                .SendAsync("PostRead", postId, postViewCount, categoryId);
         }
 
-        private Task<int> GetCategoryIdFromPostId(int postId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
-
-       
