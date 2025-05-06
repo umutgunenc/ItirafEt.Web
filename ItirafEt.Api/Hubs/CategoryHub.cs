@@ -10,6 +10,5 @@ namespace ItirafEt.Api.Hubs
             await Clients.All.SendAsync("ActiveCategoryInformationsChanged", Category);
         }
 
-        
     }
 }

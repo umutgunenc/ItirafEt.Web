@@ -1,6 +1,240 @@
-﻿@inject ICategoryApi CategoryApi
+﻿@inherits LayoutComponentBase
+@inject AuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject ICategoryApi CategoryApi
 @inject NavigationManager Navigation
 @inject AuthStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+
+@* <nav class="navbar navbar-expand-lg navbar-dark bg-info bg-gradient fixed-top py-lg-0">
+	<div class="container-fluid">
+		<a class="navbar-brand text-black" href="/home">ItirafEt</a>
+
+		
+		<div class="navbar-nav ms-3 d-none d-lg-flex gap-3 flex-row">
+
+			<div class="px-4 d-flex flex-wrap justify-content-end align-items-center">
+
+				<div class="nav-item dropdown px-3 py-0">
+					<NavLink class="nav-link dropdown-toggle px-3" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+						<span class="text-black">
+							<i class="bi bi-folder2-open"></i>Kategoriler
+						</span>
+					</NavLink>
+					<ul class="dropdown-menu bg-info-subtle bg-gradient">
+						@foreach (var category in _categories)
+						{
+							<li>
+								<NavLink class="dropdown-item" href=@($"/categories/{category.Id}")>
+									<div class="d-flex align-items-center gap-2 text-black">
+										<span class="@category.CategoryIconUrl d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
+										<span class="fs-6">@category.CategoryName (@category.PostCount)</span>
+									</div>
+								</NavLink>
+							</li>
+						}
+					</ul>
+				</div>
+
+				<AuthorizeView Context="LoggedInContext">
+					<Authorized>
+
+
+						<AuthorizeView Context="AdminPanel">
+							<Authorized>
+								<AuthorizeView Roles="@allowedRoles">
+
+									<div class="nav-link px-3">
+										<NavLink class="nav-link" href="/admin/adminastorPanel">
+ 											<span class="bi bi-speedometer d-inline-flex align-items-center text-white" style="font-size: 1.2rem"></span>
+											<span class="fs-6 text-black">Yönetim Paneli</span>
+										</NavLink>
+									</div>
+
+								</AuthorizeView>
+							</Authorized>
+						</AuthorizeView>
+
+
+						<div class="nav-link px-3">
+							<NavLink class="nav-link" href="">
+								<span class="text-black" aria-hidden="true">
+									<i class="bi bi-envelope"></i> Mesajlar
+								</span>
+							</NavLink>
+						</div>
+						<div class="nav-link px-3">
+							<NavLink class="nav-link" href="">
+								<span class="text-black" aria-hidden="true">
+									<i class="bi bi-person-check"></i> @AuthStateProvider.User?.userName.ToUpper()
+								</span>
+							</NavLink>
+						</div>
+						<div class="nav-link px-3" style="cursor:pointer">
+							<NavLink class="nav-link" @onclick=LogOutAsync>
+								<span class="text-black" aria-hidden="true">
+									<i class="bi bi-x-circle"></i> Çıkış Yap
+								</span>
+							</NavLink>
+						</div>
+
+					</Authorized>
+					<NotAuthorized>
+
+
+						<div class="nav-link px-3">
+							<NavLink class="nav-link" href="/auth/login">
+								<span class="text-black" aria-hidden="true">
+									<i class="bi bi-person-circle"></i> Giriş Yap
+								</span>
+							</NavLink>
+						</div>
+					</NotAuthorized>
+				</AuthorizeView>
+			</div>
+		</div>
+
+		<button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+				aria-controls="offcanvasNavbar">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="offcanvas offcanvas-start offcanvas-full text-bg-dark d-lg-none" tabindex="-1" id="offcanvasNavbar"
+			 aria-labelledby="offcanvasNavbarLabel">
+			<div class="offcanvas-header">
+				<h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menü</h5>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="offcanvas-body">
+				<ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+					<li class="nav-item">
+						<NavLink class="nav-link" href="/">Ana Sayfa</NavLink>
+					</li>
+					<li class="nav-item">
+						<NavLink class="nav-link" href="/about">Hakkında</NavLink>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</nav> 
+
+*@
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-info bg-gradient fixed-top py-lg-0">
+	<div class="container-fluid">
+		<a class="navbar-brand text-black" href="/home">ItirafEt</a>
+
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+				aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarMain">
+			<ul class="navbar-nav ms-auto d-flex align-items-lg-center gap-2 me-4">
+				<li class="nav-link dropdown">
+					<a class="nav-link dropdown-toggle text-black" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						<i class="bi bi-folder2-open"></i> Kategoriler
+					</a>
+					<ul class="dropdown-menu bg-info-subtle bg-gradient">
+						@foreach (var category in _categories)
+						{
+							<li>
+								<NavLink class="dropdown-item" href=@($"/categories/{category.Id}")>
+									<div class="nav-link d-flex align-items-center gap-2 text-black">
+										<span class="@category.CategoryIconUrl d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
+										<span class="fs-6">@category.CategoryName (@category.PostCount)</span>
+									</div>
+								</NavLink>
+							</li>
+						}
+					</ul>
+				</li>
+
+				<AuthorizeView Context="LoggedInContext">
+					<Authorized>
+						<AuthorizeView Roles="@allowedRoles">
+							<li class="nav-link">
+								<NavLink class="nav-link text-black" href="/admin/adminastorPanel">
+									<i class="bi bi-speedometer"></i> Yönetim Paneli
+								</NavLink>
+							</li>
+						</AuthorizeView>
+
+						<li class="nav-link dropdown">
+							<a class="nav-link dropdown-toggle text-black" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								<i class="bi bi-person-check"></i> @AuthStateProvider.User?.userName.ToUpper()
+							</a>
+							<ul class="dropdown-menu bg-info-subtle bg-gradient">
+								<li class="dropdown-item">
+									<NavLink class="nav-link text-black" href="posts/createPosts">
+										<i class="bi bi-pen"></i> İtiraf Et
+									</NavLink>
+								</li>
+								<li class="dropdown-item">
+									<NavLink class="nav-link text-black" href="">
+										<i class="bi bi-envelope"></i> Mesajlar
+									</NavLink>
+								</li>
+								<li class="dropdown-item">
+									<NavLink class="nav-link text-black" href="">
+										<i class="bi bi-gear"></i> Ayarlar
+									</NavLink>
+								</li>
+								<li class="dropdown-item">
+									<NavLink class="nav-link text-black" @onclick="LogOutAsync" style="cursor: pointer;">
+										<i class="bi bi-x-circle"></i> Çıkış Yap
+									</NavLink>
+								</li>
+									@* <li>
+										<NavLink class="dropdown-item" href=@($"/categories/{category.Id}")>
+											<div class="d-flex align-items-center gap-2 text-black">
+												<span class="@category.CategoryIconUrl d-inline-flex align-items-center" style="font-size: 1.4rem"></span>
+												<span class="fs-6">@category.CategoryName (@category.PostCount)</span>
+											</div>
+										</NavLink>
+									</li> *@
+								
+							</ul>
+						</li>
+@* 						<li class="nav-link">
+							<NavLink class="nav-link text-black" href="">
+								<i class="bi bi-envelope"></i> Mesajlar
+							</NavLink>
+						</li>
+						<li class="nav-link">
+							<NavLink class="nav-link text-black" href="">
+								<i class="bi bi-person-check"></i> @AuthStateProvider.User?.userName.ToUpper()
+							</NavLink>
+						</li>
+						<li class="nav-link">
+							<NavLink class="nav-link text-black" @onclick="LogOutAsync" style="cursor: pointer;">
+								<i class="bi bi-x-circle"></i> Çıkış Yap
+							</NavLink>
+						</li> *@
+					</Authorized>
+					<NotAuthorized>
+						<li class="nav-link">
+							<NavLink class="nav-link text-black" href="/auth/login">
+								<i class="bi bi-person-circle"></i> Giriş Yap
+							</NavLink>
+						</li>
+					</NotAuthorized>
+				</AuthorizeView>
+			</ul>
+		</div>
+	</div>
+</nav>
+
+
+
+
+
+
+@* @inject ICategoryApi CategoryApi
+@inject NavigationManager Navigation
+@inject AuthStateProvider AuthStateProvider
+
 
 
 <div class="top-row ps-3 navbar navbar-dark navbar-expand-lg">
@@ -146,4 +380,125 @@
 	}
 
 
+}
+ *@
+
+
+@code {
+
+
+	private bool collapseNavMenu = true;
+	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+	private List<CategoryDto>? _categories = new List<CategoryDto>();
+	private HubConnection _hubConnection { get; set; }
+	private string? _errorMessage = null;
+
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await JSRuntime.InvokeVoidAsync("setupNavbarScroll");
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		while (AuthStateProvider.IsInitializing)
+			await Task.Delay(500);
+		await StartHubAsync();
+		await GelAllActiveCategoryAsync();
+	}
+
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
+
+	private async Task LogOutAsync()
+	{
+		await AuthStateProvider.SetLogoutAsync();
+		NavigationManager.NavigateTo("/home", replace: true);
+	}
+
+	private string allowedRoles = string.Join(",",
+		nameof(UserRoleEnum.SuperAdmin),
+		nameof(UserRoleEnum.Admin),
+		nameof(UserRoleEnum.Moderator));
+
+	private async Task GelAllActiveCategoryAsync()
+	{
+		try
+		{
+			var response = await CategoryApi.GetAllActiveCategoryAsycn();
+			if (response.IsSuccess)
+			{
+				_categories = response.Data?
+					.OrderBy(c => c.CategoryOrder)
+					.ToList();
+			}
+			else
+				_categories = null;
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+		}
+	}
+
+	private async Task StartHubAsync()
+	{
+
+		_hubConnection = new HubConnectionBuilder()
+			.WithUrl("https://localhost:7292/categoryhub")
+			.WithAutomaticReconnect()
+			.Build();
+
+		_hubConnection.On<CategoryDto>("ActiveCategoryInformationsChanged", async (category) =>
+		{
+			UpdateCategories(category);
+			StateHasChanged();
+		});
+
+		await _hubConnection.StartAsync();
+
+	}
+
+	private void UpdateCategories(CategoryDto category)
+	{
+		var existingCategory = _categories.FirstOrDefault(c => c.Id == category.Id);
+
+		if (existingCategory != null)
+		{
+			if (!category.isActive)
+				_categories.Remove(existingCategory);
+			else
+			{
+				existingCategory.CategoryName = category.CategoryName;
+				existingCategory.CategoryIconUrl = category.CategoryIconUrl;
+				existingCategory.CategoryOrder = category.CategoryOrder;
+				existingCategory.PostCount = category.PostCount;
+			}
+		}
+		else
+		{
+			if (category.isActive)
+				_categories.Add(category);
+		}
+
+		_categories = _categories
+			.OrderBy(c => c.CategoryOrder)
+			.ToList();
+	}
+
+
+	private async Task ToggleBodyScroll(bool isMenuOpen)
+	{
+		await JSRuntime.InvokeVoidAsync("toggleBodyScroll", isMenuOpen);
+	}
+
+	private async void HandleMenuToggle(bool isOpen)
+	{
+		await ToggleBodyScroll(isOpen);
+	}
 }

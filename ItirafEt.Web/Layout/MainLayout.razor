@@ -3,16 +3,16 @@
 @inject NavigationManager NavigationManager
 
 
-<div class="page">
-	<div class="sidebar">
+<div class="page bg-secondary-subtle">
+@* 	<div class="sidebar">
 		<NavMenu />
-	</div>
-
-	<main>
-		<div class="top-row px-4 bg-primary-subtle d-flex flex-wrap justify-content-end align-items-center">
+	</div> *@
+	<NavMenu />
+	<main class="container-fluid">
+		@* <div class="top-row px-4 bg-primary-subtle d-flex flex-wrap justify-content-end align-items-center">
 			<AuthorizeView Context="LoggedInContext">
 				<Authorized>
-					
+
 					<div class="nav-item px-3">
 						<NavLink class="nav-link" href="">
 							<span class="text-black" aria-hidden="true"><i class="bi bi-envelope"></i> Mesajlar</span>
@@ -40,48 +40,10 @@
 					</div>
 				</NotAuthorized>
 			</AuthorizeView>
-		</div>
-		@* <div class="top-row px-4 bg-primary-subtle d-flex flex-wrap justify-content-end align-items-center">
-		<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
-			<div class="container-fluid">
-				<a class="navbar-brand" href="#">Offcanvas navbar</a>
-				<button class="navbar-toggler p-0 border-0" type="button" id="navbarSideCollapse" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-
-				<div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
-					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-						<li class="nav-item">
-							<a class="nav-link active" aria-current="page" href="#">Dashboard</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Notifications</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Profile</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Switch account</a>
-						</li>
-						<li class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Settings</a>
-							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="#">Action</a></li>
-								<li><a class="dropdown-item" href="#">Another action</a></li>
-								<li><a class="dropdown-item" href="#">Something else here</a></li>
-							</ul>
-						</li>
-					</ul>
-					<form class="d-flex" role="search">
-						<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-						<button class="btn btn-outline-success" type="submit">Search</button>
-					</form>
-				</div>
-			</div>
-		</nav>
 		</div> *@
+		
 
-		<article class="content px-4">
+		<article class="content position-relative flex-grow-1" style="min-height: calc(100vh - 56px);">
 			@if (AuthStateProvider.IsInitializing)
 			{
 				<p>Initializing State ... </p>
@@ -97,16 +59,16 @@
 
 
 @code {
-	
+
 	protected override async Task OnInitializedAsync()
 	{
 		while (AuthStateProvider.IsInitializing)
 			await Task.Delay(500);
 	}
 
-	private async Task LogOutAsync()
-	{
-		await AuthStateProvider.SetLogoutAsync();
-		NavigationManager.NavigateTo("/home", replace: true);
-	}
+	// private async Task LogOutAsync()
+	// {
+	// 	await AuthStateProvider.SetLogoutAsync();
+	// 	NavigationManager.NavigateTo("/home", replace: true);
+	// }
 }

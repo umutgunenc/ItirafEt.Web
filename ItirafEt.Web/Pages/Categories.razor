@@ -18,7 +18,7 @@
 	}
 	else
 	{
-		<div class="row g-2 my-3">
+@* 		<div class="row g-2 my-3">
 			<div class="col-12 col-lg">
 				<input type="radio" class="btn-check" name="orderOptions" id="orderByDate" autocomplete="off"
 				@onchange="@(() => SetOrderAsync(true,false,false))" checked="@_isDateOrdered">
@@ -34,6 +34,47 @@
 				@onchange="@(() => SetOrderAsync(false,false,true))" checked="@_isLikeOrdered">
 				<label class="btn btn-outline-success w-100 px-0" for="orderByLike">En Çok Beğenilenler</label>
 			</div>
+		</div> *@
+
+		<div class="btn-group btn-group-sm w-100 my-3" role="group" aria-label="Sıralama Seçenekleri">
+			<input type="radio"
+				   class="btn-check"
+				   name="orderOptions"
+				   id="orderByDate"
+				   autocomplete="off"
+				   @onchange="() => SetOrderAsync(true, false, false)"
+				   checked="@_isDateOrdered" />
+			<label class="btn btn-outline-primary rounded-start"
+				   for="orderByDate">
+				<i class="bi bi-clock-fill me-1"></i>
+				En Yeniler
+			</label>
+
+			<input type="radio"
+				   class="btn-check"
+				   name="orderOptions"
+				   id="orderByView"
+				   autocomplete="off"
+				   @onchange="() => SetOrderAsync(false, true, false)"
+				   checked="@_isCountOrdered" />
+			<label class="btn btn-outline-primary"
+				   for="orderByView">
+				<i class="bi bi-eye-fill me-1"></i>
+				En Çok Okunanlar
+			</label>
+
+			<input type="radio"
+				   class="btn-check"
+				   name="orderOptions"
+				   id="orderByLike"
+				   autocomplete="off"
+				   @onchange="() => SetOrderAsync(false, false, true)"
+				   checked="@_isLikeOrdered" />
+			<label class="btn btn-outline-primary rounded-end"
+				   for="orderByLike">
+				<i class="bi bi-heart-fill me-1"></i>
+				En Çok Beğenilenler
+			</label>
 		</div>
 
 		if (State.Items != null)
@@ -194,85 +235,47 @@
 		return Task.CompletedTask;
 	}
 
+	private Task<ApiResponses<List<PostInfoDto>>> GetPostsPageAsync()
+	{
+		if (_isDateOrdered)
+			return CategoryApi.GetCategoryPostsOrderByDateAsync(CategoryId, State.CurrentPage, _pageSize);
+		else if (_isCountOrdered)
+			return CategoryApi.GetCategoryPostsOrderByViewCountAsync(CategoryId, State.CurrentPage, _pageSize);
+		else
+			return CategoryApi.GetCategoryPostsOrderByLikeCountAsync(CategoryId, State.CurrentPage, _pageSize);
+	}
+
 	private async Task LoadMorePostsAsync()
 	{
 		if (_isLoading || !State.HasMore) return;
-
 		_isLoading = true;
 		_errorMessage = null;
 
-		if (_isDateOrdered)
+		try
 		{
-			try
+			var response = await GetPostsPageAsync();
+			if (response?.IsSuccess == true && response.Data?.Any() == true)
 			{
-				var response = await CategoryApi.GetCategoryPostsOrderByDateAsync(CategoryId, State.CurrentPage, _pageSize);
-
-				if (response is not null && response.IsSuccess && response.Data?.Any() == true)
-				{
-					State.Items.AddRange(response.Data);
-					State.CurrentPage++;
-				}
-				else
-				{
-					State.HasMore = false;
-					_errorMessage = response?.ErrorMessage;
-				}
+				State.Items.AddRange(response.Data);
+				State.CurrentPage++;
+				await SetItemsToCacheAsync();
 			}
-			catch (Exception ex)
+			else
 			{
-				throw;
+				State.HasMore = false;
+				_errorMessage = response?.ErrorMessage;
 			}
 		}
-		else if (_isCountOrdered)
+		catch (Exception ex)
 		{
-			try
-			{
-				var response = await CategoryApi.GetCategoryPostsOrderByViewCountAsync(CategoryId, State.CurrentPage, _pageSize);
-
-				if (response is not null && response.IsSuccess && response.Data?.Any() == true)
-				{
-					State.Items.AddRange(response.Data);
-					State.CurrentPage++;
-				}
-				else
-				{
-					State.HasMore = false;
-					_errorMessage = response?.ErrorMessage;
-				}
-			}
-			catch (Exception ex)
-			{
-				throw;
-			}
-		}
-		else
-		{
-			try
-			{
-				var response = await CategoryApi.GetCategoryPostsOrderByLikeCountAsync(CategoryId, State.CurrentPage, _pageSize);
-
-				if (response is not null && response.IsSuccess && response.Data?.Any() == true)
-				{
-					State.Items.AddRange(response.Data);
-					State.CurrentPage++;
-				}
-				else
-				{
-					State.HasMore = false;
-					_errorMessage = response?.ErrorMessage;
-				}
-
-			}
-			catch (Exception ex)
-			{
-				throw;
-			}
+			_errorMessage = ex.Message;
+			State.HasMore = false;
 		}
 
 		_isLoading = false;
-
 		StateHasChanged();
 	}
+
 	private async Task NavigateToPost(int postId)
 	{
 		await SetItemsToCacheAsync();

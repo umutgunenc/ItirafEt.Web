@@ -1,7 +1,29 @@
-﻿(() => {
-    'use strict'
+﻿// Navbar toggle event listener'ları
+function setupNavbarScroll() {
+    const navbar = document.getElementById('navbarMain');
 
-    document.querySelector('#navbarSideCollapse').addEventListener('click', () => {
-        document.querySelector('.offcanvas-collapse').classList.toggle('open')
-    })
-})()
+    navbar.addEventListener('show.bs.collapse', function () {
+        toggleBodyScroll(true);
+    });
+
+    navbar.addEventListener('hide.bs.collapse', function () {
+        toggleBodyScroll(false);
+    });
+}
+
+// Scroll kontrol fonksiyonu
+function toggleBodyScroll(isMenuOpen) {
+    document.body.classList.toggle('navbar-open', isMenuOpen);
+}
+
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+    setupNavbarScroll();
+});
+
+
+
+
+
+
+

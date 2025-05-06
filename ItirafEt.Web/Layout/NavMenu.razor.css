@@ -81,6 +81,8 @@
         overflow-y: auto;
 
     }
+
+
 }
 
 /* Mevcut stillere EKLENMESÝ GEREKENLER */
@@ -101,6 +103,78 @@
     white-space: nowrap; /* Metin kaymasýný engelle */
 }
 
-.navbar-collapse {
-    flex-grow: 0 !important; /* Otomatik geniþlemeyi engelle */
+/*.navbar-collapse {
+    flex-grow: 0 !important;*/ /* Otomatik geniþlemeyi engelle */
+/*}*/
+
+
+.offcanvas-backdrop {
+    backdrop-filter: blur(5px); /* bulanýklaþtýr */
+    background-color: rgba(0,0,0,0.3) !important; /* biraz koyu ton ekle */
 }
+
+
+
+
+
+/* Küçük ekranlar için blur efekti */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        background-color: rgba(36,207,241,0.3) !important;
+    }
+
+        /* Menü konteynýrý pozisyonlama */
+        .navbar-collapse.collapsing,
+        .navbar-collapse.show {
+            position: fixed;
+            top: 56px; /* Navbar yüksekliði ile ayný olmalý */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 1rem;
+            z-index: 1000;
+        }
+
+    /* Menü içeriði için ek stiller */
+    .navbar-nav {
+        background-color: rgba(36,207,241,0);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    /* Dropdown menü için blur */
+    .dropdown-menu {
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        background-color: rgba(36,207,241,0.2) !important;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-collapse.collapsing,
+    .navbar-collapse.show {
+        overflow-y: auto; /* Ýçerik taþarsa scroll çubuðu göster */
+        height: calc(100vh - 56px) !important; /* Navbar yüksekliðini çýkar */
+        -webkit-overflow-scrolling: touch; /* iOS için smooth scroll */
+    }
+
+    /* Sayfa scroll'unu engelle */
+    body.navbar-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+}
+
+/* Navbar yüksekliði için sabit deðer */
+.navbar {
+    min-height: 56px;
+}
+
+
+
+
+
+
+

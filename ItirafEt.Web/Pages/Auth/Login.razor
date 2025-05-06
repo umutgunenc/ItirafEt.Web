@@ -4,8 +4,9 @@
 @inject NavigationManager NavigationManager
 @inject AuthStateProvider AuthStateProvider
 
-<div class="container">
-	<div class="row vh-100">
+
+<div class="position-absolute top-50 start-50 translate-middle w-100">
+	<div class="row">
 		<div class="col-lg-8 mx-auto my-auto border shadow-lg">
 
 			<div class="mt-3">
@@ -65,7 +66,6 @@
 	</div>
 </div>
 
-
 @code {
 	private LoginDto _model = new();
 	private bool _isBusy;
@@ -81,7 +81,7 @@
 
 	private async Task LoginAsync()
 	{
-		if(_isBusy)
+		if (_isBusy)
 			return;
 		_errorMessage = null;
 		_isBusy = true;
