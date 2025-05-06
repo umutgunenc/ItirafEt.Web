@@ -1,3 +1,6 @@
+using Blazored.LocalStorage;
+using ItirafEt.Shared.ClientServices.State;
+using ItirafEt.SharedComponents.Services;
 using ItirafEt.Web;
 using ItirafEt.Web.Apis;
 using ItirafEt.Web.Pages.Auth;
@@ -12,6 +15,11 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped(typeof(InfiniteScrollState<>));
+builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
+
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthStateProvider>();

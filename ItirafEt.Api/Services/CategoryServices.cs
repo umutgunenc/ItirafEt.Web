@@ -21,7 +21,7 @@ namespace ItirafEt.Api.Services
 
         public async Task<ApiResponses> CreateCategoryAsync(CategoryDto dto)
         {
- 
+
             if (await _context.Categories.AsNoTracking().AnyAsync(c => c.CategoryName == dto.CategoryName.ToUpper()))
                 return ApiResponses.Fail("Aynı isimde mevcut bir kategori bulunmaktadır.");
 
@@ -75,7 +75,7 @@ namespace ItirafEt.Api.Services
             category.isActive = dto.isActive;
             category.CategoryOrder = (int)dto.CategoryOrder;
             category.CategoryIconUrl = dto.CategoryIconUrl;
-            
+
             var newCategoryDto = new CategoryDto
             {
                 Id = category.Id,
@@ -124,7 +124,7 @@ namespace ItirafEt.Api.Services
                     CategoryOrder = c.CategoryOrder,
                     CategoryIconUrl = c.CategoryIconUrl,
                     isActive = c.isActive,
-                    PostCount =  _context.Posts.Count(p => p.CategoryId == c.Id && p.IsActive)
+                    PostCount = _context.Posts.Count(p => p.CategoryId == c.Id && p.IsActive)
                 })
                 .ToListAsync();
 
@@ -134,7 +134,7 @@ namespace ItirafEt.Api.Services
 
 
         }
-        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByCreatedDateAsync(int categoryId,int pageNo, int pageSize)
+        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByCreatedDateAsync(int categoryId, int pageNo, int pageSize)
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
@@ -147,9 +147,10 @@ namespace ItirafEt.Api.Services
                 {
                     PostId = p.Id,
                     PostTitle = p.Title,
-                    PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
+                    PostContentReview = new string(p.Content.Take(100).ToArray()).Trim() + "...",
                     PostCreatedDate = p.CreatedDate,
                     PostCreatorUserName = p.User.UserName,
+                    PostCreatorProfilPicture = p.User.ProfilePictureUrl,
                     PostViewCount = p.Readers.Count,
                     PostLikeCount = p.PostReactions
                         .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
@@ -162,8 +163,8 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<List<PostInfoDto>>.Success(posts);
         }
-        
-        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByViewCountAsync(int categoryId,int pageNo, int pageSize)
+
+        public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByViewCountAsync(int categoryId, int pageNo, int pageSize)
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
@@ -176,9 +177,10 @@ namespace ItirafEt.Api.Services
                 {
                     PostId = p.Id,
                     PostTitle = p.Title,
-                    PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
+                    PostContentReview = new string(p.Content.Take(100).ToArray()).Trim() + "...",
                     PostCreatedDate = p.CreatedDate,
                     PostCreatorUserName = p.User.UserName,
+                    PostCreatorProfilPicture = p.User.ProfilePictureUrl,
                     PostViewCount = p.Readers.Count,
                     PostLikeCount = p.PostReactions
                         .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
@@ -207,12 +209,13 @@ namespace ItirafEt.Api.Services
                 {
                     PostId = p.Id,
                     PostTitle = p.Title,
-                    PostContentReview = new string(p.Content.Take(50).ToArray()).Trim() + "...",
+                    PostContentReview = new string(p.Content.Take(100).ToArray()).Trim() + "...",
                     PostCreatedDate = p.CreatedDate,
                     PostCreatorUserName = p.User.UserName,
+                    PostCreatorProfilPicture = p.User.ProfilePictureUrl,
                     PostViewCount = p.Readers.Count,
                     PostLikeCount = p.PostReactions
-                        .Where(pr=>pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                        .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
                         .Count()
                 })
                 .ToListAsync();
@@ -222,6 +225,7 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<List<PostInfoDto>>.Success(posts);
         }
+
 
     }
 }

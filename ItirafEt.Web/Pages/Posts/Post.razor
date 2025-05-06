@@ -8,7 +8,7 @@
 
 
 <div class="col-md-8 col mx-auto">
-	<div class="card shadow-lg rounded-4 border-1 mb-3 ">
+	<div class="card shadow-lg rounded-4 border-1 mb-3 text-bg-light">
 		@if (_isPostHaveError)
 		{
 			<div class="alert alert-danger m-3" role="alert">
@@ -37,8 +37,9 @@
 						@_postDto.Content
 					</p>
 
-					<div class="d-flex justify-content-between">
-						<div class="d-flex gap-4 justify-content-start">
+					<div class="d-flex flex-column flex-md-row justify-content-between">
+						<!-- Desktop Left (md+) -->
+						<div class="d-none d-md-flex gap-4 align-items-start order-md-1">
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
@@ -55,7 +56,7 @@
 									@_dislikeCount
 								</span>
 							</div>
-							<!-- Şikayet (sahip değilse) -->
+							<!-- Şikayet -->
 							@if (!_isPostOwner)
 							{
 								<div class="d-flex flex-column align-items-center">
@@ -66,37 +67,101 @@
 							}
 						</div>
 
-						<div class="d-flex justify-content-end text-muted small mb-2">
-							@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
-							@if (_postDto.UpdatedDate.HasValue)
+						<!-- Right Section (Always) -->
+						<div class="order-md-2 mb-2 mb-md-0 text-end">
+							<!-- Tarih -->
+							<div class="text-muted small">
+								@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+								@if (_postDto.UpdatedDate.HasValue)
+								{
+									@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
+								}
+							</div>
+							<!-- Görüntülenme -->
+							<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViewsAsync">
+								<i class="bi bi-eye me-1"></i>@_postViewCount
+							</div>
+						</div>
+
+						<!-- Mobile Bottom (md-) -->
+						<div class="d-flex d-md-none justify-content-end gap-4 mt-2 order-3">
+							<!-- Beğeni -->
+							<div class="d-flex flex-column align-items-center">
+								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
+									@_likeCount
+								</span>
+							</div>
+							<!-- Beğenmeme -->
+							<div class="d-flex flex-column align-items-center">
+								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikesAsync">
+									@_dislikeCount
+								</span>
+							</div>
+							<!-- Şikayet -->
+							@if (!_isPostOwner)
 							{
-								@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
+								<div class="d-flex flex-column align-items-center">
+									<i class="bi bi-exclamation-circle fs-5 text-danger"
+									   style="cursor:pointer" @onclick="ReportAsync"></i>
+									<span class="text-muted small">Şikayet</span>
+								</div>
 							}
-							<span class="text-muted small" style="cursor:pointer" @onclick="ShowViewsAsync">
-								Görüntülenme : @_postViewCount
-							</span>
 						</div>
 					</div>
 
 					<hr />
 
-					<!-- 1) Kullanıcı Bilgileri Grubu -->
-					<div class="d-flex align-items-end gap-2 mb-3">
-						<!-- Foto & İsim -->
-						<div class="d-flex align-items-center gap-2">
+					<div class="d-flex flex-column gap-2 mb-4">
+						<!-- Üst Bilgi Satırı -->
+						<div class="d-flex align-items-center gap-3">
+							<!-- Profil Fotoğrafı -->
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
 								 class="rounded-circle"
-								 width="42" height="42"
-								 style="object-fit: cover;" />
-							<span class="fs-5 fw-semibold">@_postDto.UserName</span>
-							<small class="text-muted">@_postDto.UserAge Yaşında</small>
-							<small class="text-muted">@_userGender</small>
-							<span class="text-muted small" style="cursor:pointer" @onclick="SendMessage">
-								Mesaj At
-							</span>
-							<i class="bi bi-chat-right-heart text-danger-emphasis"
-							   style="cursor:pointer" @onclick="SendMessage"></i>
+								 width="56" height="56"
+								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+							<!-- Kullanıcı Bilgileri -->
+							<div class="d-flex flex-column">
+								<div class="d-flex align-items-center gap-2">
+									<h5 class="mb-0" style="font-weight: 700; color: #2d3436;">@_postDto.UserName</h5>
+								</div>
+
+								<div class="d-flex  align-items-center justify-content-between">
+
+									<div class="d-flex align-items-center gap-2">
+										<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+											@_postDto.UserAge
+										</span>
+										@if (_postDto.UserGenderId == (int)GenderEnum.Male)
+										{
+											<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+												<i class="bi bi-gender-male me-1"></i>Erkek
+											</span>
+										}
+										else if (_postDto.UserGenderId == (int)GenderEnum.Female)
+										{
+											<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+												<i class="bi bi-gender-female me-1"></i>Kadın
+											</span>
+										}
+
+										<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="SendMessage">
+											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+										</a>
+									</div>
+
+
+
+								</div>
+							</div>
 						</div>
+
+
+
 					</div>
 
 					<div class="mt-4">
@@ -257,7 +322,6 @@
 	private string _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
-	private string? _userGender;
 	private List<string> allowedRoles = new List<string>
 	{
 		nameof(UserRoleEnum.SuperAdmin),
@@ -523,7 +587,6 @@
 			if (response.IsSuccess)
 			{
 				_postDto = response.Data;
-				_userGender = GetUserGenderName(_postDto.UserGenderId);
 				_errorMessage = null;
 				_isPostHaveError = false;
 

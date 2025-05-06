@@ -79,5 +79,28 @@
         /* Allow sidebar to scroll for tall menus */
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
+
     }
+}
+
+/* Mevcut stillere EKLENMESÝ GEREKENLER */
+.nav-scrollable {
+    width: 250px; /* Sabit geniþlik */
+    min-width: 250px; /* Daralmasýný engelle */
+    transition: none !important; /* Animasyonu kapat */
+}
+
+/*.navbar-expand-lg {
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+}*/
+
+.navbar-brand {
+    white-space: nowrap; /* Metin kaymasýný engelle */
+}
+
+.navbar-collapse {
+    flex-grow: 0 !important; /* Otomatik geniþlemeyi engelle */
 }

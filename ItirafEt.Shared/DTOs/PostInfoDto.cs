@@ -11,6 +11,7 @@ namespace ItirafEt.Shared.DTOs
         public int PostId { get; set; }
         public string? PostTitle { get; set; }
         public string? PostCreatorUserName { get; set; }
+        public string? PostCreatorProfilPicture { get; set; }
         public string? PostContentReview { get; set; }
         public int PostViewCount { get; set; }
         public int PostLikeCount { get; set; }
