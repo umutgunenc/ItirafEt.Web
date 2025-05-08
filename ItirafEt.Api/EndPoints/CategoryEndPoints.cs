@@ -16,6 +16,9 @@ namespace ItirafEt.Api.EndPoints
             app.MapGet("/api/getallactivecategory", async (CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.GetAllActiveCategoriesAsycn()));
 
+            app.MapGet("/api/getCategoryName", async (CategoryService categoryServices,int  categoryId) =>
+                Results.Ok(await categoryServices.GetCategoryNameAsync(categoryId)));
+
             app.MapPost("/api/createcategory", async (CategoryDto dto, CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.CreateCategoryAsync(dto)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin)));

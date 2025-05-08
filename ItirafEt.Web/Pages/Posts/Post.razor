@@ -7,7 +7,7 @@
 @inject NavigationManager NavigationManager
 
 
-<div class="col-md-8 col mx-auto">
+<div class="col-lg-8 col mx-auto py-5 px-2">
 	<div class="card shadow-lg rounded-4 border-1 mb-3 text-bg-light">
 		@if (_isPostHaveError)
 		{
@@ -61,7 +61,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportAsync"></i>
+									   style="cursor:pointer" @onclick="Report"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -106,7 +106,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportAsync"></i>
+									   style="cursor:pointer" @onclick="Report"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -153,15 +153,9 @@
 											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 										</a>
 									</div>
-
-
-
 								</div>
 							</div>
 						</div>
-
-
-
 					</div>
 
 					<div class="mt-4">
@@ -171,15 +165,15 @@
 					</div>
 					@if (_showComments)
 					{
-						<div class="m-4">
+						<div class="my-4">
 							@if (_comments?.Count > 0)
 							{
 								<EditForm Model="_commentModel" OnValidSubmit="AddCommentAsync">
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
-										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
-										<InputTextArea id="yorum"
+@* 										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
+ *@										<InputTextArea id="yorum"
 													   class="form-control"
 													   placeholder="Yorum yazın..."
 													   @bind-Value="_commentModel.Content"
@@ -188,7 +182,7 @@
 									</div>
 
 									<div class="my-3">
-										<button type="submit" class="btn btn-primary col-12">Gönder</button>
+										<button type="submit" class="btn blue col-12 text-white fw-medium">Gönder</button>
 									</div>
 								</EditForm>
 
@@ -263,8 +257,8 @@
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
-										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
-										<InputTextArea id="yorum"
+@* 										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
+ *@										<InputTextArea id="yorum"
 													   class="form-control"
 													   placeholder="Yorum yazın..."
 													   @bind-Value="_commentModel.Content"
@@ -273,7 +267,7 @@
 									</div>
 
 									<div class="my-3">
-										<button type="submit" class="btn btn-primary col-12">Gönder</button>
+										<button type="submit" class="btn blue col-12 text-white fw-medium">Gönder</button>
 									</div>
 								</EditForm>
 							}
@@ -319,7 +313,7 @@
 	private bool _showComments = false;
 	private bool _isCommentsHaveError = false;
 	private bool _isPostHaveError = false;
-	private string _newCommentText;
+	private string? _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
 
@@ -361,14 +355,7 @@
 		try
 		{
 			var result = await ReactionApi.LikePostAsync(postId, _currentUserId.Value);
-			if (result.IsSuccess)
-			{
-				var reaction = result.Data;
-				var isUpdated = result.isUpdated;
-				await _reactionHubConnection.SendAsync("NotifyPostLikedOrDisliked", postId, reaction, isUpdated);
-				UpdateReactions(reaction, (bool)isUpdated);
-			}
-			else
+			if (!result.IsSuccess)
 				_errorMessage = result.ErrorMessage;
 		}
 		catch (Exception ex)
@@ -386,14 +373,7 @@
 		try
 		{
 			var result = await ReactionApi.DislikePostAsync(postId, _currentUserId.Value);
-			if (result.IsSuccess)
-			{
-				var reaction = result.Data;
-				var isUpdated = result.isUpdated;
-				await _reactionHubConnection.SendAsync("NotifyPostLikedOrDisliked", postId, reaction, isUpdated);
-				UpdateReactions(reaction, isUpdated);
-			}
-			else
+			if (!result.IsSuccess)
 				_errorMessage = result.ErrorMessage;
 		}
 		catch (Exception ex)
@@ -402,14 +382,10 @@
 		}
 
 	}
-	private async Task ReportAsync()
+	private void Report()
 	{
 		if (!_isUserLoggedIn)
-		{
 			NavigateToLogin();
-			return;
-		}
-		await Task.Delay(1000);
 	}
 
 	private async Task ShowLikesAsync()
@@ -423,9 +399,7 @@
 	private async Task ShowViewsAsync()
 	{
 		await Task.Delay(1000);
-
 	}
-
 
 	private async Task ReadPostAsync()
 	{
@@ -697,28 +671,31 @@
 			NavigateToLogin();
 			return;
 		}
-		await Task.Delay(1000);
 		if (string.IsNullOrWhiteSpace(_commentModel.Content))
 			return;
-		_newCommentText = _newCommentText.Trim();
-		if (string.IsNullOrWhiteSpace(_commentModel.Content))
+		_newCommentText = _commentModel.Content.Trim();
+		if (string.IsNullOrWhiteSpace(_newCommentText))
 			return;
 
 		try
 		{
-			await CommentApi.AddCommentAsync(postId, (Guid)_currentUserId, _commentModel);
-
+			var result = await CommentApi.AddCommentAsync(postId, (Guid)_currentUserId, _commentModel);
+			if (result.IsSuccess){
+				//sayfada güncelleme yapmadan yeni yorumu ekle signalR ile
+			}
+			else
+			{
+				_commentErrorMessage = result.ErrorMessage;
+				_isCommentsHaveError = true;
+			}
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
-
-			throw;
+			_isCommentsHaveError = true;
+			_commentErrorMessage = ex.Message;
 		}
-
-
-
-
 		_commentModel.Content = string.Empty;
+
 	}
 
 	private void ToggleReplyBox(int commentId)

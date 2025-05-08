@@ -1,0 +1,59 @@
+﻿
+.btn-modern-order {
+    border: 1px solid #e9ecef;
+    background: rgba(255, 255, 255, 0.95);
+    color: #2d3436;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 80px;
+}
+
+.btn-check:checked + .btn-modern-order {
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    color: #fff !important;
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(75, 108, 183, 0.3);
+}
+
+    .btn-check:checked + .btn-modern-order i {
+        color: #fff !important;
+    }
+
+.btn-modern-order:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern-order i {
+    color: #4b6cb7;
+    transition: color 0.3s ease;
+}
+
+.rounded-start-3 {
+    border-radius: 10px 0 0 10px !important;
+}
+
+.rounded-end-3 {
+    border-radius: 0 10px 10px 0 !important;
+}
+
+@@media (max-width: 576px) {
+    .btn-modern-order {
+        padding: 8px 12px !important;
+        font-size: 0.9rem;
+    }
+
+        .btn-modern-order i {
+            font-size: 1rem !important;
+            margin-right: 4px !important;
+        }
+
+    .rounded-start-3 {
+        border-radius: 8px 0 0 8px !important;
+    }
+
+    .rounded-end-3 {
+        border-radius: 0 8px 8px 0 !important;
+    }
+}
+

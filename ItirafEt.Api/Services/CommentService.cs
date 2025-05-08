@@ -102,7 +102,7 @@ namespace ItirafEt.Api.Services
             var comment = new Comment
             {
                 Content = dto.Content,
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
                 UserId = UserId,
                 PostId = postId,
                 ParentCommentId = null,
@@ -110,6 +110,8 @@ namespace ItirafEt.Api.Services
                 DislikeCount = 0,
                 ReportCount = 0,
                 IsActive = true,
+                DeviceInfo = dto.DeviceInfo,
+                IpAddress = dto.IpAddress
             };
 
             _context.Comments.Add(comment);

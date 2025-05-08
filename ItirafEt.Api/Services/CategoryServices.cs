@@ -1,4 +1,5 @@
-﻿using ItirafEt.Api.Data;
+﻿using System.Security.Cryptography.Xml;
+using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Shared.DTOs;
@@ -226,6 +227,19 @@ namespace ItirafEt.Api.Services
             return ApiResponses<List<PostInfoDto>>.Success(posts);
         }
 
+        public async Task<ApiResponses<string>> GetCategoryNameAsync(int categoryId)
+        {
+            var categoryName = await _context.Categories
+                .AsNoTracking()
+                .Where(c => c.Id == categoryId && c.isActive)
+                .Select(c => c.CategoryName)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrEmpty(categoryName))
+                return ApiResponses<string>.Fail("Kategori Bulunamadı");
+
+            return ApiResponses<string>.Success(categoryName);
+        }
 
     }
 }

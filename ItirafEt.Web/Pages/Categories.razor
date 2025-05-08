@@ -5,11 +5,11 @@
 @inject InfiniteScrollState<PostInfoDto> State
 @inject ILocalStorageService LocalStorage
 @inject IScrollHelper ScrollHelper
-@inject IJSRuntime JSRuntime 
+@inject IJSRuntime JSRuntime
 
-<div class="col-md-8 col mx-auto">
+<div class="col-md-8 col mx-auto py-5">
 
-	<h3>Gönderiler</h3>
+
 	@if (_isError)
 	{
 		<div class="alert alert-danger m-3" role="alert">
@@ -18,62 +18,42 @@
 	}
 	else
 	{
-@* 		<div class="row g-2 my-3">
-			<div class="col-12 col-lg">
-				<input type="radio" class="btn-check" name="orderOptions" id="orderByDate" autocomplete="off"
-				@onchange="@(() => SetOrderAsync(true,false,false))" checked="@_isDateOrdered">
-				<label class="btn btn-outline-success w-100" for="orderByDate">En Yeniler</label>
-			</div>
-			<div class="col-12 col-lg">
-				<input type="radio" class="btn-check" name="orderOptions" id="orderByView" autocomplete="off"
-				@onchange="@(() => SetOrderAsync(false,true,false))" checked="@_isCountOrdered">
-				<label class="btn btn-outline-success w-100 px-0" for="orderByView">En Çok Okunanlar</label>
-			</div>
-			<div class="col-12 col-lg">
-				<input type="radio" class="btn-check" name="orderOptions" id="orderByLike" autocomplete="off"
-				@onchange="@(() => SetOrderAsync(false,false,true))" checked="@_isLikeOrdered">
-				<label class="btn btn-outline-success w-100 px-0" for="orderByLike">En Çok Beğenilenler</label>
-			</div>
-		</div> *@
-
-		<div class="btn-group btn-group-sm w-100 my-3" role="group" aria-label="Sıralama Seçenekleri">
+		<h3 class="text-center">@_categoryName?.ToUpper()</h3>
+		<div class="btn-group btn-group-sm w-100 my-4 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
 			<input type="radio"
-				   class="btn-check"
-				   name="orderOptions"
-				   id="orderByDate"
-				   autocomplete="off"
-				   @onchange="() => SetOrderAsync(true, false, false)"
-				   checked="@_isDateOrdered" />
-			<label class="btn btn-outline-primary rounded-start"
-				   for="orderByDate">
-				<i class="bi bi-clock-fill me-1"></i>
-				En Yeniler
+			class="btn-check"
+			name="orderOptions"
+			id="orderByDate"
+			autocomplete="off"
+			@onchange="() => SetOrderAsync(true, false, false)"
+			checked="@_isDateOrdered" />
+			<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
+				<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
+				<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
 			</label>
 
 			<input type="radio"
-				   class="btn-check"
-				   name="orderOptions"
-				   id="orderByView"
-				   autocomplete="off"
-				   @onchange="() => SetOrderAsync(false, true, false)"
-				   checked="@_isCountOrdered" />
-			<label class="btn btn-outline-primary"
-				   for="orderByView">
-				<i class="bi bi-eye-fill me-1"></i>
-				En Çok Okunanlar
+			class="btn-check"
+			name="orderOptions"
+			id="orderByView"
+			autocomplete="off"
+			@onchange="() => SetOrderAsync(false, true, false)"
+			checked="@_isCountOrdered" />
+			<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
+				<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
+				<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
 			</label>
 
 			<input type="radio"
-				   class="btn-check"
-				   name="orderOptions"
-				   id="orderByLike"
-				   autocomplete="off"
-				   @onchange="() => SetOrderAsync(false, false, true)"
-				   checked="@_isLikeOrdered" />
-			<label class="btn btn-outline-primary rounded-end"
-				   for="orderByLike">
-				<i class="bi bi-heart-fill me-1"></i>
-				En Çok Beğenilenler
+			class="btn-check"
+			name="orderOptions"
+			id="orderByLike"
+			autocomplete="off"
+			@onchange="() => SetOrderAsync(false, false, true)"
+			checked="@_isLikeOrdered" />
+			<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
+				<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
+				<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
 			</label>
 		</div>
 
@@ -136,15 +116,18 @@
 	private int _pageSize = 10;
 	private bool _isLoading = false;
 	private bool _isError = false;
-	private bool _isDateOrdered = true;
-	private bool _isCountOrdered = false;
-	private bool _isLikeOrdered = false;
-	private double _scrollY = 0;
+	private bool _isDateOrdered;
+	private bool _isCountOrdered;
+	private bool _isLikeOrdered;
 	private string? _errorMessage = null;
+	private string? _categoryName;
+	private bool _hasRestoredScroll = false;
 
 
 	protected override async Task OnParametersSetAsync()
 	{
+		ResetParameters();
+
 		var cachedItems = await LocalStorage.GetItemAsync<List<PostInfoDto>>($"cat-{CategoryId}-items");
 		var cachedCursor = await LocalStorage.GetItemAsync<CursorDto>($"cat-{CategoryId}-cursor");
 
@@ -152,26 +135,17 @@
 			await GetItemsFromCacheAsync(cachedItems, cachedCursor);
 		else
 		{
-			ResetParameters();
-			await StartPostViewHubConnectionAsync();
+			_isDateOrdered = true;
+			_isCountOrdered = false;
+			_isLikeOrdered = false;
 			await LoadMorePostsAsync();
+			await GetCategoryNameAsync();
+			await SetCategoryNameToLocalStorageAsync();
 		}
-
-	}
-
-	protected override async Task OnInitializedAsync()
-	{
-		var cachedItems = await LocalStorage.GetItemAsync<List<PostInfoDto>>($"cat-{CategoryId}-items");
-		var cachedCursor = await LocalStorage.GetItemAsync<CursorDto>($"cat-{CategoryId}-cursor");
-
-		if (cachedItems?.Any() == true && cachedCursor != null)
-			await GetItemsFromCacheAsync(cachedItems, cachedCursor);
-		else
-			await LoadMorePostsAsync();
-
 		await StartPostViewHubConnectionAsync();
 	}
 
+	
 	private void ResetParameters()
 	{
 		ResetCache();
@@ -188,7 +162,8 @@
 		await ScrollHelper.SetScrollYAsync(State.ScrollY);
 		_isDateOrdered = await LocalStorage.GetItemAsync<bool>($"cat-{CategoryId}-dateOrdered");
 		_isCountOrdered = await LocalStorage.GetItemAsync<bool>($"cat-{CategoryId}-countOrdered");
-		_isLikeOrdered = await LocalStorage.GetItemAsync<bool>($"cat-{CategoryId}-likeOrderede");
+		_isLikeOrdered = await LocalStorage.GetItemAsync<bool>($"cat-{CategoryId}-likeOrdered");
+		_categoryName = await LocalStorage.GetItemAsync<string?>($"cat-{CategoryId}-categoryName");
 	}
 	private async Task SetItemsToCacheAsync()
 	{
@@ -199,7 +174,7 @@
 		await LocalStorage.SetItemAsync($"cat-{CategoryId}-cursor", cursor);
 		await LocalStorage.SetItemAsync<bool>($"cat-{CategoryId}-dateOrdered", _isDateOrdered);
 		await LocalStorage.SetItemAsync<bool>($"cat-{CategoryId}-countOrdered", _isCountOrdered);
-		await LocalStorage.SetItemAsync<bool>($"cat-{CategoryId}-likeOrderede", _isLikeOrdered);
+		await LocalStorage.SetItemAsync<bool>($"cat-{CategoryId}-likeOrdered", _isLikeOrdered);
 	}
 	private void ResetCache()
 	{
@@ -209,18 +184,19 @@
 		State.ScrollY = 0;
 	}
 
+
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		if (firstRender)
+		var dotNetRef = DotNetObjectReference.Create(this);
+		await JSRuntime.InvokeVoidAsync("addScrollListener", dotNetRef);
+
+		if (State.ScrollY > 0 && !_hasRestoredScroll)
 		{
-			var dotNetRef = DotNetObjectReference.Create(this);
-			await JSRuntime.InvokeVoidAsync("addScrollListener", dotNetRef);
-
-			if (State.ScrollY > 0)
-				await JSRuntime.InvokeVoidAsync("eval", $"setTimeout(() => window.scrollTo(0, {State.ScrollY}), 0);");
+			_hasRestoredScroll = true;
+			await JSRuntime.InvokeVoidAsync("scrollHelper.setScrollY", State.ScrollY);
 		}
-
 	}
+
 
 	[JSInvokable]
 	public async Task OnScrollToBottom()
@@ -315,5 +291,31 @@
 		await LocalStorage.RemoveItemAsync($"cat-{CategoryId}-items");
 		await LocalStorage.RemoveItemAsync($"cat-{CategoryId}-cursor");
 		await LoadMorePostsAsync();
+	}
+
+	private async Task GetCategoryNameAsync()
+	{
+		try
+		{
+			var response = await CategoryApi.GetCategoryNameAsync(CategoryId);
+			if (response?.IsSuccess == true)
+				_categoryName = response.Data;
+			else
+			{
+				_isError = true;
+				_errorMessage = response?.ErrorMessage;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isError = true;
+			_errorMessage = ex.Message;
+		}
+
+	}
+
+	private async Task SetCategoryNameToLocalStorageAsync()
+	{
+		await LocalStorage.SetItemAsync($"cat-{CategoryId}-categoryName", _categoryName);
 	}
 }

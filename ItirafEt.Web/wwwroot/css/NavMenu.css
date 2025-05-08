@@ -1,0 +1,234 @@
+
+/*body {
+    padding-top: 56px;
+}
+
+.navbar {
+    min-height: 60px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+    padding: 8px 16px !important;
+    border-radius: 8px;
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+}
+
+    .nav-link i {
+        font-size: 1.1em;
+        vertical-align: middle;
+        margin-top: -2px;
+    }
+
+    .nav-link:hover {
+        background: rgba(75, 108, 183, 0.8) !important;
+        transform: translateY(-1px);
+    }
+
+.dropdown-menu {
+    background: rgba(75, 108, 183, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.dropdown-item {
+    color: white !important;
+    transition: all 0.2s ease;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover,
+.navbar .dropdown-menu .dropdown-item:focus {
+    background-color: rgba(75, 108, 183, 0.6) !important;
+    color: #fff !important;
+    transform: translateX(3px);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}*/
+
+/* Responsive Ayarlar */
+/*@media (max-width: 992px) {
+    .navbar-nav {
+        gap: 12px !important;
+        padding: 16px 0;
+        width: 100%;
+    }
+
+    .dropdown-menu {
+        margin-left: 20px;
+        width: calc(100% - 40px);
+        backdrop-filter: blur(10px);
+        background: rgba(75, 108, 183, 0.4) !important;
+    }
+
+    .order-lg-1 {
+        order: 2 !important;
+    }
+
+    .order-lg-2 {
+        order: 1 !important;
+    }
+
+    .navbar-collapse {
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        background: rgba(75, 108, 183, 0.1) !important;
+    }
+
+    
+}
+
+@media (min-width: 992px) {
+    .navbar-collapse {
+        backdrop-filter: none !important;
+    }
+}
+
+
+.align-middle {
+    vertical-align: middle !important;
+}*/
+
+/* Transparan ve Blur Efektleri */
+/*.dropdown-menu,
+.navbar-collapse {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}*/
+
+/* Aktif Link Stilleri */
+/*.dropdown-item.active {
+    background: rgba(75, 108, 183, 0.7) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}*/
+
+
+
+body {
+    padding-top: 56px;
+}
+
+.navbar {
+    min-height: 60px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+    padding: 8px 16px !important;
+    border-radius: 8px;
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+}
+
+    .nav-link i {
+        font-size: 1.1em;
+        vertical-align: middle;
+        margin-top: -2px;
+    }
+
+    .nav-link:hover {
+        background: rgba(75, 108, 183, 0.8) !important;
+        transform: translateY(-1px);
+    }
+
+.dropdown-menu {
+    background: rgba(75, 108, 183, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.5) transparent;
+}
+
+.dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.5);
+    border-radius: 3px;
+}
+
+.dropdown-item {
+    color: white !important;
+    transition: all 0.2s ease;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover,
+.navbar .dropdown-menu .dropdown-item:focus {
+    /* Büyük ekran hover efekti */
+    background-color: rgba(75, 108, 183, 0.6) !important;
+    color: #fff !important;
+    transform: translateX(3px);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 992px) {
+    .navbar-nav {
+        gap: 12px !important;
+        padding: 16px 0;
+        width: 100%;
+    }
+
+    .dropdown-menu {
+        margin-left: 20px;
+        width: calc(100% - 40px);
+        background: rgba(75, 108, 183, 0.9) !important;
+        max-height: 50vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.5) transparent;
+    }
+
+     .dropdown-menu::-webkit-scrollbar {
+         width: 6px;
+     }
+
+     .dropdown-menu::-webkit-scrollbar-track {
+         background: transparent;
+     }
+
+     .dropdown-menu::-webkit-scrollbar-thumb {
+         background-color: rgba(255,255,255,0.5);
+         border-radius: 3px;
+     }
+
+    .order-lg-1 {
+        order: 2 !important;
+    }
+
+    .order-lg-2 {
+        order: 1 !important;
+    }
+
+    .navbar-collapse {
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        background: rgba(75, 108, 183, 0.9) !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .navbar-collapse {
+        backdrop-filter: none !important;
+    }
+}
+
+.dropdown-item.active {
+    background: rgba(75, 108, 183, 0.7) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}

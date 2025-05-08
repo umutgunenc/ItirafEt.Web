@@ -8,9 +8,13 @@
 		<div class="col-md-12">
 			@if (!_isAnyCategory)
 			{
-				<tr>
-					<td colspan="4" class="text-danger">@_errorMessage</td>
-				</tr>
+				<table class="table table-success table-striped table-hover">
+					<thead>
+						<tr>
+							<td colspan="4" class="text-danger">@_errorMessage</td>
+						</tr>
+					</thead>
+				</table>
 			}
 			else
 			{
@@ -91,24 +95,24 @@
 									</EditForm>
 								</td>
 							</tr>
-						}		
-						
+						}
+
 					</tbody>
 				</table>
 			}
 
-@* 			@if (!_isSuccess && _errorMessage != null)
+			@* 			@if (!_isSuccess && _errorMessage != null)
 			{ *@
-				<ModalComponent @ref="Modal" Title="Hata">
-					<ChildContent>
-						<div class="col text-bg-danger text-white m-3 rounded align-items-center">
-							<p>@_errorMessage</p>
-						</div>
-					</ChildContent>
-					<FooterContent>
-						<button class="btn btn-primary col" @onclick="Modal.Close">Kapat</button>
-					</FooterContent>
-				</ModalComponent>
+			<ModalComponent @ref="Modal" Title="Hata">
+				<ChildContent>
+					<div class="col text-bg-danger text-white m-3 rounded align-items-center">
+						<p>@_errorMessage</p>
+					</div>
+				</ChildContent>
+				<FooterContent>
+					<button class="btn btn-primary col" @onclick="Modal.Close">Kapat</button>
+				</FooterContent>
+			</ModalComponent>
 			@* } *@
 
 

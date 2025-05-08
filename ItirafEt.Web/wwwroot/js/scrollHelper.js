@@ -1,8 +1,31 @@
-﻿window.scrollHelper = {
+﻿//window.scrollHelper = {
+//    getScrollY: () => window.pageYOffset,
+//    setScrollY: y => {
+//        setTimeout(() => {
+//            document.documentElement.style.scrollBehavior = 'auto';
+
+//            window.scrollTo({
+//                top: y,
+//                left: 0
+//            });
+
+//        }, 50);
+//    }
+//};
+
+window.scrollHelper = {
     getScrollY: () => window.pageYOffset,
     setScrollY: y => {
-        setTimeout(() => {
-            window.scrollTo(0, y);
-        }, 50); // Short delay to allow rendering
+        document.documentElement.style.scrollBehavior = 'auto';
+        requestAnimationFrame(() => {
+            window.scrollTo({
+                top: y,
+                left: 0
+            });
+        });
     }
 };
+
+
+
+
