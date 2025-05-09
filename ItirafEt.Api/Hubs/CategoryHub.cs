@@ -5,10 +5,14 @@ namespace ItirafEt.Api.Hubs
 {
     public class CategoryHub :Hub
     {
-        public async Task NotifyActiveCategoryInformationsChanged(CategoryDto Category)
-        {
-            await Clients.All.SendAsync("ActiveCategoryInformationsChanged", Category);
-        }
+
+        public Task JoinCategoryInfoChangedGroup() => Groups.AddToGroupAsync(Context.ConnectionId, $"CategoryInfoChanged");
+        public Task JoinCategoryPostCountChangedGroup() => Groups.AddToGroupAsync(Context.ConnectionId, $"CategoryPostCountChanged");
+
+        //public async Task NotifyActiveCategoryInformationsChanged(CategoryDto Category)
+        //{
+        //    await Clients.All.SendAsync("ActiveCategoryInformationsChanged", Category);
+        //}
 
     }
 }

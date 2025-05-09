@@ -23,17 +23,17 @@ namespace ItirafEt.Api.Services
             var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == userId);
             if (user == null)
-                return ApiResponses<(int?, int?)>.Fail("Kullanıcı bulunamadı");
+                return ApiResponses<(int?, int?)>.Fail("Kullanıcı bulunamadı.");
 
             var post = await _context.Posts.FindAsync(postId);
             if (post == null)
-                return ApiResponses<(int?, int?)>.Fail("Gönderi Bulunamadı");
+                return ApiResponses<(int?, int?)>.Fail("Gönderi Bulunamadı.");
 
             if (!post.IsActive)
-                return ApiResponses<(int?, int?)>.Fail("Gönderi aktif değil");
+                return ApiResponses<(int?, int?)>.Fail("Gönderi aktif değil.");
 
             if (post.UserId == userId)
-                return ApiResponses<(int?, int?)>.Fail("Kendi gönderinizi okuyamazsınız");
+                return ApiResponses<(int?, int?)>.Fail("Kendi gönderinizi okuyamazsınız.");
 
             var didUserReadPostBefore = await _context.UserReadPosts
                 .AnyAsync(x => x.PostId == postId && x.UserId == userId);

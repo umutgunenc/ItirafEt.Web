@@ -336,7 +336,7 @@
 		await StartReactionHubConnectionAsync();
 		await StartPostViewHubConnectionAsync();
 		await StartTasksAsync();
-		await GetPostViewCountAsync();
+		// await GetPostViewCountAsync();
 		CheckUserLoggedIn();
 		IsUserPostOwner(_isPostHaveError);
 		UpdatePostReactionCounts();
@@ -516,20 +516,22 @@
 		var postTask = PostApi.GetPostByIdAsync(postId);
 		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
 		var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-		await Task.WhenAll(postTask, reactionsTask, commentsTask);
+		var postViewCountTask = PostViewApi.GetPostReadCountAsync(postId);
+		await Task.WhenAll(postTask, reactionsTask, commentsTask, postViewCountTask);
 
 		var reactionsTaskResult = await reactionsTask;
 		GetPost(postTask.Result);
 		GetComments(commentsTask.Result);
 		GetReactions(reactionsTask.Result);
+		GetPostViewCount(postViewCountTask.Result);
 	}
 
-	private async Task GetPostViewCountAsync()
-	{
-		var response = await PostViewApi.GetPostReadCountAsync(postId);
-		if (response.IsSuccess)
-			_postViewCount = response.Data;
-	}
+	// private async Task GetPostViewCountAsync()
+	// {
+	// 	var response = await PostViewApi.GetPostReadCountAsync(postId);
+	// 	if (response.IsSuccess)
+	// 		_postViewCount = response.Data;
+	// }
 
 	private void IsUserPostOwner(bool IsPostError)
 	{
@@ -635,7 +637,11 @@
 			_commentErrorMessage = ex.Message;
 		}
 	}
-
+	private void GetPostViewCount(ApiResponses<int> response)
+	{
+		if (response.IsSuccess)
+			_postViewCount = response.Data;
+	}
 
 	private void ShowUserProfile()
 	{

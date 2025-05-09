@@ -74,11 +74,12 @@ namespace ItirafEt.Api.Services
 
         public async Task<ApiResponses<PostDto>> GetPostByIdAsync(int postId)
         {
-
+            //TODO category aktif değilse hata versin postu getirmesin
             var post = await _context.Posts
                 .Include(p => p.User)
+                .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.Id == postId && p.IsActive)
+                .Where(p => p.Id == postId && p.IsActive && p.Category.isActive)
                 .Select(p => new PostDto
                 {
                     Id = p.Id,

@@ -2,6 +2,7 @@
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
+using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
@@ -13,11 +14,13 @@ namespace ItirafEt.Api.Services
     public class CategoryService
     {
         private readonly dbContext _context;
-        private readonly IHubContext<CategoryHub> _hubContext;
-        public CategoryService(dbContext context, IHubContext<CategoryHub> hubContext, PostViewService postReadService)
+        //private readonly IHubContext<CategoryHub> _hubContext;
+        private readonly CategoryHubService _categoryHubService;
+        public CategoryService(dbContext context, IHubContext<CategoryHub> hubContext, PostViewService postReadService, CategoryHubService categoryHubService)
         {
             _context = context;
-            _hubContext = hubContext;
+            //_hubContext = hubContext;
+            _categoryHubService = categoryHubService;
         }
 
         public async Task<ApiResponses> CreateCategoryAsync(CategoryDto dto)
@@ -52,7 +55,8 @@ namespace ItirafEt.Api.Services
                 PostCount = _context.Posts.Count(p => p.CategoryId == category.Id && p.IsActive)
             };
 
-            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
+            //await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
+            await _categoryHubService.CategoryInfoChangedAsync(newCategoryDto);
 
             return ApiResponses.Success();
 
@@ -89,8 +93,8 @@ namespace ItirafEt.Api.Services
 
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
-            await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
-
+            //await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
+            await _categoryHubService.CategoryInfoChangedAsync(newCategoryDto);
             return ApiResponses.Success();
 
         }
@@ -139,8 +143,9 @@ namespace ItirafEt.Api.Services
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
+                .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.CategoryId == categoryId && p.IsActive)
+                .Where(p => p.CategoryId == categoryId && p.IsActive && p.Category.isActive)
                 .OrderByDescending(p => p.CreatedDate)
                 .Skip((pageNo - 1) * pageSize)
                 .Take(pageSize)
@@ -169,8 +174,9 @@ namespace ItirafEt.Api.Services
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
+                .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.CategoryId == categoryId && p.IsActive)
+                .Where(p => p.CategoryId == categoryId && p.IsActive && p.Category.isActive)
                 .OrderByDescending(p => p.Readers.Count)
                 .Skip((pageNo - 1) * pageSize)
                 .Take(pageSize)
@@ -199,8 +205,9 @@ namespace ItirafEt.Api.Services
         {
             var posts = await _context.Posts
                 .Include(p => p.User)
+                .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.CategoryId == categoryId && p.IsActive)
+                .Where(p => p.CategoryId == categoryId && p.IsActive && p.Category.isActive)
                 .OrderByDescending(p => p.PostReactions
                         .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
                         .Count())
@@ -236,7 +243,7 @@ namespace ItirafEt.Api.Services
                 .FirstOrDefaultAsync();
 
             if (string.IsNullOrEmpty(categoryName))
-                return ApiResponses<string>.Fail("Kategori Bulunamadı");
+                return ApiResponses<string>.Fail("Kategori Bulunamadı.");
 
             return ApiResponses<string>.Success(categoryName);
         }
