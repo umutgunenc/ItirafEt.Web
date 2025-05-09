@@ -290,7 +290,7 @@
 	[Parameter]
 	public int postId { get; set; }
 
-	private PostDto _postDto = new();
+	private PostDto? _postDto = new();
 	private CommentsDto _commentModel = new();
 	private List<CommentsDto>? _comments = new();
 	private List<ReactionDto>? _reactions = new();
@@ -476,7 +476,7 @@
 					.WithAutomaticReconnect()
 					.Build();
 
-		_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDisliked", async (reaction, isReactionUpdated) =>
+		_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
 		{
 			UpdateReactions(reaction, isReactionUpdated);
 			StateHasChanged();

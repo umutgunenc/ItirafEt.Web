@@ -1,6 +1,6 @@
 ﻿using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
-using ItirafEt.Api.Hubs;
+using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
@@ -11,13 +11,13 @@ namespace ItirafEt.Api.Services
     public class ReactionService
     {
         private readonly dbContext _context;
-        private readonly IHubContext<ReactionHub> _hubContext;
+        private readonly ReactionHubService _reactionHubService;
 
 
-        public ReactionService(dbContext context, IHubContext<ReactionHub> hubContext)
+        public ReactionService(dbContext context, ReactionHubService reactionHubService)
         {
             _context = context;
-            _hubContext = hubContext;
+            _reactionHubService = reactionHubService;
         }
 
         public async Task<ApiResponses<List<ReactionDto>>> GetPostReactionsAsync(int postId)
@@ -57,46 +57,63 @@ namespace ItirafEt.Api.Services
 
             var reaction = await _context.PostReaction
                 .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
-
+            var likeCount = post.PostReactions.Count(c => c.ReactionTypeId == (int)ReactionTypeEnum.Like);
             if (reaction != null)
             {
                 if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Cancelled;
+                    likeCount--;
+
+                }
                 else if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
+                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Like;
+                    likeCount++;
+                }
                 else
+                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Like;
+                    likeCount++;
+                }
 
                 reaction.CreatedDate = DateTime.Now;
                 _context.PostReaction.Update(reaction);
-
-                var reactitonDto = ReactionToReactionDto(reaction);
-
                 await _context.SaveChangesAsync();
-                await _hubContext.Clients
-                    .Group($"post-{postId}")
-                    .SendAsync("PostLikedOrDisliked", reactitonDto, true);
-                return ApiResponses<ReactionDto>.Success(reactitonDto, true);
+
+                var reactionDto = ReactionToReactionDto(reaction);
+
+                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
+                await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
+
+                return ApiResponses<ReactionDto>.Success(reactionDto, true);
+
             }
             else
             {
-                var newReaction = new PostReaction
+                reaction = new PostReaction
                 {
                     PostId = postId,
                     ReactingUserId = UserId,
                     ReactionTypeId = (int)ReactionTypeEnum.Like,
                     CreatedDate = DateTime.Now
                 };
-                _context.PostReaction.Add(newReaction);
+                _context.PostReaction.Add(reaction);
 
-                var reactionDto = ReactionToReactionDto(newReaction);
+
+                likeCount++;
 
                 await _context.SaveChangesAsync();
-                await _hubContext.Clients
-                    .Group($"post-{postId}")
-                    .SendAsync("PostLikedOrDisliked", reactionDto, false);
+
+                var reactionDto = ReactionToReactionDto(reaction);
+
+                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
+                await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
+
                 return ApiResponses<ReactionDto>.Success(reactionDto, false);
+
             }
+
 
         }
         public async Task<ApiResponses<ReactionDto>> DislikePostAsync(int postId, Guid UserId)
@@ -110,49 +127,55 @@ namespace ItirafEt.Api.Services
 
             var reaction = await _context.PostReaction
                 .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
+            var likeCount = post.PostReactions.Count(c => c.ReactionTypeId == (int)ReactionTypeEnum.Like);
 
             if (reaction != null)
             {
                 if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
+                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Cancelled;
+                }
                 else if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Dislike;
+                    likeCount--;
+                }
                 else
+                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Dislike;
+                }
 
                 reaction.CreatedDate = DateTime.Now;
 
                 _context.PostReaction.Update(reaction);
-
                 await _context.SaveChangesAsync();
-
                 var reactionDto = ReactionToReactionDto(reaction);
-                await _hubContext.Clients
-                    .Group($"post-{postId}")
-                    .SendAsync("PostLikedOrDisliked", reactionDto, true);
+                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
+                await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
+
                 return ApiResponses<ReactionDto>.Success(reactionDto, true);
+
             }
             else
             {
-                var newReaction = new PostReaction
+                reaction = new PostReaction
                 {
                     PostId = postId,
                     ReactingUserId = UserId,
                     ReactionTypeId = (int)ReactionTypeEnum.Dislike,
                     CreatedDate = DateTime.Now
                 };
-                _context.PostReaction.Add(newReaction);
-
-
+                _context.PostReaction.Add(reaction);
 
                 await _context.SaveChangesAsync();
+                var reactionDto = ReactionToReactionDto(reaction);
+                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
+                await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
 
-                var reactionDto = ReactionToReactionDto(newReaction);
-                await _hubContext.Clients
-                    .Group($"post-{postId}")
-                    .SendAsync("PostLikedOrDisliked", reactionDto, false);
                 return ApiResponses<ReactionDto>.Success(reactionDto, false);
+
             }
+
 
         }
         private ReactionDto ReactionToReactionDto(PostReaction reaction)
@@ -164,5 +187,7 @@ namespace ItirafEt.Api.Services
                 ReactionTypeId = reaction.ReactionTypeId,
             };
         }
+
+        
     }
 }

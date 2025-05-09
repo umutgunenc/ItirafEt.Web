@@ -125,7 +125,7 @@
 	private ModalComponent? Modal;
 	private string? _errorMessage;
 	private bool _isAnyCategory = false;
-	private bool _isSuccess = false;
+	// private bool _isSuccess = false;
 
 
 	protected override async Task OnInitializedAsync()
@@ -168,11 +168,9 @@
 			{
 				await LoadCategoriesAsync();
 				_errorMessage = null;
-				_isSuccess = true;
 			}
 			else
 			{
-				_isSuccess = false;
 				_errorMessage = response.ErrorMessage;
 				Modal?.Open();
 			}

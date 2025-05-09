@@ -3,6 +3,7 @@ using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.EndPoints;
 using ItirafEt.Api.Hubs;
+using ItirafEt.Api.HubServices;
 using ItirafEt.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -73,6 +74,7 @@ builder.Services.AddTransient<PostService>();
 builder.Services.AddTransient<CommentService>();
 builder.Services.AddTransient<ReactionService>();
 builder.Services.AddTransient<PostViewService>();
+builder.Services.AddTransient<ReactionHubService>();
 
 var app = builder.Build();
 

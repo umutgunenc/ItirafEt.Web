@@ -21,36 +21,36 @@
 		<h3 class="text-center">@_categoryName?.ToUpper()</h3>
 		<div class="btn-group btn-group-sm w-100 my-4 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
 			<input type="radio"
-			class="btn-check"
-			name="orderOptions"
-			id="orderByDate"
-			autocomplete="off"
-			@onchange="() => SetOrderAsync(true, false, false)"
-			checked="@_isDateOrdered" />
+				   class="btn-check"
+				   name="orderOptions"
+				   id="orderByDate"
+				   autocomplete="off"
+				   @onchange="() => SetOrderAsync(true, false, false)"
+				   checked="@_isDateOrdered" />
 			<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
 				<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
 				<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
 			</label>
 
 			<input type="radio"
-			class="btn-check"
-			name="orderOptions"
-			id="orderByView"
-			autocomplete="off"
-			@onchange="() => SetOrderAsync(false, true, false)"
-			checked="@_isCountOrdered" />
+				   class="btn-check"
+				   name="orderOptions"
+				   id="orderByView"
+				   autocomplete="off"
+				   @onchange="() => SetOrderAsync(false, true, false)"
+				   checked="@_isCountOrdered" />
 			<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
 				<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
 				<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
 			</label>
 
 			<input type="radio"
-			class="btn-check"
-			name="orderOptions"
-			id="orderByLike"
-			autocomplete="off"
-			@onchange="() => SetOrderAsync(false, false, true)"
-			checked="@_isLikeOrdered" />
+				   class="btn-check"
+				   name="orderOptions"
+				   id="orderByLike"
+				   autocomplete="off"
+				   @onchange="() => SetOrderAsync(false, false, true)"
+				   checked="@_isLikeOrdered" />
 			<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
 				<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
 				<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
@@ -113,6 +113,7 @@
 
 
 	private HubConnection _postViewHubConnection;
+	private HubConnection _reactionHubConnection;
 	private int _pageSize = 10;
 	private bool _isLoading = false;
 	private bool _isError = false;
@@ -143,9 +144,10 @@
 			await SetCategoryNameToLocalStorageAsync();
 		}
 		await StartPostViewHubConnectionAsync();
+		await StartReactionHubConnectionAsync();
 	}
 
-	
+
 	private void ResetParameters()
 	{
 		ResetCache();
@@ -183,7 +185,6 @@
 		State.HasMore = true;
 		State.ScrollY = 0;
 	}
-
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -232,8 +233,11 @@
 			var response = await GetPostsPageAsync();
 			if (response?.IsSuccess == true && response.Data?.Any() == true)
 			{
+
 				State.Items.AddRange(response.Data);
 				State.CurrentPage++;
+				// await StartReactionHubConnectionAsync();
+
 				await SetItemsToCacheAsync();
 			}
 			else
@@ -282,6 +286,25 @@
 		await _postViewHubConnection.SendAsync("JoinCategoryPostCountGroup", CategoryId);
 	}
 
+	private async Task StartReactionHubConnectionAsync()
+	{
+
+		_reactionHubConnection = new HubConnectionBuilder()
+					.WithUrl("https://localhost:7292/reactionhub")
+					.WithAutomaticReconnect()
+					.Build();
+
+		_reactionHubConnection.On<int, int>("UpdatePostLikeCountAsync", (postId, likeCount) =>
+		{
+			UpdateReactions(postId, likeCount);
+			StateHasChanged();
+		});
+
+		await _reactionHubConnection.StartAsync();
+		await _reactionHubConnection.SendAsync("JoinCategoryPostReactionGroup", CategoryId);
+
+	}
+
 	private async Task SetOrderAsync(bool orderByDate, bool orderByViewCount, bool orderByLikeCount)
 	{
 		_isDateOrdered = orderByDate;
@@ -318,4 +341,19 @@
 	{
 		await LocalStorage.SetItemAsync($"cat-{CategoryId}-categoryName", _categoryName);
 	}
+
+
+	private void UpdateReactions(int postId, int likeCount)
+	{
+		foreach (var post in State.Items)
+		{
+			if (post.PostId == postId)
+			{
+				post.PostLikeCount = likeCount;
+				break;
+			}
+		}
+		
+	}
+
 }

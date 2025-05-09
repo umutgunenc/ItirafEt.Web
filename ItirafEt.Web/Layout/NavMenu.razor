@@ -419,7 +419,7 @@
 			.WithAutomaticReconnect()
 			.Build();
 
-		_hubConnection.On<CategoryDto>("ActiveCategoryInformationsChanged", async (category) =>
+		_hubConnection.On<CategoryDto>("ActiveCategoryInformationsChanged", (category) =>
 		{
 			UpdateCategories(category);
 			StateHasChanged();
