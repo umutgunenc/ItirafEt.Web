@@ -19,5 +19,12 @@ namespace ItirafEt.Api.HubServices
                 .SendAsync("CommentAddedOrDeletedAsync", dto, isAdded);
         }
 
+        public async Task ReplyAddedOrDeletedAsync(int postId, CommentsDto replyDto, bool isAdded)
+        {
+            await _hubContext.Clients
+                .Group($"post-{postId}")
+                .SendAsync("ReplyAddedOrDeletedAsync", replyDto, isAdded);
+        }
+
     }
 }

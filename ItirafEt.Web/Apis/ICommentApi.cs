@@ -11,5 +11,9 @@ namespace ItirafEt.Web.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/addComment/")]
         Task<ApiResponses> AddCommentAsync(int postId,Guid UserId, CommentsDto dto);
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/addCommentRepyl/")]
+        Task<ApiResponses> AddReplyCommentAsync(int postId, int commentId, Guid UserId, CommentsDto replyDto);
     }
 }

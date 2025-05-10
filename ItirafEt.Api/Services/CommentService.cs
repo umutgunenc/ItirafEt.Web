@@ -120,35 +120,73 @@ namespace ItirafEt.Api.Services
             await _context.SaveChangesAsync();
 
             dto.CreatedDate = comment.CreatedDate;
+            dto.Id = comment.Id;
 
-            dto.UserName = await _context.Users
+            dto.UserName = await GetUserNameAsync(UserId);
+
+
+            await _commentHubServices.CommentAddedOrDeletedAsync(postId, dto, true);
+
+            return ApiResponses.Success();
+
+        }
+
+        public async Task<ApiResponses> AddCommentReplyAsync(int postId, int commentId, Guid UserId, CommentsDto replyDto)
+        {
+            if (string.IsNullOrEmpty(replyDto.Content))
+                return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
+
+            replyDto.Content = replyDto.Content.Trim();
+
+            if (string.IsNullOrEmpty(replyDto.Content))
+                return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
+
+            var didHaveCommentComment = await _context.Comments
                 .AsNoTracking()
-                .Include(u=>u.Comments)
-                .Where(u => u.Id == UserId)
-                .Select(u => u.UserName)
-                .FirstOrDefaultAsync();
+                .AnyAsync(c => c.Id == commentId && c.IsActive);
 
-            await _commentHubServices.CommentAddedOrDeletedAsync(postId,dto,true);
+            if (!didHaveCommentComment)
+                return ApiResponses.Fail("Cevaplamak istediğiniz yorum bulunamadı.");
+
+            var reply = new Comment
+            {
+                Content = replyDto.Content,
+                CreatedDate = DateTime.Now,
+                UserId = UserId,
+                PostId = postId,
+                ParentCommentId = commentId,
+                LikeCount = 0,
+                DislikeCount = 0,
+                ReportCount = 0,
+                IsActive = true,
+                DeviceInfo = replyDto.DeviceInfo,
+                IpAddress = replyDto.IpAddress
+            };
+
+            _context.Comments.Add(reply);
+
+            await _context.SaveChangesAsync();
+
+            replyDto.CreatedDate = reply.CreatedDate;
+            replyDto.UserName = await GetUserNameAsync(UserId);
+            replyDto.ParentCommentId = commentId;
+            replyDto.Id = reply.Id;
+
+
+            await _commentHubServices.ReplyAddedOrDeletedAsync(postId, replyDto, true);
 
             return ApiResponses.Success();
 
 
-            //var currentPostCommentCount = await _context.Posts
-            //    .Where(p => p.Id == postId)
-            //    .Select(p => p.CommentCount)
-            //    .FirstOrDefaultAsync();
-
-            //currentPostCommentCount++;
-
-            //var post = await _context.Posts.FindAsync(postId);
-            //if (post != null)
-            //{
-            //    post.CommentCount = currentPostCommentCount;
-            //    _context.Posts.Update(post);
-            //}
-
-
         }
 
+        private async Task<string> GetUserNameAsync(Guid UserId)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == UserId)
+                .Select(u => u.UserName)
+                .FirstOrDefaultAsync();
+        }
     }
 }

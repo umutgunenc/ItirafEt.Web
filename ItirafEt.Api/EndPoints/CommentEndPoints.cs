@@ -1,4 +1,5 @@
-﻿using ItirafEt.Api.Services;
+﻿using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.Services;
 using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
 
@@ -21,6 +22,19 @@ namespace ItirafEt.Api.EndPoints
                 dto.DeviceInfo = userAgent;
 
                 return Results.Ok(await commentService.AddCommentAsync(PostId, userId,dto ));
+
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
+
+            app.MapPost("/api/addCommentRepyl", async (int postId, int commentId, Guid UserId, CommentsDto replyDto, HttpContext context, CommentService commentService) =>
+            {
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString();
+                var userAgent = context.Request.Headers["User-Agent"].ToString();
+
+                replyDto.IpAddress = ipAddress;
+                replyDto.DeviceInfo = userAgent;
+
+                return Results.Ok(await commentService.AddCommentReplyAsync(postId, commentId, UserId, replyDto));
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 

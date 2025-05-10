@@ -11,7 +11,8 @@ namespace ItirafEt.Shared.DTOs
     {
         public int Id { get; set; }
         public string? UserName { get; set; }
-        [Required(ErrorMessage = "Lütfen yorum alanını doldurduktan sonra tekrar deneyin.")]
+
+        [Required(ErrorMessage= "Lütfen yorumunuzu yazın.")]
         public string Content { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }

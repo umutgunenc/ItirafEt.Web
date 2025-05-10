@@ -7,5 +7,8 @@ namespace ItirafEt.Api.Hubs
         public Task JoinPostCommentGroup(int postId)
             => Groups.AddToGroupAsync(Context.ConnectionId, $"post-{postId}");
 
+    //    public Task JoinPostCommentGroup(int postId)
+    //=> Groups.AddToGroupAsync(Context.ConnectionId, $"post-{postId}");
+
     }
 }

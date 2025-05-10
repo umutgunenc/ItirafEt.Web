@@ -31,7 +31,7 @@
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
 					<p class="card-text text-break"
-					style="text-align: justify;
+					   style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
@@ -43,7 +43,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
 									@_likeCount
 								</span>
@@ -51,7 +51,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikesAsync">
 									@_dislikeCount
 								</span>
@@ -61,7 +61,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="Report"></i>
+									   style="cursor:pointer" @onclick="Report"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -88,7 +88,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
 									@_likeCount
 								</span>
@@ -96,7 +96,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikesAsync">
 									@_dislikeCount
 								</span>
@@ -106,7 +106,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="Report"></i>
+									   style="cursor:pointer" @onclick="Report"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -120,9 +120,9 @@
 						<div class="d-flex align-items-center gap-3">
 							<!-- Profil Fotoğrafı -->
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-							class="rounded-circle"
-							width="56" height="56"
-							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+								 class="rounded-circle"
+								 width="56" height="56"
+								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 
 							<!-- Kullanıcı Bilgileri -->
 							<div class="d-flex flex-column">
@@ -172,12 +172,11 @@
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
-										@* 										<label for="yorum" class="form-label fw-bold">Yorumunuz</label>
- *@										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+										<InputTextArea id="yorum"
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -194,9 +193,7 @@
 											<div class="d-flex justify-content-between">
 												<div>
 													<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle" width="24" height="24" style="object-fit: cover;" />
-
 													<strong class="ms-2">@comment.UserName</strong>
-
 													<small class="text-muted ms-2">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
 												</div>
 												<button class="btn btn-sm btn-link text-primary" @onclick="() => ToggleReplyBox(comment.Id)">
@@ -208,20 +205,39 @@
 											<!-- Reply input -->
 											@if (_replyToCommentId == comment.Id)
 											{
-												<div class="input-group mb-2">
+												<EditForm 
+													Model="_replyModel"
+													OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+													<DataAnnotationsValidator />
+													<div class="input-group mb-2">
+														<input type="text"
+															   class="form-control form-control-sm"
+															   placeholder="Cevabınızı yazın..."
+															   @bind="_replyModel.Content" />
+														<div class="input-group-append">
+															<button class="btn btn-sm btn-outline-primary" type="submit">
+																@* @onclick="() => AddReplyAsync(comment.Id)" *@
+																Cevapla
+															</button>
+														</div>
+
+													</div>														
+													<ValidationMessage For="@(() => _replyModel.Content)" />
+
+												</EditForm>
+												@* <div class="input-group mb-2">
 													<input type="text"
-													class="form-control form-control-sm"
-													placeholder="Cevabınızı yazın..."
-													@bind="_replyText" />
+														   class="form-control form-control-sm"
+														   placeholder="Cevabınızı yazın..."
+														   @bind="_replyText" />
 													<div class="input-group-append">
 														<button class="btn btn-sm btn-outline-primary"
-														@onclick="() => AddReplyAsync(comment.Id)">
+																@onclick="() => AddReplyAsync(comment.Id)">
 															Cevapla
 														</button>
 													</div>
-												</div>
+												</div> *@
 											}
-
 											<!-- Alt yorumlar (replies) -->
 											@if (comment.CommentReplies?.Any() == true)
 											{
@@ -233,8 +249,8 @@
 																<div class="d-flex justify-content-between">
 																	<div>
 																		<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg" class="rounded-circle ms-2" width="24" height="24" style="object-fit: cover;" />
-
-																		<strong class="ms-2">@comment.UserName</strong>															<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
+																		<strong class="ms-2">@comment.UserName</strong>
+																		<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
 																	</div>
 																</div>
 																<p class="mb-0" style="white-space: pre-wrap;">@reply.Content</p>
@@ -253,15 +269,16 @@
 									@_commentErrorMessage
 								</div>
 
-								<EditForm Model="_commentModel" OnValidSubmit="AddCommentAsync">
+								<EditForm Model="_commentModel"
+										  OnValidSubmit="AddCommentAsync">
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -291,11 +308,13 @@
 
 	private PostDto? _postDto = new();
 	private CommentsDto _commentModel = new();
+	private CommentsDto _replyModel = new();
 	private List<CommentsDto>? _comments = new();
 	private List<ReactionDto>? _reactions = new();
 	private HubConnection _reactionHubConnection;
 	private HubConnection _commentHubConnection;
 	private HubConnection _postViewHubConnection;
+
 
 	private Guid? _currentUserId;
 	private int? _likeCount;
@@ -328,7 +347,7 @@
 	private int? _replyToCommentId;
 
 	// Cevap metni
-	private string _replyText;
+	private string? _replyText;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -508,6 +527,7 @@
 		await _postViewHubConnection.StartAsync();
 		await _postViewHubConnection.SendAsync("JoinPostPostCountGroup", postId);
 		await _postViewHubConnection.SendAsync("JoinCategoryPostCountGroup", _postDto.CategoryId);
+
 	}
 
 	private async Task StartCommentHubConnectionAsync()
@@ -524,6 +544,24 @@
 				_comments.Insert(0, commentDto);
 			else
 				_comments.Remove(commentDto);
+
+			StateHasChanged();
+		});
+
+		_commentHubConnection.On<CommentsDto, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
+		{
+			var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
+
+			if (comment != null)
+			{
+				if (comment.CommentReplies == null)
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>();
+
+				if (isAdded)
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
+				else
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies.RemoveAll(r => r.Id == replyDto.Id);
+			}
 
 			StateHasChanged();
 		});
@@ -741,24 +779,33 @@
 
 	private async Task AddReplyAsync(int parentCommentId)
 	{
-		await Task.Delay(1000);
-		// if (string.IsNullOrWhiteSpace(_replyText))
-		// 	return;
+		if (!_isUserLoggedIn)
+		{
+			NavigateToLogin();
+			return;
+		}
+		if (string.IsNullOrWhiteSpace(_replyModel.Content))
+			return;
+		var _newReplyText = _replyModel.Content.Trim();
+		if (string.IsNullOrWhiteSpace(_newReplyText))
+			return;
 
-		// // API çağrısı ile cevabı ekleyin...
-		// // await _commentService.AddReply(postId: _postDto.Id, parentCommentId, _replyText);
-
-		// var parent = _postDto.Comments.First(c => c.Id == parentCommentId);
-		// parent.Replies.Add(new ReplyDto
-		// 	{
-		// 		Id = /*dönen id*/,
-		// 		UserName = _currentUserName,
-		// 		Content = _replyText,
-		// 		CreatedDate = DateTime.Now
-		// 	});
-
-		// _replyToCommentId = null;
-		// _replyText = string.Empty;
+		try
+		{
+			var result = await CommentApi.AddReplyCommentAsync(postId, parentCommentId, (Guid)_currentUserId, _replyModel);
+			if (!result.IsSuccess)
+			{
+				_commentErrorMessage = result.ErrorMessage;
+				_isCommentsHaveError = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isCommentsHaveError = true;
+			_commentErrorMessage = ex.Message;
+		}
+		_replyModel.Content = string.Empty;
+		_replyToCommentId = null;
 	}
 
 }
