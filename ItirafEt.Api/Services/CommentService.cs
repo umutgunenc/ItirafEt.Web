@@ -1,6 +1,7 @@
 ﻿using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
+using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.DTOs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +11,11 @@ namespace ItirafEt.Api.Services
     public class CommentService
     {
         private readonly dbContext _context;
-        private readonly IHubContext<CommentHub> _commentHub;
-        public CommentService(dbContext context, IHubContext<CommentHub> commentHub)
+        private readonly CommentHubService _commentHubServices;
+        public CommentService(dbContext context, CommentHubService commentHubServices)
         {
             _context = context;
-            _commentHub = commentHub;
+            _commentHubServices = commentHubServices;
         }
 
         public async Task<ApiResponses<List<CommentsDto>>> GetPostCommentsAsync(int postId)
@@ -116,12 +117,18 @@ namespace ItirafEt.Api.Services
 
             _context.Comments.Add(comment);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            await _commentHub
-                .Clients
-                .Group($"post-{postId}")
-                .SendAsync("CommentAdded", comment.Id);
+            dto.CreatedDate = comment.CreatedDate;
+
+            dto.UserName = await _context.Users
+                .AsNoTracking()
+                .Include(u=>u.Comments)
+                .Where(u => u.Id == UserId)
+                .Select(u => u.UserName)
+                .FirstOrDefaultAsync();
+
+            await _commentHubServices.CommentAddedOrDeletedAsync(postId,dto,true);
 
             return ApiResponses.Success();
 

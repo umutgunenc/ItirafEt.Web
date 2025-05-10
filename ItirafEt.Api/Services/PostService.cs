@@ -2,6 +2,7 @@
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
+using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
@@ -13,11 +14,11 @@ namespace ItirafEt.Api.Services
     public class PostService
     {
         private readonly dbContext _context;
-        private readonly IHubContext<CategoryHub> _categoryHubContext;
-        public PostService(dbContext context, IHubContext<CategoryHub> categoryHubContext)
+        private readonly CategoryHubService _categoryHubService;
+        public PostService(dbContext context,  CategoryHubService categoryHubService)
         {
             _context = context;
-            _categoryHubContext = categoryHubContext;
+            _categoryHubService = categoryHubService;
         }
 
         public async Task<ApiResponses> CreatePostAsync(PostDto dto, Guid UserId)
@@ -54,7 +55,7 @@ namespace ItirafEt.Api.Services
             };
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
-            await _categoryHubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged");
+            await _categoryHubService.CategoryPostCountChangedAsync(post.CategoryId, true);
 
             return ApiResponses.Success();
 
@@ -101,44 +102,6 @@ namespace ItirafEt.Api.Services
 
         }
 
-        //public async Task<ApiResponses<int?>> IncreaseViewCountAsync(int postId, string? ipAddress)
-        //{
-        //    if (string.IsNullOrEmpty(ipAddress))
-        //        return ApiResponses<int?>.Fail("IP adresi alınamadı.");
-
-        //    var now = DateTime.UtcNow;
-
-        //    var tracker = await _context.PostViewTrackers
-        //        .FirstOrDefaultAsync(x => x.PostId == postId && x.IPAddress == ipAddress);
-
-        //    var post = await _context.Posts.FindAsync(postId);
-        //    if (post == null)
-        //        return ApiResponses<null>.Fail("Post bulunamadı.");
-
-        //    if (tracker == null)
-        //    {
-        //        tracker = new PostViewTracker
-        //        {
-        //            PostId = postId,
-        //            IPAddress = ipAddress,
-        //            LastViewedAt = now
-        //        };
-        //        _context.PostViewTrackers.Add(tracker);
-        //        post.ViewCount++;
-        //    }
-        //    else if ((now - tracker.LastViewedAt).TotalMinutes > 60)
-        //    {
-        //        tracker.LastViewedAt = now;
-        //        post.ViewCount++;
-        //    }
-        //    else
-        //    {
-        //        return ApiResponses<bool>.Fail("Yakın zamanda görüntülendi.");
-        //    }
-
-        //    await _context.SaveChangesAsync();
-        //    return ApiResponses<bool>.Success();
-        //}
 
     }
 }

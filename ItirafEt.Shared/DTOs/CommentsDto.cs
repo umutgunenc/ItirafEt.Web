@@ -10,7 +10,7 @@ namespace ItirafEt.Shared.DTOs
     public class CommentsDto
     {
         public int Id { get; set; }
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
         [Required(ErrorMessage = "Lütfen yorum alanını doldurduktan sonra tekrar deneyin.")]
         public string Content { get; set; }
         public DateTime CreatedDate { get; set; }

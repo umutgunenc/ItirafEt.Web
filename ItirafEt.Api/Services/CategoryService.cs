@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.Xml;
-using ItirafEt.Api.Data;
+﻿using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
@@ -14,12 +13,10 @@ namespace ItirafEt.Api.Services
     public class CategoryService
     {
         private readonly dbContext _context;
-        //private readonly IHubContext<CategoryHub> _hubContext;
         private readonly CategoryHubService _categoryHubService;
         public CategoryService(dbContext context, IHubContext<CategoryHub> hubContext, PostViewService postReadService, CategoryHubService categoryHubService)
         {
             _context = context;
-            //_hubContext = hubContext;
             _categoryHubService = categoryHubService;
         }
 
@@ -93,7 +90,6 @@ namespace ItirafEt.Api.Services
 
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
-            //await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
             await _categoryHubService.CategoryInfoChangedAsync(newCategoryDto);
             return ApiResponses.Success();
 

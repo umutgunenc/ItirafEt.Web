@@ -294,9 +294,9 @@
 					.WithAutomaticReconnect()
 					.Build();
 
-		_reactionHubConnection.On<int, int>("UpdatePostLikeCountAsync", (postId, likeCount) =>
+		_reactionHubConnection.On<int, int>("UpdatePostLikeCountAsync", async (postId, likeCount) =>
 		{
-			UpdateReactions(postId, likeCount);
+			await UpdateReactionsAsync(postId, likeCount);
 			StateHasChanged();
 		});
 
@@ -342,9 +342,9 @@
 		await LocalStorage.SetItemAsync($"cat-{CategoryId}-categoryName", _categoryName);
 	}
 
-
-	private void UpdateReactions(int postId, int likeCount)
+	private async Task UpdateReactionsAsync(int postId, int likeCount)
 	{
+
 		foreach (var post in State.Items)
 		{
 			if (post.PostId == postId)
@@ -353,6 +353,9 @@
 				break;
 			}
 		}
+
+		await LocalStorage.RemoveItemAsync($"cat-{CategoryId}-items");
+		await LocalStorage.SetItemAsync($"cat-{CategoryId}-items", State.Items);
 		
 	}
 

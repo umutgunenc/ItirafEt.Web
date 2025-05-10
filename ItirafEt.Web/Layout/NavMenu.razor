@@ -269,7 +269,7 @@
 		<a class="navbar-brand text-white fw-bold" href="/home">ItirafEt</a>
 
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-				aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+		aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon" style="filter: invert(1);"></span>
 		</button>
 
@@ -361,11 +361,13 @@
 @code {
 
 
-	// private bool collapseNavMenu = true;
-	// private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 	private List<CategoryDto>? _categories = new List<CategoryDto>();
-	private HubConnection _hubConnection { get; set; }
+	private HubConnection _hubConnection;
 	private string? _errorMessage = null;
+	private string allowedRoles = string.Join(",",
+	nameof(UserRoleEnum.SuperAdmin),
+	nameof(UserRoleEnum.Admin),
+	nameof(UserRoleEnum.Moderator));
 
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -388,11 +390,6 @@
 		NavigationManager.NavigateTo("/home", replace: true);
 	}
 
-	private string allowedRoles = string.Join(",",
-		nameof(UserRoleEnum.SuperAdmin),
-		nameof(UserRoleEnum.Admin),
-		nameof(UserRoleEnum.Moderator));
-
 	private async Task GelAllActiveCategoryAsync()
 	{
 		try
@@ -413,7 +410,6 @@
 
 	private async Task StartHubAsync()
 	{
-
 		_hubConnection = new HubConnectionBuilder()
 			.WithUrl("https://localhost:7292/categoryhub")
 			.WithAutomaticReconnect()
@@ -425,9 +421,16 @@
 			StateHasChanged();
 		});
 
-		await _hubConnection.StartAsync();
-		await _hubConnection.SendAsync("JoinCategoryInfoChangedGroup");
+		_hubConnection.On<int, bool>("CategoryPostCountChangedAsync", (categoryId, isPostAdded) =>
+		{
+			UpdateCategories(categoryId, isPostAdded);
+			StateHasChanged();
+		});
 
+		await _hubConnection.StartAsync();
+
+		await _hubConnection.SendAsync("JoinCategoryInfoChangedGroup");
+		await _hubConnection.SendAsync("JoinCategoryPostCountChangedGroup");
 	}
 
 	private void UpdateCategories(CategoryDto category)
@@ -458,14 +461,12 @@
 			.ToList();
 	}
 
-
-	private async Task ToggleBodyScroll(bool isMenuOpen)
+	private void UpdateCategories(int categoryId,bool isPostAdded)
 	{
-		await JSRuntime.InvokeVoidAsync("toggleBodyScroll", isMenuOpen);
+		if (isPostAdded)
+			_categories.First(c => c.Id == categoryId).PostCount++;
+		else
+			_categories.First(c => c.Id == categoryId).PostCount--;
 	}
 
-	private async void HandleMenuToggle(bool isOpen)
-	{
-		await ToggleBodyScroll(isOpen);
-	}
 }

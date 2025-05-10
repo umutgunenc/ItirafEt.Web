@@ -20,11 +20,11 @@ namespace ItirafEt.Api.HubServices
                 .SendAsync("CategoryInfoChangedAsync", categoryDto);
         }
 
-        public async Task CategoryPostCountChanged(int categoryId, bool isPostAdded)
+        public async Task CategoryPostCountChangedAsync(int categoryId, bool isPostAdded)
         {
             await _categoryHub.Clients
                 .Group($"CategoryPostCountChanged")
-                .SendAsync("CategoryPostCountChanged", categoryId, isPostAdded);
+                .SendAsync("CategoryPostCountChangedAsync", categoryId, isPostAdded);
         }
     }
 }
