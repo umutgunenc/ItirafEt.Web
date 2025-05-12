@@ -1,4 +1,5 @@
-﻿using ItirafEt.Api.Data;
+﻿using System.Net.NetworkInformation;
+using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.DTOs;
@@ -40,23 +41,17 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            //if (postReactions == null || postReactions.Count == 0)
-            //    return ApiResponses<List<ReactionDto>>.Fail("");
-
             return ApiResponses<List<ReactionDto>>.Success(postReactions);
 
         }
         public async Task<ApiResponses<ReactionDto>> LikePostAsync(int postId, Guid UserId)
         {
-            var post = await _context.Posts
-                .AsNoTracking()
-                .Include(p => p.PostReactions)
-                .FirstOrDefaultAsync(c => c.Id == postId && c.IsActive);
+            var post = await GetPostAsync(postId);
             if (post == null)
                 return ApiResponses<ReactionDto>.Fail("Gönderi bulunamadı.");
 
-            var reaction = await _context.PostReaction
-                .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
+            var reaction = await GetPostReactionAsync(postId, UserId);
+
             var likeCount = post.PostReactions.Count(c => c.ReactionTypeId == (int)ReactionTypeEnum.Like);
             if (reaction != null)
             {
@@ -64,7 +59,6 @@ namespace ItirafEt.Api.Services
                 {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Cancelled;
                     likeCount--;
-
                 }
                 else if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
                 {
@@ -99,11 +93,10 @@ namespace ItirafEt.Api.Services
                     CreatedDate = DateTime.Now
                 };
                 _context.PostReaction.Add(reaction);
-
-
                 likeCount++;
 
                 await _context.SaveChangesAsync();
+                reaction.ReactingUser = await GetReactingUser(UserId);
 
                 var reactionDto = ReactionToReactionDto(reaction);
 
@@ -118,15 +111,12 @@ namespace ItirafEt.Api.Services
         }
         public async Task<ApiResponses<ReactionDto>> DislikePostAsync(int postId, Guid UserId)
         {
-            var post = await _context.Posts
-                .AsNoTracking()
-                .Include(p => p.PostReactions)
-                .FirstOrDefaultAsync(c => c.Id == postId && c.IsActive);
+            var post = await GetPostAsync(postId);
             if (post == null)
                 return ApiResponses<ReactionDto>.Fail("Gönderi bulunamadı.");
 
-            var reaction = await _context.PostReaction
-                .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
+            var reaction = await GetPostReactionAsync(postId, UserId);
+
             var likeCount = post.PostReactions.Count(c => c.ReactionTypeId == (int)ReactionTypeEnum.Like);
 
             if (reaction != null)
@@ -168,6 +158,8 @@ namespace ItirafEt.Api.Services
                 _context.PostReaction.Add(reaction);
 
                 await _context.SaveChangesAsync();
+
+                reaction.ReactingUser = await GetReactingUser(UserId);
                 var reactionDto = ReactionToReactionDto(reaction);
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
@@ -185,9 +177,30 @@ namespace ItirafEt.Api.Services
                 PostId = reaction.PostId,
                 ReactingUserId = reaction.ReactingUserId,
                 ReactionTypeId = reaction.ReactionTypeId,
+                ReactingUserUserName = reaction.ReactingUser.UserName,
+                CreatedDate = reaction.CreatedDate,
+
             };
         }
+        private async Task<Post?> GetPostAsync(int postId)
+        {
+            return await _context.Posts
+                .AsNoTracking()
+                .Include(p => p.PostReactions)
+                .FirstOrDefaultAsync(c => c.Id == postId && c.IsActive);
+        }
+        private async Task<PostReaction?> GetPostReactionAsync(int postId, Guid UserId)
+        {
+            return await _context.PostReaction
+                .Include(c => c.ReactingUser)
+                .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
+        }
+        private async Task<User> GetReactingUser(Guid UserId)
+        {
+           return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == UserId);
 
-        
+        }
     }
 }

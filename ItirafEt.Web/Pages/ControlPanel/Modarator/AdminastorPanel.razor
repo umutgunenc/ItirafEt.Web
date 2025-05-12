@@ -1,7 +1,7 @@
 ﻿@page "/admin/adminastorPanel"
 
 
-<div class="mx-5 my-5">
+<div class="px-5 py-5">
 	<div class=" ps-3 mb-4 py-3">
 		<h1 class="mb-0 fw-bold text-dark-emphasis text-center">
 			<i class="bi bi-person-gear me-2"></i>
@@ -11,8 +11,8 @@
 	<AuthorizeView Context="Categories">
 		<Authorized>
 			<AuthorizeView Roles="@SuperAdminAdmin">
-				<div class="border-start border-5 border-primary ps-3 py-2 mb-4 bg-info-subtle" @onclick="ToggleCategory">
-					<h3 class="mb-0 fw-bold text-dark-emphasis d-flex align-items-center" style="cursor: pointer;">
+				<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToggleCategory">
+					<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
 						<i class="bi bi-folder2-open me-2"></i>
 						Kategori İşlemleri
 						<i class="bi ms-auto @(isCategoryVisible ? "bi-chevron-up" : "bi-chevron-down") fs-5 text-muted"></i>
@@ -24,18 +24,17 @@
 					<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
 
 						<NavLink class="text-decoration-none" href="admin/createcategory">
-							<div class="card shadow-md border-0 bg-dark-subtle hover-shadow transition d-flex flex-row align-items-center p-2 rounded-3">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
 								<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
 								<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Ekle</span>
 							</div>
 						</NavLink>
 						<NavLink class="text-decoration-none" href="admin/editcategory">
-							<div class="card shadow-md border-0 bg-dark-subtle hover-shadow transition d-flex flex-row align-items-center p-2 rounded-3">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
 								<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
 								<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Düzenle</span>
 							</div>
 						</NavLink>
-
 
 					</div>
 				}
@@ -46,8 +45,8 @@
 	<AuthorizeView Context="Users">
 		<Authorized>
 			<AuthorizeView Roles="@SuperAdmin">
-				<div class="border-start border-5 border-primary ps-3 py-2 mb-4 bg-info-subtle" @onclick="ToggleUsers">
-					<h3 class="mb-0 fw-bold text-dark-emphasis d-flex align-items-center" style="cursor: pointer;">
+				<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToggleUsers">
+					<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
 						<i class="bi bi-people me-2"></i>
 						Kullanıcı İşlemleri
 						<i class="bi ms-auto @(isUsersVisible ? "bi-chevron-up" : "bi-chevron-down") fs-5 text-muted"></i>
@@ -58,14 +57,14 @@
 				{
 					<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
 						<NavLink class="text-decoration-none" href="admin/banUsers">
-							<div class="card shadow-md border-0 bg-dark-subtle hover-shadow transition d-flex flex-row align-items-center p-2 rounded-3">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
 								<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
 								<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıyı Banla</span>
 							</div>
 						</NavLink>
 
 						<NavLink class="text-decoration-none" href="admin/checkComplaint">
-							<div class="card shadow-md border-0 bg-dark-subtle hover-shadow transition d-flex flex-row align-items-center p-2 rounded-3">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
 								<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
 								<span class="fs-6 fw-semibold text-dark-emphasis">Şikayetleri Gör</span>
 							</div>

@@ -27,6 +27,7 @@
 			}
 			else
 			{
+
 				<div class="card-body">
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
@@ -44,7 +45,7 @@
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
 								   style="cursor:pointer" @onclick="LikePostAsync"></i>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
 							</div>
@@ -52,7 +53,7 @@
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
 								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikesAsync">
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
 							</div>
@@ -61,7 +62,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="Report"></i>
+									   style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -89,7 +90,7 @@
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
 								   style="cursor:pointer" @onclick="LikePostAsync"></i>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikesAsync">
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
 							</div>
@@ -97,7 +98,7 @@
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
 								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikesAsync">
+								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
 							</div>
@@ -106,7 +107,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="Report"></i>
+									   style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -181,7 +182,7 @@
 									</div>
 
 									<div class="my-3">
-										<button type="submit" class="btn blue col-12 text-white fw-medium">Gönder</button>
+										<button type="submit" class="btn blue col-12 text-white fw-medium" disabled="@_isApiBusy">Gönder</button>
 									</div>
 								</EditForm>
 
@@ -205,9 +206,8 @@
 											<!-- Reply input -->
 											@if (_replyToCommentId == comment.Id)
 											{
-												<EditForm 
-													Model="_replyModel"
-													OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+												<EditForm Model="_replyModel"
+														  OnValidSubmit="()=>AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
 													<div class="input-group mb-2">
 														<input type="text"
@@ -221,7 +221,7 @@
 															</button>
 														</div>
 
-													</div>														
+													</div>
 													<ValidationMessage For="@(() => _replyModel.Content)" />
 
 												</EditForm>
@@ -283,7 +283,7 @@
 									</div>
 
 									<div class="my-3">
-										<button type="submit" class="btn blue col-12 text-white fw-medium">Gönder</button>
+										<button type="submit" class="btn blue col-12 text-white fw-medium" disabled="@_isApiBusy">Gönder</button>
 									</div>
 								</EditForm>
 							}
@@ -301,6 +301,80 @@
 	</div>
 </div>
 
+<ModalComponent @ref="_likesModel" Title="Beğeneler" TitleClass="mx-auto">
+	<ChildContent>
+		@if (_reactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like))
+		{
+			@foreach (var reaction in _reactions)
+			{
+				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
+				{
+					<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
+						<div class="d-flex align-items-center p-3">
+							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
+								 class="rounded-circle me-3"
+								 width="48"
+								 height="48"
+								 style="object-fit: cover;"
+								 alt="User Profil Picture" />
+							<div>
+								<h6 class="mb-1 fw-semibold text-dark" @onclick="ShowUserProfile" style="cursor:pointer">@reaction.ReactingUserUserName</h6>
+								<small class="text-muted">@reaction.CreatedDate.ToString("HH:mm - dd:MM:yyyy")</small>
+							</div>
+						</div>
+					</div>
+				}
+			}
+		}
+		else
+		{
+			<div class="alert alert-info" role="alert">
+				Gönderi Henüz Beğenilmedi.
+			</div>
+		}
+	</ChildContent>
+	<FooterContent>
+		<button class="btn blue col text-white fw-medium" @onclick="_likesModel.Close">Kapat</button>
+	</FooterContent>
+</ModalComponent>
+
+<ModalComponent @ref="_dislikeModel" Title="Beğenmeyenler" TitleClass="mx-auto">
+	<ChildContent>
+		@if (_reactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike))
+		{
+			@foreach (var reaction in _reactions)
+			{
+				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
+				{
+					<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
+						<div class="d-flex align-items-center p-3">
+							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
+								 class="rounded-circle me-3"
+								 width="48"
+								 height="48"
+								 style="object-fit: cover;"
+								 alt="User Profil Picture" />
+							<div>
+								<h6 class="mb-1 fw-semibold text-dark" @onclick="ShowUserProfile" style="cursor:pointer">@reaction.ReactingUserUserName</h6>
+								<small class="text-muted">@reaction.CreatedDate.ToString("HH:mm - dd:MM:yyyy")</small>
+							</div>
+						</div>
+					</div>
+				}
+			}
+		}
+		else
+		{
+			<div class="alert alert-info" role="alert">
+				Gönderiyi beğenmeyen yok.
+			</div>
+		}
+	</ChildContent>
+	<FooterContent>
+		<button class="btn blue col text-white fw-medium" @onclick="_dislikeModel.Close">Kapat</button>
+	</FooterContent>
+</ModalComponent>
+
 
 @code {
 	[Parameter]
@@ -314,15 +388,24 @@
 	private HubConnection _reactionHubConnection;
 	private HubConnection _commentHubConnection;
 	private HubConnection _postViewHubConnection;
-
-
+	private ModalComponent? _likesModel;
+	private ModalComponent? _dislikeModel;
 	private Guid? _currentUserId;
+	private List<string> allowedRoles = new List<string>
+	{
+		nameof(UserRoleEnum.SuperAdmin),
+		nameof(UserRoleEnum.Admin),
+		nameof(UserRoleEnum.Moderator),
+		nameof(UserRoleEnum.SuperUser)
+	};
 	private int? _likeCount;
 	private int? _dislikeCount;
 	private int? _newReactionId;
 	private int? _oldReactionId;
 	private int? _loggedInUserLastReaction;
 	private int? _postViewCount;
+	private int? _replyToCommentId;
+	private bool _isApiBusy = false;
 	private bool _isBusy = true;
 	private bool _isPostOwner = false;
 	private bool _isUserLoggedIn = false;
@@ -334,40 +417,179 @@
 	private string? _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
-
-	private List<string> allowedRoles = new List<string>
-	{
-		nameof(UserRoleEnum.SuperAdmin),
-		nameof(UserRoleEnum.Admin),
-		nameof(UserRoleEnum.Moderator),
-		nameof(UserRoleEnum.SuperUser)
-	};
-
-	// Hangi yoruma cevap kutusu açık
-	private int? _replyToCommentId;
-
-	// Cevap metni
 	private string? _replyText;
+	private string? _userRoleId = null;
 
-	protected override async Task OnInitializedAsync()
+
+
+
+	protected override async Task OnParametersSetAsync()
 	{
+		ResetPage();
+		await StartTasksAsync();
 		await StartReactionHubConnectionAsync();
 		await StartPostViewHubConnectionAsync();
 		await StartCommentHubConnectionAsync();
-		await StartTasksAsync();
 		// await GetPostViewCountAsync();
 		CheckUserLoggedIn();
+		GetUserRoleId();
 		IsUserPostOwner(_isPostHaveError);
 		UpdatePostReactionCounts();
 		UpdatePostReactionButtons();
 		await ReadPostAsync();
 		_isBusy = false;
+
+	}
+	private void ResetPage()
+	{
+		_isPostHaveError = false;
+		_isApiBusy = false;
+		_isBusy = true;
+		_showComments = false;
+		_isCommentsHaveError = false;
+		_commentErrorMessage = null;
+	}
+	private async Task StartReactionHubConnectionAsync()
+	{
+		_reactionHubConnection = new HubConnectionBuilder()
+					.WithUrl("https://localhost:7292/reactionhub")
+					.WithAutomaticReconnect()
+					.Build();
+
+		_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
+		{
+			UpdateReactions(reaction, isReactionUpdated);
+			StateHasChanged();
+		});
+
+		await _reactionHubConnection.StartAsync();
+		await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
+
+	}
+	private async Task StartPostViewHubConnectionAsync()
+	{
+		_postViewHubConnection = new HubConnectionBuilder()
+					.WithUrl("https://localhost:7292/postviewhub")
+					.WithAutomaticReconnect()
+					.Build();
+
+
+
+		_postViewHubConnection.On<int, int, int>("PostRead", (categoryId, updatedPostId, viewCount) =>
+		{
+
+			if (updatedPostId == postId)
+				_postViewCount = viewCount;
+			StateHasChanged();
+		});
+
+		await _postViewHubConnection.StartAsync();
+		await _postViewHubConnection.SendAsync("JoinPostPostCountGroup", postId);
+		await _postViewHubConnection.SendAsync("JoinCategoryPostCountGroup", _postDto.CategoryId);
+
+	}
+	private async Task StartCommentHubConnectionAsync()
+	{
+		_commentHubConnection = new HubConnectionBuilder()
+					.WithUrl("https://localhost:7292/commenthub")
+					.WithAutomaticReconnect()
+					.Build();
+
+		_commentHubConnection.On<CommentsDto, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
+		{
+
+			if (isAdded)
+			{
+				if (_comments == null)
+					_comments = new List<CommentsDto>();
+				_comments.Insert(0, commentDto);
+			}
+			else
+				_comments.Remove(commentDto);
+
+			StateHasChanged();
+		});
+
+		_commentHubConnection.On<CommentsDto, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
+		{
+			var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
+			if (comment != null)
+			{
+				if (comment.CommentReplies == null)
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>();
+
+				if (isAdded)
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
+				else
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies.RemoveAll(r => r.Id == replyDto.Id);
+			}
+
+			StateHasChanged();
+		});
+
+		await _commentHubConnection.StartAsync();
+		await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId);
+	}
+	private async Task StartTasksAsync()
+	{
+		var postTask = PostApi.GetPostByIdAsync(postId);
+		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
+		var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+		var postViewCountTask = PostViewApi.GetPostReadCountAsync(postId);
+		await Task.WhenAll(postTask, reactionsTask, commentsTask, postViewCountTask);
+
+		var reactionsTaskResult = await reactionsTask;
+		GetPost(postTask.Result);
+		GetComments(commentsTask.Result);
+		GetReactions(reactionsTask.Result);
+		GetPostViewCount(postViewCountTask.Result);
+	}
+	private void CheckUserLoggedIn()
+	{
+		_isUserLoggedIn = AuthStateProvider.IsLoggedIn;
+	}
+	private void GetUserRoleId()
+	{
+		if (_isUserLoggedIn)
+			_userRoleId = AuthStateProvider.User?.roleId;
+		else
+			_userRoleId = null;
+	}
+	private void IsUserPostOwner(bool IsPostError)
+	{
+		if (IsPostError)
+			return;
+
+		if (_postDto == null)
+			return;
+		if (_userRoleId == null)
+			return;
+
+		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
+		{
+			_currentUserId = parsedId;
+			_isPostOwner = _postDto.UserId == _currentUserId;
+		}
+		else
+			_isPostOwner = false;
 	}
 
+	private void NavigateToLogin()
+	{
+		NavigationManager.NavigateTo("/auth/login");
+	}
+	private void NavigateToPricing()
+	{
+		NavigationManager.NavigateTo("/pricing");
+	}
 	private async Task LikePostAsync()
 	{
+		if (_isApiBusy)
+			return;
+		_isApiBusy = true;
 		if (!_isUserLoggedIn)
 		{
+			_isApiBusy = false;
 			NavigateToLogin();
 			return;
 		}
@@ -375,17 +597,26 @@
 		{
 			var result = await ReactionApi.LikePostAsync(postId, _currentUserId.Value);
 			if (!result.IsSuccess)
+			{
+				_isPostHaveError = true;
 				_errorMessage = result.ErrorMessage;
+			}
 		}
 		catch (Exception ex)
 		{
+			_isPostHaveError = true;
 			_errorMessage = ex.Message;
 		}
+		_isApiBusy = false;
 	}
 	private async Task DislikePostAsync()
 	{
+		if (_isApiBusy)
+			return;
+		_isApiBusy = true;
 		if (!_isUserLoggedIn)
 		{
+			_isApiBusy = false;
 			NavigateToLogin();
 			return;
 		}
@@ -393,33 +624,84 @@
 		{
 			var result = await ReactionApi.DislikePostAsync(postId, _currentUserId.Value);
 			if (!result.IsSuccess)
+			{
+				_isPostHaveError = true;
 				_errorMessage = result.ErrorMessage;
+			}
 		}
 		catch (Exception ex)
 		{
+			_isPostHaveError = true;
 			_errorMessage = ex.Message;
 		}
+		_isApiBusy = false;
 
 	}
-	private void Report()
+	private void ReportPost()
 	{
 		if (!_isUserLoggedIn)
 			NavigateToLogin();
 	}
+	private void SendMessage()
+	{
+		if (!_isUserLoggedIn)
+		{
+			NavigateToLogin();
+			return;
+		}
+		var userRole = AuthStateProvider.User?.roleId;
 
-	private async Task ShowLikesAsync()
-	{
-		await Task.Delay(1000);
+		if (allowedRoles.Contains(userRole))
+		{
+			// Mesaj gönderme işlemi
+			// Mesaj gönderme API çağrısı yapılabilir
+			// Örnek: await MessageApi.SendMessageAsync(_postDto.UserId, messageContent);
+		}
+		else
+			NavigateToPricing();
 	}
-	private async Task ShowDislikesAsync()
+	private void ShowLikes()
 	{
-		await Task.Delay(1000);
+		if (!allowedRoles.Contains(_userRoleId))
+		{
+			NavigateToPricing();
+			return;
+		}
+
+		_likesModel.Open();
 	}
+	private void ShowDislikes()
+	{
+		if (!allowedRoles.Contains(_userRoleId))
+		{
+			NavigateToPricing();
+			return;
+		}
+
+		_dislikeModel.Open();
+	}
+	private void ShowComments()
+	{
+		_showComments = !_showComments;
+	}
+	private void ToggleReplyBox(int commentId)
+	{
+		if (_replyToCommentId == commentId)
+		{
+			_replyToCommentId = null;
+			_replyText = string.Empty;
+		}
+		else
+		{
+			_replyToCommentId = commentId;
+			_replyText = string.Empty;
+		}
+	}
+
 	private async Task ShowViewsAsync()
 	{
 		await Task.Delay(1000);
 	}
-
 	private async Task ReadPostAsync()
 	{
 		if (!_isUserLoggedIn)
@@ -440,39 +722,17 @@
 			_errorMessage = ex.Message;
 		}
 	}
-
-	private void CheckUserLoggedIn()
-	{
-		_isUserLoggedIn = AuthStateProvider.IsLoggedIn;
-	}
-	private void NavigateToLogin()
-	{
-		NavigationManager.NavigateTo("/auth/login");
-	}
-	private void NavigateToPricing()
-	{
-		NavigationManager.NavigateTo("/pricing");
-	}
-
-	private void ShowComments()
-	{
-		_showComments = !_showComments;
-	}
-
-
 	private void UpdatePostReactionCounts()
 	{
 		_likeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? 0;
 		_dislikeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? 0;
 	}
-
 	private void UpdatePostReactionButtons()
 	{
 
 		_isAlreadyLiked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
 		_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 	}
-
 	private void UpdateReactions(ReactionDto? reaction, bool? isReactionUpdated)
 	{
 		if (isReactionUpdated == true)
@@ -488,127 +748,6 @@
 		UpdatePostReactionButtons();
 	}
 
-	private async Task StartReactionHubConnectionAsync()
-	{
-		_reactionHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/reactionhub")
-					.WithAutomaticReconnect()
-					.Build();
-
-		_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
-		{
-			UpdateReactions(reaction, isReactionUpdated);
-			StateHasChanged();
-		});
-
-		await _reactionHubConnection.StartAsync();
-		await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
-
-	}
-
-	private async Task StartPostViewHubConnectionAsync()
-	{
-		_postViewHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/postviewhub")
-					.WithAutomaticReconnect()
-					.Build();
-
-
-
-		_postViewHubConnection.On<int, int, int>("PostRead", (categoryId, updatedPostId, viewCount) =>
-		{
-			if (updatedPostId == postId)
-			{
-				_postViewCount = viewCount;
-				StateHasChanged();
-			}
-		});
-
-		await _postViewHubConnection.StartAsync();
-		await _postViewHubConnection.SendAsync("JoinPostPostCountGroup", postId);
-		await _postViewHubConnection.SendAsync("JoinCategoryPostCountGroup", _postDto.CategoryId);
-
-	}
-
-	private async Task StartCommentHubConnectionAsync()
-	{
-		_commentHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/commenthub")
-					.WithAutomaticReconnect()
-					.Build();
-
-
-		_commentHubConnection.On<CommentsDto, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
-		{
-			if (isAdded)
-				_comments.Insert(0, commentDto);
-			else
-				_comments.Remove(commentDto);
-
-			StateHasChanged();
-		});
-
-		_commentHubConnection.On<CommentsDto, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
-		{
-			var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
-
-			if (comment != null)
-			{
-				if (comment.CommentReplies == null)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>();
-
-				if (isAdded)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
-				else
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies.RemoveAll(r => r.Id == replyDto.Id);
-			}
-
-			StateHasChanged();
-		});
-
-		await _commentHubConnection.StartAsync();
-		await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId);
-	}
-
-	private async Task StartTasksAsync()
-	{
-		var postTask = PostApi.GetPostByIdAsync(postId);
-		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
-		var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-		var postViewCountTask = PostViewApi.GetPostReadCountAsync(postId);
-		await Task.WhenAll(postTask, reactionsTask, commentsTask, postViewCountTask);
-
-		var reactionsTaskResult = await reactionsTask;
-		GetPost(postTask.Result);
-		GetComments(commentsTask.Result);
-		GetReactions(reactionsTask.Result);
-		GetPostViewCount(postViewCountTask.Result);
-	}
-
-	// private async Task GetPostViewCountAsync()
-	// {
-	// 	var response = await PostViewApi.GetPostReadCountAsync(postId);
-	// 	if (response.IsSuccess)
-	// 		_postViewCount = response.Data;
-	// }
-
-	private void IsUserPostOwner(bool IsPostError)
-	{
-		if (IsPostError)
-			return;
-
-		if (_postDto == null)
-			return;
-
-		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
-		{
-			_currentUserId = parsedId;
-			_isPostOwner = _postDto.UserId == _currentUserId;
-		}
-		else
-			_isPostOwner = false;
-	}
-
 	private string GetUserGenderName(int genderId)
 	{
 		switch (genderId)
@@ -621,9 +760,7 @@
 				return "";
 		}
 	}
-
-	private void GetPost(ApiResponses<PostDto>
-	response)
+	private void GetPost(ApiResponses<PostDto> response)
 	{
 		try
 		{
@@ -704,54 +841,43 @@
 		if (response.IsSuccess)
 			_postViewCount = response.Data;
 	}
-
 	private void ShowUserProfile()
 	{
 		NavigationManager.NavigateTo($"/profile/{_postDto.UserId}");
 	}
 
-	private void SendMessage()
-	{
-
-		if (!_isUserLoggedIn)
-		{
-			NavigateToLogin();
-			return;
-		}
-		var userRole = AuthStateProvider.User?.roleId;
-
-		if (allowedRoles.Contains(userRole))
-		{
-			// Mesaj gönderme işlemi
-			// Mesaj gönderme API çağrısı yapılabilir
-			// Örnek: await MessageApi.SendMessageAsync(_postDto.UserId, messageContent);
-		}
-		else
-			NavigateToPricing();
-	}
-
-
-
 	private async Task AddCommentAsync()
 	{
+		if (_isApiBusy)
+			return;
+		_isApiBusy = true;
 		if (!_isUserLoggedIn)
 		{
+			_isApiBusy = false;
+
 			NavigateToLogin();
 			return;
 		}
 		if (string.IsNullOrWhiteSpace(_commentModel.Content))
+		{
+			_isApiBusy = false;
 			return;
+		}
+
 		_newCommentText = _commentModel.Content.Trim();
 		if (string.IsNullOrWhiteSpace(_newCommentText))
+		{
+			_isApiBusy = false;
 			return;
+		}
 
 		try
 		{
 			var result = await CommentApi.AddCommentAsync(postId, (Guid)_currentUserId, _commentModel);
 			if (!result.IsSuccess)
 			{
-				_commentErrorMessage = result.ErrorMessage;
 				_isCommentsHaveError = true;
+				_commentErrorMessage = result.ErrorMessage;
 			}
 		}
 		catch (Exception ex)
@@ -760,43 +886,42 @@
 			_commentErrorMessage = ex.Message;
 		}
 		_commentModel.Content = string.Empty;
+		_isApiBusy = false;
 
-	}
-
-	private void ToggleReplyBox(int commentId)
-	{
-		if (_replyToCommentId == commentId)
-		{
-			_replyToCommentId = null;
-			_replyText = string.Empty;
-		}
-		else
-		{
-			_replyToCommentId = commentId;
-			_replyText = string.Empty;
-		}
 	}
 
 	private async Task AddReplyAsync(int parentCommentId)
 	{
+		if (_isApiBusy)
+			return;
+
+		_isApiBusy = true;
+
 		if (!_isUserLoggedIn)
 		{
+			_isApiBusy = false;
 			NavigateToLogin();
 			return;
 		}
 		if (string.IsNullOrWhiteSpace(_replyModel.Content))
+		{
+			_isApiBusy = false;
 			return;
+		}
 		var _newReplyText = _replyModel.Content.Trim();
 		if (string.IsNullOrWhiteSpace(_newReplyText))
+		{
+			_isApiBusy = false;
 			return;
+		}
 
 		try
 		{
 			var result = await CommentApi.AddReplyCommentAsync(postId, parentCommentId, (Guid)_currentUserId, _replyModel);
 			if (!result.IsSuccess)
 			{
-				_commentErrorMessage = result.ErrorMessage;
 				_isCommentsHaveError = true;
+				_commentErrorMessage = result.ErrorMessage;
 			}
 		}
 		catch (Exception ex)
@@ -806,6 +931,7 @@
 		}
 		_replyModel.Content = string.Empty;
 		_replyToCommentId = null;
+		_isApiBusy = false;
 	}
 
 }

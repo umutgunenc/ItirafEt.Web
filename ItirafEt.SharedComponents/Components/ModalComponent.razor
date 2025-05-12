@@ -1,10 +1,10 @@
 ﻿﻿@using Microsoft.AspNetCore.Components
 
 <div class="@htmlClass" @ref="modalElement" tabindex="-1" role="dialog" style="display:@display">
-    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg">
             <div class="modal-header m-3">
-                <h5 class="modal-title">@Title</h5>
+                <h5 class="modal-title @TitleClass">@Title</h5>
                 @*                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="Close"></button>
  *@            </div>
             <div class="modal-body m-3">
@@ -20,6 +20,9 @@
 @code {
     [Parameter]
     public string Title { get; set; }
+
+    [Parameter]
+    public string TitleClass { get; set; }
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
