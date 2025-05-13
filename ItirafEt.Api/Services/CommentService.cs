@@ -53,7 +53,6 @@ namespace ItirafEt.Api.Services
                        ReactingUserId = cr.ReactingUserId,
                        ReactingUserUserName = cr.ReactingUser.UserName,
                        CreatedDate = cr.CreatedDate,
-                       ReactionTypeName = cr.Reaction.Name,
                        CommentId = c.Id
                    }).ToList(),
                    CommentReplies = c.Replies
@@ -76,7 +75,6 @@ namespace ItirafEt.Api.Services
                                 ReactingUserId = cr.ReactingUserId,
                                 ReactingUserUserName = cr.ReactingUser.UserName,
                                 CreatedDate = cr.CreatedDate,
-                                ReactionTypeName = cr.Reaction.Name,
                                 CommentId = r.Id
 
                             }).ToList()

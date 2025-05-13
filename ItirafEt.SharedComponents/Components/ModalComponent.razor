@@ -3,14 +3,14 @@
 <div class="@htmlClass" @ref="modalElement" tabindex="-1" role="dialog" style="display:@display">
     <div class="modal-dialog modal-fullscreen modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg">
-            <div class="modal-header m-3">
+            <div class="modal-header my-3">
                 <h5 class="modal-title @TitleClass">@Title</h5>
                 @*                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="Close"></button>
  *@            </div>
-            <div class="modal-body m-3">
+            <div class="modal-body mb-3 px-md-5 px-1">
                 @ChildContent
             </div>
-            <div class="modal-footer m-3">
+            <div class="modal-footer mb-3 px-md-5 px-1">
                 @FooterContent
             </div>
         </div>

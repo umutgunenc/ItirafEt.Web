@@ -37,7 +37,9 @@ namespace ItirafEt.Api.Services
                     ReactingUserId = pr.ReactingUserId,
                     ReactingUserUserName = pr.ReactingUser.UserName,
                     CreatedDate = pr.CreatedDate,
-                    ReactionTypeName = pr.ReactionType.Name
+                    ReactingUserAge = DateTime.Now.Year - pr.ReactingUser.BirthDate.Year,
+                    ReactingUserGenderId = pr.ReactingUser.GenderId,
+                    ReactingUserProfileImageUrl = pr.ReactingUser.ProfilePictureUrl
                 })
                 .ToListAsync();
 

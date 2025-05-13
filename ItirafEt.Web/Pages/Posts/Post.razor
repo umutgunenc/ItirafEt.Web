@@ -32,7 +32,7 @@
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
 					<p class="card-text text-break"
-					   style="text-align: justify;
+					style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
@@ -44,7 +44,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								   style="cursor:pointer" @onclick="LikePostAsync"></i>
+								style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -52,7 +52,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -62,7 +62,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportPost"></i>
+									style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -79,8 +79,8 @@
 								}
 							</div>
 							<!-- Görüntülenme -->
-							<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViewsAsync">
-								<i class="bi bi-eye me-1"></i>@_postViewCount
+							<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViwers">
+								<i class="bi bi-eye me-1"></i>@_viewers.Count
 							</div>
 						</div>
 
@@ -89,7 +89,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								   style="cursor:pointer" @onclick="LikePostAsync"></i>
+								style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -97,7 +97,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -107,7 +107,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportPost"></i>
+									style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -121,9 +121,9 @@
 						<div class="d-flex align-items-center gap-3">
 							<!-- Profil Fotoğrafı -->
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-								 class="rounded-circle"
-								 width="56" height="56"
-								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+							class="rounded-circle"
+							width="56" height="56"
+							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 
 							<!-- Kullanıcı Bilgileri -->
 							<div class="d-flex flex-column">
@@ -150,7 +150,7 @@
 											</span>
 										}
 
-										<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="SendMessage">
+										<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(_postDto.UserId)">
 											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 										</a>
 									</div>
@@ -174,10 +174,10 @@
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-													   class="form-control"
-													   placeholder="Yorum yazın..."
-													   @bind-Value="_commentModel.Content"
-													   rows="4" />
+										class="form-control"
+										placeholder="Yorum yazın..."
+										@bind-Value="_commentModel.Content"
+										rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -207,13 +207,13 @@
 											@if (_replyToCommentId == comment.Id)
 											{
 												<EditForm Model="_replyModel"
-														  OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+												OnValidSubmit="()=>AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
 													<div class="input-group mb-2">
 														<input type="text"
-															   class="form-control form-control-sm"
-															   placeholder="Cevabınızı yazın..."
-															   @bind="_replyModel.Content" />
+														class="form-control form-control-sm"
+														placeholder="Cevabınızı yazın..."
+														@bind="_replyModel.Content" />
 														<div class="input-group-append">
 															<button class="btn btn-sm btn-outline-primary" type="submit">
 																@* @onclick="() => AddReplyAsync(comment.Id)" *@
@@ -270,15 +270,15 @@
 								</div>
 
 								<EditForm Model="_commentModel"
-										  OnValidSubmit="AddCommentAsync">
+								OnValidSubmit="AddCommentAsync">
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-													   class="form-control"
-													   placeholder="Yorum yazın..."
-													   @bind-Value="_commentModel.Content"
-													   rows="4" />
+										class="form-control"
+										placeholder="Yorum yazın..."
+										@bind-Value="_commentModel.Content"
+										rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -310,16 +310,46 @@
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
 				{
 					<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
-						<div class="d-flex align-items-center p-3">
-							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-								 class="rounded-circle me-3"
-								 width="48"
-								 height="48"
-								 style="object-fit: cover;"
-								 alt="User Profil Picture" />
-							<div>
-								<h6 class="mb-1 fw-semibold text-dark" @onclick="ShowUserProfile" style="cursor:pointer">@reaction.ReactingUserUserName</h6>
-								<small class="text-muted">@reaction.CreatedDate.ToString("HH:mm - dd:MM:yyyy")</small>
+						<div class="d-flex flex-column gap-2 my-3 mx-2">
+							<!-- Üst Bilgi Satırı -->
+							<div class="d-flex align-items-center gap-2 gap-md-4">
+								<!-- Profil Fotoğrafı -->
+								<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
+								class="rounded-circle"
+								width="56" height="56"
+								style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+								<div class="d-flex flex-column">
+									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
+										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
+										<small>
+											@reaction.CreatedDate.ToString("HH:mm dd/MM/yyyy")
+										</small>
+									</div>
+
+									<div class="d-flex align-items-center justify-content-between">
+
+										<div class="d-flex align-items-center gap-2">
+											<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+												@reaction.ReactingUserAge
+											</span>
+											@if (reaction.ReactingUserGenderId == (int)GenderEnum.Male)
+											{
+												<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+													<i class="bi bi-gender-male me-1"></i>Erkek
+												</span>
+											}
+											else if (reaction.ReactingUserGenderId == (int)GenderEnum.Female)
+											{
+												<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+													<i class="bi bi-gender-female me-1"></i>Kadın
+												</span>
+											}
+											<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(reaction.ReactingUserId)">
+												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+											</a>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -347,16 +377,47 @@
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
 				{
 					<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
-						<div class="d-flex align-items-center p-3">
-							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-								 class="rounded-circle me-3"
-								 width="48"
-								 height="48"
-								 style="object-fit: cover;"
-								 alt="User Profil Picture" />
-							<div>
-								<h6 class="mb-1 fw-semibold text-dark" @onclick="ShowUserProfile" style="cursor:pointer">@reaction.ReactingUserUserName</h6>
-								<small class="text-muted">@reaction.CreatedDate.ToString("HH:mm - dd:MM:yyyy")</small>
+						<div class="d-flex flex-column gap-2 my-3 mx-2">
+							<!-- Üst Bilgi Satırı -->
+							<div class="d-flex align-items-center gap-2 gap-sm-4">
+								<!-- Profil Fotoğrafı -->
+								<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
+								class="rounded-circle"
+								width="56" height="56"
+								style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+								<div class="d-flex flex-column">
+									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
+										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
+										<small>
+											@reaction.CreatedDate.ToString("HH:mm dd/MM/yyyy")
+										</small>
+									</div>
+
+									<div class="d-flex align-items-center justify-content-between">
+
+										<div class="d-flex align-items-center gap-2">
+											<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+												@reaction.ReactingUserAge
+											</span>
+											@if (reaction.ReactingUserGenderId == (int)GenderEnum.Male)
+											{
+												<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+													<i class="bi bi-gender-male me-1"></i>Erkek
+												</span>
+											}
+											else if (reaction.ReactingUserGenderId == (int)GenderEnum.Female)
+											{
+												<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+													<i class="bi bi-gender-female me-1"></i>Kadın
+												</span>
+											}
+
+											<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(reaction.ReactingUserId)">
+												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+											</a>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -375,6 +436,73 @@
 	</FooterContent>
 </ModalComponent>
 
+<ModalComponent @ref="_viewerModel" Title="Okuyanlar" TitleClass="mx-auto">
+	<ChildContent>
+
+		@if (_viewers.Count == 0)
+		{
+			<div class="alert alert-info" role="alert">
+				Gönderiyi beğenmeyen yok.
+			</div>
+		}
+		else
+		{
+			@foreach (var viewer in _viewers)
+			{
+
+				<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
+					<div class="d-flex flex-column gap-2 my-3 mx-2">
+						<!-- Üst Bilgi Satırı -->
+						<div class="d-flex align-items-center gap-2 gap-sm-4">
+							<!-- Profil Fotoğrafı -->
+							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
+							class="rounded-circle"
+							width="56" height="56"
+							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+							<div class="d-flex flex-column">
+								<div class="d-flex align-items-center gap-1 gap-md-3 mb-2">
+									<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(viewer.PostViewerUserId)">@viewer.PostViewerUserName</h5>
+									<small>
+										@viewer.ReadDate.ToString("HH:mm dd/MM/yyyy")
+									</small>
+								</div>
+
+								<div class="d-flex align-items-center justify-content-between">
+
+									<div class="d-flex align-items-center gap-2">
+										<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+											@viewer.PostViewerAge
+										</span>
+										@if (viewer.PostViewerGenderId == (int)GenderEnum.Male)
+										{
+											<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+												<i class="bi bi-gender-male me-1"></i>Erkek
+											</span>
+										}
+										else if (viewer.PostViewerGenderId == (int)GenderEnum.Female)
+										{
+											<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+												<i class="bi bi-gender-female me-1"></i>Kadın
+											</span>
+										}
+
+										<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(viewer.PostViewerUserId)">
+											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		}
+	</ChildContent>
+	<FooterContent>
+		<button class="btn blue col text-white fw-medium" @onclick="_viewerModel.Close">Kapat</button>
+	</FooterContent>
+</ModalComponent>
+
 
 @code {
 	[Parameter]
@@ -385,11 +513,13 @@
 	private CommentsDto _replyModel = new();
 	private List<CommentsDto>? _comments = new();
 	private List<ReactionDto>? _reactions = new();
+	private List<PostViewersDto>? _viewers = new();
 	private HubConnection _reactionHubConnection;
 	private HubConnection _commentHubConnection;
 	private HubConnection _postViewHubConnection;
 	private ModalComponent? _likesModel;
 	private ModalComponent? _dislikeModel;
+	private ModalComponent? _viewerModel;
 	private Guid? _currentUserId;
 	private List<string> allowedRoles = new List<string>
 	{
@@ -403,7 +533,6 @@
 	private int? _newReactionId;
 	private int? _oldReactionId;
 	private int? _loggedInUserLastReaction;
-	private int? _postViewCount;
 	private int? _replyToCommentId;
 	private bool _isApiBusy = false;
 	private bool _isBusy = true;
@@ -414,9 +543,11 @@
 	private bool _showComments = false;
 	private bool _isCommentsHaveError = false;
 	private bool _isPostHaveError = false;
+	private bool _isViwersHaveError = false;
 	private string? _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
+	private string? _viewersErrorMessage;
 	private string? _replyText;
 	private string? _userRoleId = null;
 
@@ -448,6 +579,8 @@
 		_showComments = false;
 		_isCommentsHaveError = false;
 		_commentErrorMessage = null;
+		_isViwersHaveError = false;
+
 	}
 	private async Task StartReactionHubConnectionAsync()
 	{
@@ -473,19 +606,18 @@
 					.WithAutomaticReconnect()
 					.Build();
 
+		_postViewHubConnection.On<int, PostViewersDto>("PostViewedAsync", (postId, postViewerDto) =>
+	{
+			if (_viewers == null)
+				_viewers = new List<PostViewersDto>();
 
+			_viewers.Add(postViewerDto);
 
-		_postViewHubConnection.On<int, int, int>("PostRead", (categoryId, updatedPostId, viewCount) =>
-		{
-
-			if (updatedPostId == postId)
-				_postViewCount = viewCount;
 			StateHasChanged();
 		});
 
 		await _postViewHubConnection.StartAsync();
-		await _postViewHubConnection.SendAsync("JoinPostPostCountGroup", postId);
-		await _postViewHubConnection.SendAsync("JoinCategoryPostCountGroup", _postDto.CategoryId);
+		await _postViewHubConnection.SendAsync("JoinPostPostViewCountGroup", postId);
 
 	}
 	private async Task StartCommentHubConnectionAsync()
@@ -535,14 +667,14 @@
 		var postTask = PostApi.GetPostByIdAsync(postId);
 		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
 		var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-		var postViewCountTask = PostViewApi.GetPostReadCountAsync(postId);
-		await Task.WhenAll(postTask, reactionsTask, commentsTask, postViewCountTask);
+		var postViewTask = PostViewApi.GetPostsViewersAsync(postId);
+		await Task.WhenAll(postTask, reactionsTask, commentsTask, postViewTask);
 
 		var reactionsTaskResult = await reactionsTask;
 		GetPost(postTask.Result);
 		GetComments(commentsTask.Result);
 		GetReactions(reactionsTask.Result);
-		GetPostViewCount(postViewCountTask.Result);
+		GetPostViewers(postViewTask.Result);
 	}
 	private void CheckUserLoggedIn()
 	{
@@ -642,7 +774,7 @@
 		if (!_isUserLoggedIn)
 			NavigateToLogin();
 	}
-	private void SendMessage()
+	private void SendMessage(Guid reciverUserId)
 	{
 		if (!_isUserLoggedIn)
 		{
@@ -698,9 +830,15 @@
 		}
 	}
 
-	private async Task ShowViewsAsync()
+	private void ShowViwers()
 	{
-		await Task.Delay(1000);
+		if (!allowedRoles.Contains(_userRoleId))
+		{
+			NavigateToPricing();
+			return;
+		}
+
+		_viewerModel.Open();
 	}
 	private async Task ReadPostAsync()
 	{
@@ -709,12 +847,18 @@
 		try
 		{
 			var response = await PostViewApi.ReadPostAsync(postId, _currentUserId);
-			if (response.IsSuccess)
+			if (!response.IsSuccess)
 			{
-				var (viewCount, id) = response.Data;
-				await _postViewHubConnection.SendAsync("NotifyPostRead", postId, viewCount);
-				// await _postViewHubConnection.SendAsync("NotifyPostRead", postId);
+				_isPostHaveError = true;
+				_errorMessage = response.ErrorMessage;
 			}
+
+			// if (response.IsSuccess)
+			// {
+			// 	var (viewCount, id) = response.Data;
+			// 	await _postViewHubConnection.SendAsync("NotifyPostRead", postId, viewCount);
+			// 	// await _postViewHubConnection.SendAsync("NotifyPostRead", postId);
+			// }
 		}
 		catch (Exception ex)
 		{
@@ -836,14 +980,40 @@
 			_commentErrorMessage = ex.Message;
 		}
 	}
-	private void GetPostViewCount(ApiResponses<int> response)
+	private void GetPostViewers(ApiResponses<List<PostViewersDto>> response)
 	{
-		if (response.IsSuccess)
-			_postViewCount = response.Data;
+		if (_isPostHaveError)
+			return;
+		try
+		{
+			if (response.IsSuccess)
+			{
+				_viewers = response.Data;
+				_viewersErrorMessage = null;
+				_isViwersHaveError = false;
+			}
+			else
+			{
+				_viewers = null;
+				_viewersErrorMessage = response.ErrorMessage;
+				_isViwersHaveError = true;
+			}
+
+		}
+		catch (Exception ex)
+		{
+			_viewers = null;
+			_isViwersHaveError = true;
+			_viewersErrorMessage = ex.Message;
+		}
 	}
 	private void ShowUserProfile()
 	{
 		NavigationManager.NavigateTo($"/profile/{_postDto.UserId}");
+	}
+	private void ShowUserProfile(Guid UserId)
+	{
+		NavigationManager.NavigateTo($"/profile/{UserId}");
 	}
 
 	private async Task AddCommentAsync()

@@ -17,8 +17,10 @@ namespace ItirafEt.Shared.DTOs
         public string ReactingUserUserName { get; set; }
 
         public int ReactionTypeId { get; set; }
+        public int ReactingUserAge { get; set; }
+        public int ReactingUserGenderId { get; set; }
+        public string ReactingUserProfileImageUrl { get; set; }
 
-        public string ReactionTypeName { get; set; }
         public DateTime CreatedDate { get; set; }
 
         public int? CommentId { get; set; }

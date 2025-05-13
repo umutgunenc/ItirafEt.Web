@@ -77,6 +77,7 @@ builder.Services.AddTransient<PostViewService>();
 builder.Services.AddTransient<ReactionHubService>();
 builder.Services.AddTransient<CategoryHubService>();
 builder.Services.AddTransient<CommentHubService>();
+builder.Services.AddTransient<PostViewHubService>();
 
 var app = builder.Build();
 

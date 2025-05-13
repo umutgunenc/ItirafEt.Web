@@ -165,7 +165,6 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<List<PostInfoDto>>.Success(posts);
         }
-
         public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByViewCountAsync(int categoryId, int pageNo, int pageSize)
         {
             var posts = await _context.Posts
@@ -196,7 +195,6 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<List<PostInfoDto>>.Success(posts);
         }
-
         public async Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByLikeCountAsync(int categoryId, int pageNo, int pageSize)
         {
             var posts = await _context.Posts
@@ -229,7 +227,6 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<List<PostInfoDto>>.Success(posts);
         }
-
         public async Task<ApiResponses<string>> GetCategoryNameAsync(int categoryId)
         {
             var categoryName = await _context.Categories
