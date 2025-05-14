@@ -171,7 +171,7 @@
 				_latestPostId = createdPostApiResonse.Data;
 				_isSuccess = true;
 				_successMessage = "İtirafınız başarıyla gönderildi. 5 saniye içinde yönlendirileceksiniz.";
-				StartCountdown(5);
+				await StartCountdownAsync(5);
 			}
 			else
 				_errorMessage = createdPostApiResonse.ErrorMessage;
@@ -194,7 +194,7 @@
 		_successMessage = null;
 	}
 
-	private async void StartCountdown(int countdown)
+	private async Task StartCountdownAsync(int countdown)
 	{
 		var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 

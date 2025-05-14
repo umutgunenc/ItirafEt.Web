@@ -1,8 +1,12 @@
 ﻿@page "/register"
 
-<div class="position-absolute top-50 start-50 translate-middle w-100">
+@inject IAuthApi AuthApi
+@inject AuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="px-lg-5 py-5">
 	<div class="row mx-0">
-		<div class="col-lg-8 mx-auto my-auto border shadow-lg p-4 rounded">
+		<div class="col-lg-8 mx-auto my-auto border shadow-lg p-4 rounded bg-light">
 
 			<div class="mt-3">
 				<h1 class="text-center h3">Kayıt Ol</h1>
@@ -23,6 +27,22 @@
 					<label class="form-label">E-Posta:</label>
 					<InputText @bind-Value="_registerModel.Email" type="email" class="form-control" />
 					<ValidationMessage For="()=> _registerModel.Email" />
+				</div>
+
+				<div class="my-3">
+					<label class="form-label">Doğum Tarihi:</label>
+					<InputDate @bind-Value="_registerModel.BirthDate" max="@MaxBirthDate" class="form-control" />
+					<ValidationMessage For="()=> _registerModel.BirthDate" />
+				</div>
+
+				<div class="my-3">
+					<label for="gender" class="form-label">Cinsiyet:</label>
+					<InputSelect id="gender" @bind-Value="_registerModel.GenderId" class="form-select">
+						<option value="" disabled selected>Cinsiyet seçiniz</option>
+						<option value="@( (int)GenderEnum.Male )">Erkek</option>
+						<option value="@( (int)GenderEnum.Female )">Kadın</option>
+					</InputSelect>
+					<ValidationMessage For="() => _registerModel.GenderId" />
 				</div>
 
 				<div class="my-3">
@@ -54,16 +74,34 @@
 				<div class="form-check mb-3">
 					<InputCheckbox @bind-Value="_registerModel.isTermsAccepted" class="form-check-input" />
 					<label class="form-check-label">
-						<small>Sözleşmeyi ve Gizlilik Politikasını okudum, kabul ediyorum.</small>
+						<small style="cursor:pointer" @onclick="ToggleTermsOfUse">Kullanım Koşulları ve Gizlilik Politikasını okudum, kabul ediyorum.</small>
+						<small style="cursor:pointer; color:darkblue; font-weight:600; text-decoration:underline" @onclick=_termOfUserModal.Open>Kullanım Koşulları</small>
+						<span>  |  </span>
+						<small style="cursor:pointer; color:darkblue; font-weight:600; text-decoration:underline" @onclick=_privacyModal.Open>Gizlilik Politikası</small>
 					</label>
 
 					<ValidationMessage For="()=> _registerModel.isTermsAccepted" />
 				</div>
 
+
 				@if (_errorMessage != null)
 				{
 					<div class="mb-3 text-bg-danger text-white p-2 rounded">
 						<p class="mb-0">@_errorMessage</p>
+					</div>
+				}
+
+				@if (_isRegistered)
+				{
+					<div class="alert alert-success d-flex align-items-center justify-content-between shadow rounded p-4 mb-4">
+						<div>
+							<h5 class="mb-2"><i class="bi bi-check-circle-fill me-2"></i> Kayıt Başarılı</h5>
+							<p class="mb-1">Kayıt işleminiz başarıyla tamamlandı.</p>
+							<p class="mb-1"><strong>@_timeout</strong> saniye sonra otomatik olarak giriş sayfasına yönlendirileceksiniz.</p>
+							<p class="mb-0">
+								<a href="/login" class="btn btn-custom text-white btn-sm">Hemen Giriş Yap</a>
+							</p>
+						</div>
 					</div>
 				}
 
@@ -80,34 +118,69 @@
 						</button>
 					}
 				</div>
+
+				<hr />
+
+				<div class="d-grid mb-3">
+					<button type="button" class="btn btn-google w-100 mb-3">
+						<i class="bi bi-google"></i> Google ile Kayıt Ol
+					</button>
+					<button type="button" class="btn btn-facebook w-100">
+						<i class="bi bi-facebook"></i> Facebook ile Kayıt Ol
+					</button>
+				</div>
+
+				<div class="text-center">
+					<small>Zaten hesabınız var mı? <a href="/login">Giriş Yap</a></small>
+				</div>
 			</EditForm>
-
-			<hr />
-
-			<div class="row mb-3 justify-content-center">
-				<button type="button" class="btn btn-google w-100 mb-2">
-					<i class="bi bi-google"></i> Google ile Kayıt Ol
-				</button>
-				<button type="button" class="btn btn-facebook w-100">
-					<i class="bi bi-facebook"></i> Facebook ile Kayıt Ol
-				</button>
-			</div>
-
-			<div class="text-center">
-				<small>Zaten hesabınız var mı? <a href="/login">Giriş Yap</a></small>
-			</div>
-
 		</div>
 	</div>
 </div>
 
+
+<ModalComponent @ref="_privacyModal" Title="Gizlik Politikası" TitleClass="mx-auto">
+	<ChildContent>
+
+	</ChildContent>
+	<FooterContent>
+		<button class="btn blue col text-white fw-medium" @onclick="_privacyModal.Close">Kapat</button>
+	</FooterContent>
+</ModalComponent>
+
+<ModalComponent @ref="_termOfUserModal" Title="Kullanım Koşulları" TitleClass="mx-auto">
+	<ChildContent>
+
+	</ChildContent>
+	<FooterContent>
+		<button class="btn blue col text-white fw-medium" @onclick="_termOfUserModal.Close">Kapat</button>
+	</FooterContent>
+</ModalComponent>
+
 @code {
 	private RegisterDto _registerModel = new();
+	private ModalComponent? _privacyModal;
+	private ModalComponent? _termOfUserModal;
 	private bool _showPassword = false;
-
 	private bool _isBusy;
 	private bool _showPasswordConfirm;
+	private bool _isRegistered = false;
+	private int _timeout = 5;
+	private int countDown = 5;
 	private string? _errorMessage;
+	private string MaxBirthDate => DateTime.Now.AddYears(-18).ToString("yyyy-MM-dd");
+	private CancellationTokenSource? _cts;
+
+
+	protected override void OnInitialized()
+	{
+		if (AuthStateProvider.IsLoggedIn)
+			NavigationManager.NavigateTo("/home", replace: true);
+		_registerModel.BirthDate = null;
+		NavigationManager.LocationChanged += OnLocationChanged;
+
+	}
+
 	private void TogglePasswordVisibility()
 	{
 		_showPassword = !_showPassword;
@@ -133,12 +206,82 @@
 			_isBusy = false;
 		}
 	}
-
-
 	private async Task RegisterAsync()
 	{
-		await Task.Delay(1000);
+		if (_isBusy)
+			return;
+		_errorMessage = null;
+		_isBusy = true;
+		try
+		{
+			var response = await AuthApi.RegisterAsync(_registerModel);
+			if (!response.IsSuccess)
+				_errorMessage = response.ErrorMessage;
+			else
+			{
+				_isRegistered = true;
+				await StartCountdownAsync(countDown);
+			}
 
+
+			_isBusy = false;
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+			_isBusy = false;
+		}
+
+	}
+
+	private async Task StartCountdownAsync(int countdown)
+	{
+		_cts = new CancellationTokenSource();
+		var token = _cts.Token;
+		var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+
+		try
+		{
+			while (countdown > 0 && await timer.WaitForNextTickAsync(token))
+			{
+				countdown--;
+				_timeout = countdown;
+				await InvokeAsync(StateHasChanged);
+			}
+
+			// Süre bittiğinde yönlendir
+			if (!token.IsCancellationRequested && NavigationManager.Uri.EndsWith("/register", StringComparison.OrdinalIgnoreCase))
+				await InvokeAsync(() => NavigationManager.NavigateTo("/login"));
+		}
+		catch (OperationCanceledException)
+		{
+			// Sayfa değiştiği için sayaç iptal edildi
+		}
+		finally
+		{
+			timer.Dispose();
+		}
+	}
+
+	private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+	{
+		// Sayfa değiştiğinde sayacı durdur
+		_cts?.Cancel();
+	}
+
+	public void Dispose()
+	{
+		NavigationManager.LocationChanged -= OnLocationChanged;
+		_cts?.Cancel();
+		_cts?.Dispose();
+	}
+
+	private void ToggleTermsOfUse()
+	{
+		if (_registerModel.isTermsAccepted == null)
+			_registerModel.isTermsAccepted = true;
+		else
+			_registerModel.isTermsAccepted = !_registerModel.isTermsAccepted;
 	}
 
 }

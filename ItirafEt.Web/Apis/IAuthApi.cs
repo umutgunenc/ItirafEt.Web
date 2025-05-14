@@ -7,5 +7,9 @@ namespace ItirafEt.Web.Apis
     {
         [Post("/api/auth/login")]
         Task<AuthResponseDto> LoginAsync(LoginDto dto);
+
+
+        [Post("/api/auth/register")]
+        Task<ApiResponses> RegisterAsync(RegisterDto dto);
     }
 }

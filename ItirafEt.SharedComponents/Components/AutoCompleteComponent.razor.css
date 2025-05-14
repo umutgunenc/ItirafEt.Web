@@ -12,7 +12,9 @@
     flex-direction: column;
     overflow: hidden;
 }
-
+.card-header {
+    padding: 0;
+}
 /* Input alanı */
 .card-header .form-control {
     width: 100%;

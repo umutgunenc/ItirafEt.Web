@@ -5,6 +5,7 @@ using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Shared;
 using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -61,6 +62,41 @@ namespace ItirafEt.Api.Services
 
         }
 
+        public async Task<ApiResponses> RegisterAsync(RegisterDto dto)
+        {
+            var isUserNameNotValid = await _context.Users.AnyAsync(u => u.UserName.ToUpper() == dto.UserName.ToUpper());
+            if(isUserNameNotValid)
+                return ApiResponses.Fail("Bu kullanıcı adı zaten kullanılıyor.");
+            var isEmailNotValid = await _context.Users.AnyAsync(u => u.Email.ToUpper() == dto.Email.ToUpper());
+            if (isEmailNotValid)
+                return ApiResponses.Fail("Bu e-posta adresi zaten kullanılıyor.");
+
+           var isModelValid = CheckRegisterModel(dto);
+            if (!isModelValid.IsSuccess)
+                return isModelValid;
+
+            var user = new User
+            {
+                UserName = dto.UserName,
+                Email = dto.Email,
+                PasswordHash = _passwordHasher.HashPassword(null, dto.Password),
+                CreatedDate = DateTime.Now,
+                BirthDate = (DateTime)dto.BirthDate,
+                IsDeleted = false,
+                IsBanned = false,
+                IsPremium = false,
+                IsTermOfUse = true,
+                RoleName = nameof(UserRoleEnum.User),
+                GenderId = (int)dto.GenderId,
+
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+            return ApiResponses.Success();
+
+
+        }
+
         private string GenearteJwtToken(User user)
         {
             Claim[] claims = [
@@ -85,6 +121,71 @@ namespace ItirafEt.Api.Services
             var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
             return token;
+        }
+
+        private ApiResponses CheckRegisterModel(RegisterDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.UserName))
+                return ApiResponses.Fail("Kullanıcı adı boş olamaz.");
+
+            if (string.IsNullOrWhiteSpace(dto.Password))
+                return ApiResponses.Fail("Şifre boş olamaz.");
+
+            if (string.IsNullOrWhiteSpace(dto.PasswordConfirm))
+                return ApiResponses.Fail("Şifre tekrarı boş olamaz.");
+
+            if (!dto.Password.Any(char.IsUpper))
+                return ApiResponses.Fail("Şifre en az 1 büyük harf içermelidir.");
+
+            if (!dto.Password.Any(char.IsLower))
+                return ApiResponses.Fail("Şifre en az 1 küçük harf içermelidir.");
+
+            if (!dto.Password.Any(char.IsDigit))
+                return ApiResponses.Fail("Şifre en az 1 rakam içermelidir.");
+
+            if (!dto.Password.Any(ch => !char.IsLetterOrDigit(ch)))
+                return ApiResponses.Fail("Şifre en az 1 özel karakter içermelidir.");
+
+            if (dto.Password.Length < 8)
+                return ApiResponses.Fail("Şifre en az 6 karakter uzunluğunda olmalıdır.");
+
+            if (dto.Password.Length > 64)
+                return ApiResponses.Fail("Şifre en fazla 64 karakter uzunluğunda olmalıdır.");
+
+            if (dto.Password != dto.PasswordConfirm)
+                return ApiResponses.Fail("Şifreler eşleşmiyor.");
+
+            if (dto.UserName.Length < 3)
+                return ApiResponses.Fail("Kullanıcı adı en az 3 karakter uzunluğunda olmalıdır.");
+            if (dto.UserName.Length > 64)
+                return ApiResponses.Fail("Kullanıcı adı en fazla 64 karakter uzunluğunda olmalıdır.");
+
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                return ApiResponses.Fail("E-posta adresi boş olamaz.");
+
+            if (dto.Password != dto.PasswordConfirm)
+                return ApiResponses.Fail("Şifreler eşleşmiyor.");
+
+            if (!dto.isTermsAccepted)
+                return ApiResponses.Fail("Kullanım Koşulları ve Gizlilik Politikasını kabul etmelisiniz.");
+
+            if(dto.BirthDate > DateTime.Now.AddYears(-18))
+                return ApiResponses.Fail("18 yaşından küçük olamazsınız.");
+
+            if (dto.BirthDate < DateTime.Now.AddYears(-100))
+                return ApiResponses.Fail("100 yaşından büyük olamazsınız.");
+            
+            if(dto.BirthDate == null)
+                return ApiResponses.Fail("Doğum tarihi boş olamaz.");
+
+            if(dto.GenderId == null)
+                return ApiResponses.Fail("Lütfen Cinsiyet Seçiniz.");
+
+            if (dto.GenderId != (int)GenderEnum.Male && dto.GenderId != (int)GenderEnum.Female)
+                return ApiResponses.Fail("Lütfen Cinsiyet Seçiniz.");
+
+
+            return ApiResponses.Success();
         }
     }
 }

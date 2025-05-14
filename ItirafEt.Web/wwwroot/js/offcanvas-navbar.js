@@ -21,7 +21,13 @@
 //    setupNavbarScroll();
 //});
 
-
+window.collapseNavbar = () => {
+    const navbar = document.getElementById('navbarMain');
+    const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+    if (bsCollapse) {
+        bsCollapse.hide();
+    }
+};
 
 
 

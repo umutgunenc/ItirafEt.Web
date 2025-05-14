@@ -3,7 +3,7 @@
 @inject IBanUserApi BanUserApi
 
 
-<div class="px-5 py-5">
+<div class="px-lg-5 py-5">
 	<AutoCompleteComponent TItemType="BanUserDto"
 						   DisplayedItemsList="Users"
 						   SelectedItem="_selectedUser"
@@ -19,7 +19,7 @@
 					  OnValidSubmit="() => BanUserAsync(_selectedUser)">
 
 				<DataAnnotationsValidator />
-				<div class="row align-items-center p-3">
+				<div class="row align-items-center p-3 mx-0">
 
 					<div class="col-lg-4 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-start">
 						<div class="col d-flex-inline d-lg-flex">
@@ -93,6 +93,8 @@
 
 	}
 </div>
+
+
 @code {
 
 	private Guid _adminId;
