@@ -86,11 +86,20 @@
 							</li>
 						</Authorized>
 						<NotAuthorized>
-							<li class="nav-item">
-								<NavLink class="nav-link text-white d-flex align-items-center gap-1" href="/auth/login">
-									<i class="bi bi-person-circle fs-5"></i> Giriş
-								</NavLink>
-							</li>
+							<ul class="navbar-nav ms-auto d-flex flex-column flex-lg-row align-items-start gap-3">
+								<li class="nav-item">
+									<NavLink class="nav-link text-white d-flex align-items-center gap-1" href="/login">
+										<i class="bi bi-person-circle fs-5"></i>
+										Giriş
+									</NavLink>
+								</li>
+								<li class="nav-item">
+									<NavLink class="nav-link text-white d-flex align-items-center gap-1" href="/register">
+										<i class="bi bi-person-plus-fill fs-5"></i>
+										Kayıt Ol
+									</NavLink>
+								</li>
+							</ul>
 						</NotAuthorized>
 					</AuthorizeView>
 				</li>

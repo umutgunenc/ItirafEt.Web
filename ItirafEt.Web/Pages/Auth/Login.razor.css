@@ -1,0 +1,45 @@
+﻿.btn-google {
+    background: linear-gradient(to right, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #dee2e6;
+    color: #5f6368;
+    border-radius: 8px;
+    transition: all 0.1s ease;
+    padding: 12px 24px;
+}
+
+.btn-facebook {
+    background: linear-gradient(to right, #1877f2 0%, #166fe5 100%);
+    color: white;
+    border-radius: 8px;
+    transition: all 0.1s ease;
+    padding: 12px 24px;
+    border: none;
+}
+
+.btn-custom {
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    color: white;
+    border-radius: 8px;
+    transition: all 0.1s ease;
+    padding: 12px 24px;
+    border: none;
+}
+
+.btn-google:hover {
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn-facebook:hover {
+    background: linear-gradient(to right, #166fe5 0%, #115293 100%);
+    box-shadow: 0 4px 12px rgba(24, 119, 242, 0.15);
+    transform: translateY(-1px);
+}
+
+
+
+.btn-custom:hover {
+    background: linear-gradient(135deg, #3a5599 0%, #121d38 100%);
+    box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
+    transform: translateY(-1px);
+}

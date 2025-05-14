@@ -1,23 +1,22 @@
-﻿@page "/auth/login"
-@layout AuthLayout
+﻿@page "/login"
+@* @layout AuthLayout
+ *@
 @inject IAuthApi AuthApi
 @inject NavigationManager NavigationManager
 @inject AuthStateProvider AuthStateProvider
 
 
 <div class="position-absolute top-50 start-50 translate-middle w-100">
-	<div class="row">
-		<div class="col-lg-8 mx-auto my-auto border shadow-lg">
+	<div class="row mx-0">
+		<div class="col-lg-8 mx-auto my-auto border shadow-lg p-4 rounded">
 
-			<div class="mt-3">
+			<div class="mt-3" >
 				<h1 class="text-center h3">Giriş Yap</h1>
 			</div>
 			<hr />
 
 			<EditForm Model="_model"
 					  OnValidSubmit="LoginAsync">
-
-
 				<DataAnnotationsValidator />
 
 				<div class="my-3">
@@ -51,20 +50,37 @@
 				<div class="row mb-3 mx-auto">
 					@if (!_isBusy)
 					{
-						<button type="submit" class="btn btn-success">Giriş Yap</button>
+						<button type="submit" class="btn btn-custom text-white">Giriş Yap</button>
 					}
 					else
 					{
-						<button class="btn btn-success" type="button" disabled>
+						<button class="btn btn-custom text-white" type="button" disabled>
 							<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
 							Giriş Yapılıyor Lütfen Bekleyiniz
 						</button>
 					}
 				</div>
 			</EditForm>
+
+			<hr />
+
+			<div class="row mb-3 mx-auto">
+				<button type="button" class="btn btn-google">
+					<i class="bi bi-google"></i> Google İle Giriş Yap
+				</button>
+
+			</div>
+			<div class="row mb-3 mx-auto">
+				<button type="button" class="btn btn-facebook">
+					<i class="bi bi-facebook"></i> Facebook İle Giriş Yap
+				</button>
+			</div>
 		</div>
 	</div>
 </div>
+
+
+
 
 @code {
 	private LoginDto _model = new();
