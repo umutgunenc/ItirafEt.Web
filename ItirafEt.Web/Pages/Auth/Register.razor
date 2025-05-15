@@ -175,7 +175,7 @@
 	protected override void OnInitialized()
 	{
 		if (AuthStateProvider.IsLoggedIn)
-			NavigationManager.NavigateTo("/home", replace: true);
+			NavigationManager.NavigateTo("/", replace: true);
 		_registerModel.BirthDate = null;
 		NavigationManager.LocationChanged += OnLocationChanged;
 

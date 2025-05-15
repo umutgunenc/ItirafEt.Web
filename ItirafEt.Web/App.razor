@@ -20,10 +20,26 @@
 		<FocusOnNavigate RouteData="@routeData" Selector="h1" />
 	</Found>
 	<NotFound>
-		<PageTitle>Not found</PageTitle>
+@* 		<PageTitle>Not found</PageTitle>
 		<LayoutView Layout="@typeof(MainLayout)">
 			<p role="alert">Sorry, there's nothing at this address.</p>
+		</LayoutView> *@
+		<PageTitle>Not found</PageTitle>
+		<LayoutView Layout="@typeof(MainLayout)">
+			<main class="flex-fill d-flex align-items-center justify-content-center bg-light" style="min-height: calc(100vh - 56px); width: 100%;">
+				<div class="card shadow-sm p-4">
+					<div class="card-body text-center">
+						<i class="bi bi-question-circle-fill" style="font-size: 3rem; color: #ffc107;"></i>
+						<h1 class="card-title mt-3">Kayboldunuz mu?</h1>
+						<p class="card-text">
+							Aradığınız sayfa bulunamadı veya mevcut değil. Belki bir harf hatası yaptınız ya da sayfa taşınmış olabilir.
+						</p>
+						<a href="/" class="btn btn-warning text-white">Ana Sayfaya Dön</a>
+					</div>
+				</div>
+			</main>
 		</LayoutView>
+		
 	</NotFound>
 </Router>
 

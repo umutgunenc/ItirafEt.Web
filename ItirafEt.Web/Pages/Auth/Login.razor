@@ -91,7 +91,7 @@
 	protected override void OnInitialized()
 	{
 		if (AuthStateProvider.IsLoggedIn)
-			NavigationManager.NavigateTo("/home", replace: true);
+			NavigationManager.NavigateTo("/", replace: true);
 
 	}
 
@@ -113,7 +113,7 @@
 
 			var loggedInUser = authResponse.User;
 			await AuthStateProvider.SetLoginAsync(loggedInUser);
-			NavigationManager.NavigateTo("/home");
+			NavigationManager.NavigateTo("/");
 		}
 		catch (Exception ex)
 		{

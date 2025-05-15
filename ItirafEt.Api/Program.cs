@@ -40,7 +40,8 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration.GetValue<string>("Jwt:Audience"),
         ValidateIssuer = true,
         ValidateAudience = true,
-        ValidateIssuerSigningKey = true
+        ValidateIssuerSigningKey = true,
+
 
     };
 });
