@@ -115,7 +115,7 @@ namespace ItirafEt.Api.Services
                 issuer: _configuration.GetValue<string>("Jwt:Issuer"),
                 audience: _configuration.GetValue<string>("Jwt:Audience"),
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(_configuration.GetValue<int>("Jwt:ExpiryInMinutes")),
+                expires: DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:ExpiryInMinutes")),
                 signingCredentials: signingCredentials);
 
             var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);

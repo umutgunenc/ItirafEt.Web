@@ -10,10 +10,10 @@ namespace ItirafEt.Web.Apis
 
         [Headers("Authorization: Bearer")]
         [Post("/api/likePost/")]
-        Task<ApiResponses<ReactionDto>> LikePostAsync(int postId, Guid UserId);
+        Task<ApiResponses> LikePostAsync(int postId, Guid UserId);
 
         [Headers("Authorization: Bearer")]
         [Post("/api/dislikePost/")]
-        Task<ApiResponses<ReactionDto>> DislikePostAsync(int postId, Guid UserId);
+        Task<ApiResponses> DislikePostAsync(int postId, Guid UserId);
     }
 }

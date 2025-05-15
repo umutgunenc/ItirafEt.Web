@@ -9,11 +9,11 @@ namespace ItirafEt.Api.EndPoints
         public static IEndpointRouteBuilder MapCategoryEndpoints(this IEndpointRouteBuilder app)
         {
 
-            app.MapGet("/api/getcategory", async (CategoryService categoryServices) =>
+            app.MapGet("/api/getAllCategories", async (CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.GetAllCategoriesAsync()))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin)));
 
-            app.MapGet("/api/getallactivecategory", async (CategoryService categoryServices) =>
+            app.MapGet("/api/getAllActiveCategories", async (CategoryService categoryServices) =>
                 Results.Ok(await categoryServices.GetAllActiveCategoriesAsycn()));
 
             app.MapGet("/api/getCategoryName", async (CategoryService categoryServices,int  categoryId) =>

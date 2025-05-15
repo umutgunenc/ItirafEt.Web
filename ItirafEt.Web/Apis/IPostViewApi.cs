@@ -7,7 +7,7 @@ namespace ItirafEt.Web.Apis
     {
         //[Headers("Authorization: Bearer")]
         [Post("/api/readPost")]
-        Task<ApiResponses<PostViewersDto?>> ReadPostAsync(int postId, Guid? userId);
+        Task<ApiResponses> ReadPostAsync(int postId, Guid? userId);
 
 
         //[Headers("Authorization: Bearer")]

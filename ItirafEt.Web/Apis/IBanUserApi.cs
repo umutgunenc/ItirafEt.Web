@@ -12,6 +12,6 @@ namespace ItirafEt.Web.Apis
 
 
         [Get("/api/getAllUsers")]
-        Task<Shared.DTOs.ApiResponses<List<BanUserDto>>> GetAllUserDtosAsync();
+        Task<ApiResponses<List<BanUserDto>>> GetAllUserDtosAsync();
     }
 }

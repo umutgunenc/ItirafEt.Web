@@ -11,14 +11,14 @@ namespace ItirafEt.Web.Apis
         Task<ApiResponses> CreateCategoryAsync(CategoryDto dto);
         [Post("/api/editcategory")]
         Task<ApiResponses> EditCategoryAsync(CategoryDto dto);
-        [Get("/api/getcategory")]
-        Task<ApiResponses<List<CategoryDto>>> GetCategoryAsync();
+        [Get("/api/getAllCategories")]
+        Task<ApiResponses<List<CategoryDto>>> GetAllCategoriesAsync();
 
         [Get("/api/getCategoryName")]
         Task<ApiResponses<string>> GetCategoryNameAsync(int categoryId);
 
-        [Get("/api/getallactivecategory")]
-        Task<ApiResponses<List<CategoryDto>>> GetAllActiveCategoryAsycn();
+        [Get("/api/getAllActiveCategories")]
+        Task<ApiResponses<List<CategoryDto>>> GetAllActiveCategoriesAsycn();
 
         [Get("/api/getCategoryPostsOrderByDate")]
         Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByDateAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);

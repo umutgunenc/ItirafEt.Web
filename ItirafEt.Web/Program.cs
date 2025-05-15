@@ -39,14 +39,14 @@ static void ConfigureRefit(IServiceCollection services)
      .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<ICategoryApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient); 
-    
+     .ConfigureHttpClient(SetHttpClient);
+
     services.AddRefitClient<IBanUserApi>(GetRefitSettings)
      .ConfigureHttpClient(SetHttpClient);
-    
+
     services.AddRefitClient<IPostApi>(GetRefitSettings)
      .ConfigureHttpClient(SetHttpClient);
-    
+
     services.AddRefitClient<ICommentApi>(GetRefitSettings)
      .ConfigureHttpClient(SetHttpClient);
 
@@ -54,8 +54,8 @@ static void ConfigureRefit(IServiceCollection services)
      .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<IPostViewApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient); 
-    
+     .ConfigureHttpClient(SetHttpClient);
+
 
     static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
 
@@ -64,7 +64,7 @@ static void ConfigureRefit(IServiceCollection services)
         var authStateProvider = sp.GetRequiredService<AuthStateProvider>();
         return new RefitSettings
         {
-            AuthorizationHeaderValueGetter = (_, __) => Task.FromResult(authStateProvider.User?.Token??"")
+            AuthorizationHeaderValueGetter = (_, __) => Task.FromResult(authStateProvider.User?.Token ?? "")
         };
     }
 }

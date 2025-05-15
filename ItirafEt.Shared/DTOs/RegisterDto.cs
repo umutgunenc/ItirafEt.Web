@@ -27,6 +27,7 @@ namespace ItirafEt.Shared.DTOs
 
         [Required(ErrorMessage = "E-posta adresinizi giriniz.")]
         [EmailAddress(ErrorMessage = "Geçersiz e-posta adresi.")]
+        [DataType(DataType.EmailAddress)]
         [MaxLength(256, ErrorMessage = "E-posta adresi maksimum 256 karakter uzunluğunda olmalıdır.")]
         public string Email { get; set; }
 

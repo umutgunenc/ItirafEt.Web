@@ -122,7 +122,7 @@
 	{
 		try
 		{
-			var response = await CategoryApi.GetAllActiveCategoryAsycn();
+			var response = await CategoryApi.GetAllActiveCategoriesAsycn();
 			if (response.IsSuccess)
 			{
 				_isCategoryLoaded = true;

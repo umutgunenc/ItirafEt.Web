@@ -46,11 +46,11 @@ namespace ItirafEt.Api.Services
             return ApiResponses<List<ReactionDto>>.Success(postReactions);
 
         }
-        public async Task<ApiResponses<ReactionDto>> LikePostAsync(int postId, Guid UserId)
+        public async Task<ApiResponses> LikePostAsync(int postId, Guid UserId)
         {
             var post = await GetPostAsync(postId);
             if (post == null)
-                return ApiResponses<ReactionDto>.Fail("Gönderi bulunamadı.");
+                return ApiResponses.Fail("Gönderi bulunamadı.");
 
             var reaction = await GetPostReactionAsync(postId, UserId);
 
@@ -82,7 +82,7 @@ namespace ItirafEt.Api.Services
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
 
-                return ApiResponses<ReactionDto>.Success(reactionDto, true);
+                return ApiResponses.Success();
 
             }
             else
@@ -105,17 +105,17 @@ namespace ItirafEt.Api.Services
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
 
-                return ApiResponses<ReactionDto>.Success(reactionDto, false);
+                return ApiResponses.Success();
 
             }
 
 
         }
-        public async Task<ApiResponses<ReactionDto>> DislikePostAsync(int postId, Guid UserId)
+        public async Task<ApiResponses> DislikePostAsync(int postId, Guid UserId)
         {
             var post = await GetPostAsync(postId);
             if (post == null)
-                return ApiResponses<ReactionDto>.Fail("Gönderi bulunamadı.");
+                return ApiResponses.Fail("Gönderi bulunamadı.");
 
             var reaction = await GetPostReactionAsync(postId, UserId);
 
@@ -145,7 +145,7 @@ namespace ItirafEt.Api.Services
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
 
-                return ApiResponses<ReactionDto>.Success(reactionDto, true);
+                return ApiResponses.Success();
 
             }
             else
@@ -166,7 +166,7 @@ namespace ItirafEt.Api.Services
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
 
-                return ApiResponses<ReactionDto>.Success(reactionDto, false);
+                return ApiResponses.Success();
 
             }
 

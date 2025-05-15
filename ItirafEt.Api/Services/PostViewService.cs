@@ -22,27 +22,27 @@ namespace ItirafEt.Api.Services
             _postViewHubService = postViewHubService;
         }
 
-        public async Task<ApiResponses<PostViewersDto?>> ReadPostAsync(int postId, Guid? userId)
+        public async Task<ApiResponses> ReadPostAsync(int postId, Guid? userId)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == userId);
             if (user == null)
-                return ApiResponses<PostViewersDto?>.Success(null);
+                return ApiResponses.Success();
 
             var post = await _context.Posts
                 .FirstOrDefaultAsync(x => x.Id == postId && x.IsActive);
             if (post == null)
-                return ApiResponses<PostViewersDto?>.Fail("Gönderi Bulunamadı.");
+                return ApiResponses.Fail("Gönderi Bulunamadı.");
 
             if (post.UserId == userId)
-                return ApiResponses<PostViewersDto?>.Success(null);
+                return ApiResponses.Success();
 
             var didUserReadPostBefore = await _context
                                                 .UserReadPosts
                                                 .AnyAsync(x => x.PostId == postId && x.UserId == userId);
 
             if (didUserReadPostBefore)
-                return ApiResponses<PostViewersDto?>.Success(null);
+                return ApiResponses.Success();
 
             var userReadPost = new UserReadPost
             {
@@ -57,8 +57,6 @@ namespace ItirafEt.Api.Services
             ///
             var postViewerDto = new PostViewersDto
             {
-                PostId = postId,
-                PostTitle = post.Title,
                 PostViewerAge = DateTime.Now.Year - user.BirthDate.Year,
                 PostViewerGenderId = user.GenderId,
                 PostViewerUserName = user.UserName,
@@ -70,7 +68,7 @@ namespace ItirafEt.Api.Services
             await _postViewHubService.PostViewedAsync(postId, postViewerDto);
             await _postViewHubService.UpdatePostViewCountAsync(post.CategoryId, postId);
 
-            return ApiResponses<PostViewersDto?>.Success(postViewerDto);
+            return ApiResponses.Success();
 
             //var postCategoryIdAndViewCount = await _context.Posts
             //    .Include(p => p.Readers)
@@ -104,8 +102,6 @@ namespace ItirafEt.Api.Services
                 .Where(urp => urp.PostId == postId)
                 .Select(urp => new PostViewersDto
                 {
-                    PostId = postId,
-                    PostTitle = urp.Post.Title,
                     PostViewerAge = DateTime.Now.Year - urp.User.BirthDate.Year,
                     PostViewerGenderId = urp.User.GenderId,
                     PostViewerUserName = urp.User.UserName,
