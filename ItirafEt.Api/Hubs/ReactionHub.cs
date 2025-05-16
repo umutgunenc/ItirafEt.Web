@@ -10,5 +10,6 @@ namespace ItirafEt.Api.Hubs
         
         public Task JoinCategoryPostReactionGroup(int categoryId) => Groups.AddToGroupAsync(Context.ConnectionId, $"category-{categoryId}");
 
+
     }
 }

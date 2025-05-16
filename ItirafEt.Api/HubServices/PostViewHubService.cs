@@ -17,6 +17,12 @@ namespace ItirafEt.Api.HubServices
                 .Group($"postPostViewed-{postId}")
                 .SendAsync("PostViewedAsync", postId, dto);
         }
+        public async Task PostViewedAnonymousAsync(int postId)
+        {
+            await _hubContext.Clients
+                .Group($"postPostViewed-{postId}")
+                .SendAsync("PostViewedAnonymousAsync", postId);
+        }
 
         public async Task UpdatePostViewCountAsync(int categoryId, int postId)
         {
@@ -24,5 +30,7 @@ namespace ItirafEt.Api.HubServices
                 .Group($"categoryPostViewed-{categoryId}")
                 .SendAsync("UpdatePostViewCountAsync", postId);
         }
+
+
     }
 }

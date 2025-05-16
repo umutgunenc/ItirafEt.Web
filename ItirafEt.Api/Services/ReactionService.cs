@@ -46,6 +46,24 @@ namespace ItirafEt.Api.Services
             return ApiResponses<List<ReactionDto>>.Success(postReactions);
 
         }
+        public async Task<ApiResponses<int>> GetPostLikeCountAsync(int podtId)
+        {
+            var likeCount = await _context.PostReaction
+                .AsNoTracking()
+                .Where(p=>p.PostId == podtId && p.ReactionTypeId == (int)ReactionTypeEnum.Like)
+                .CountAsync();
+
+            return ApiResponses<int>.Success(likeCount);
+        } 
+        public async Task<ApiResponses<int>> GetPostDislikeCountAsync(int podtId)
+        {
+            var dislikeCount = await _context.PostReaction
+                .AsNoTracking()
+                .Where(p=>p.PostId == podtId && p.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
+                .CountAsync();
+
+            return ApiResponses<int>.Success(dislikeCount);
+        }
         public async Task<ApiResponses> LikePostAsync(int postId, Guid UserId)
         {
             var post = await GetPostAsync(postId);
@@ -57,6 +75,7 @@ namespace ItirafEt.Api.Services
             var likeCount = post.PostReactions.Count(c => c.ReactionTypeId == (int)ReactionTypeEnum.Like);
             if (reaction != null)
             {
+                var oldReactionTypeId = reaction.ReactionTypeId;
                 if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
                 {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Cancelled;
@@ -81,6 +100,7 @@ namespace ItirafEt.Api.Services
 
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId, UserId);
 
                 return ApiResponses.Success();
 
@@ -104,6 +124,7 @@ namespace ItirafEt.Api.Services
 
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, null, reaction.ReactionTypeId, UserId);
 
                 return ApiResponses.Success();
 
@@ -123,10 +144,10 @@ namespace ItirafEt.Api.Services
 
             if (reaction != null)
             {
+                var oldReactionTypeId = reaction.ReactionTypeId;
+
                 if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
-                {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Cancelled;
-                }
                 else if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
                 {
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Dislike;
@@ -144,6 +165,7 @@ namespace ItirafEt.Api.Services
                 var reactionDto = ReactionToReactionDto(reaction);
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId, UserId);
 
                 return ApiResponses.Success();
 
@@ -165,24 +187,22 @@ namespace ItirafEt.Api.Services
                 var reactionDto = ReactionToReactionDto(reaction);
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, null, reaction.ReactionTypeId, UserId);
 
                 return ApiResponses.Success();
 
             }
 
-
         }
-        private ReactionDto ReactionToReactionDto(PostReaction reaction)
+        public async Task<ApiResponses<int?>> GetUserReactionTypeIdAsync(int postId, Guid? UserId)
         {
-            return new ReactionDto
-            {
-                PostId = reaction.PostId,
-                ReactingUserId = reaction.ReactingUserId,
-                ReactionTypeId = reaction.ReactionTypeId,
-                ReactingUserUserName = reaction.ReactingUser.UserName,
-                CreatedDate = reaction.CreatedDate,
+            var reactionTypeId = await _context.PostReaction
+                .AsNoTracking()
+                .Where( pr=>pr.ReactingUserId == UserId && pr.PostId == postId)
+                .Select( pr=>  pr.ReactionTypeId)
+                .FirstOrDefaultAsync();
 
-            };
+            return ApiResponses<int?>.Success(reactionTypeId);
         }
         private async Task<Post?> GetPostAsync(int postId)
         {
@@ -197,12 +217,26 @@ namespace ItirafEt.Api.Services
                 .Include(c => c.ReactingUser)
                 .FirstOrDefaultAsync(c => c.PostId == postId && c.ReactingUserId == UserId);
         }
-        private async Task<User> GetReactingUser(Guid UserId)
+        private async Task<User?> GetReactingUser(Guid UserId)
         {
            return await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == UserId);
 
+        }
+        private ReactionDto ReactionToReactionDto(PostReaction reaction)
+        {
+            return new ReactionDto
+            {
+                PostId = reaction.PostId,
+                ReactingUserId = reaction.ReactingUserId,
+                ReactionTypeId = reaction.ReactionTypeId,
+                ReactingUserUserName = reaction.ReactingUser.UserName,
+                ReactingUserProfileImageUrl = reaction.ReactingUser.ProfilePictureUrl,
+                ReactingUserAge = DateTime.Now.Year - reaction.ReactingUser.BirthDate.Year,
+                CreatedDate = reaction.CreatedDate,
+
+            };
         }
     }
 }

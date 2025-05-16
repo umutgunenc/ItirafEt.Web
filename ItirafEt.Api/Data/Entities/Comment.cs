@@ -46,10 +46,7 @@ namespace ItirafEt.Api.Data.Entities
 
         [ForeignKey(nameof(ParentCommentId))]
         public virtual Comment ParentComment { get; set; }
-        public int LikeCount { get; set; } = 0;
-        public int DislikeCount { get; set; } = 0;
-        public int CommentCount { get; set; } = 0;
-        public int ReportCount { get; set; } = 0;
+
         public virtual ICollection<Comment> Replies { get; set; }
         public virtual ICollection<CommentReaction> CommentReactions { get; set; }
         public virtual ICollection<CommentReport> CommentReports { get; set; }

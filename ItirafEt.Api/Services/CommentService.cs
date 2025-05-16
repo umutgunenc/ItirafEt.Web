@@ -42,10 +42,6 @@ namespace ItirafEt.Api.Services
                    CreatedDate = c.CreatedDate,
                    UpdatedDate = c.UpdatedDate,
                    UserName = c.User.UserName,
-                   LikeCount = c.LikeCount,
-                   DislikeCount = c.DislikeCount,
-                   CommentCount = c.CommentCount,
-                   ReportCount = c.ReportCount,
                    CommentRections = c.CommentReactions.Select(cr => new ReactionDto
                    {
                        Id = cr.Id,
@@ -65,9 +61,6 @@ namespace ItirafEt.Api.Services
                             CreatedDate = r.CreatedDate,
                             UpdatedDate = r.UpdatedDate,
                             UserName = r.User.UserName,
-                            LikeCount = r.LikeCount,
-                            DislikeCount = r.DislikeCount,
-                            ReportCount = r.ReportCount,
                             CommentRections = r.CommentReactions.Select(cr => new ReactionDto
                             {
                                 Id = cr.Id,
@@ -105,9 +98,6 @@ namespace ItirafEt.Api.Services
                 UserId = UserId,
                 PostId = postId,
                 ParentCommentId = null,
-                LikeCount = 0,
-                DislikeCount = 0,
-                ReportCount = 0,
                 IsActive = true,
                 DeviceInfo = dto.DeviceInfo,
                 IpAddress = dto.IpAddress
@@ -153,9 +143,6 @@ namespace ItirafEt.Api.Services
                 UserId = UserId,
                 PostId = postId,
                 ParentCommentId = commentId,
-                LikeCount = 0,
-                DislikeCount = 0,
-                ReportCount = 0,
                 IsActive = true,
                 DeviceInfo = replyDto.DeviceInfo,
                 IpAddress = replyDto.IpAddress
@@ -178,7 +165,7 @@ namespace ItirafEt.Api.Services
 
         }
 
-        private async Task<string> GetUserNameAsync(Guid UserId)
+        private async Task<string?> GetUserNameAsync(Guid UserId)
         {
             return await _context.Users
                 .AsNoTracking()

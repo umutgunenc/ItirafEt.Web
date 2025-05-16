@@ -6,6 +6,7 @@
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
+<p>_postViewCount @_postViewCount</p>
 
 <div class="col-lg-8 col mx-auto py-5 px-2">
 	<div class="card shadow-lg rounded-4 border-1 mb-3 text-bg-light">
@@ -80,7 +81,7 @@
 							</div>
 							<!-- Görüntülenme -->
 							<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViwers">
-								<i class="bi bi-eye me-1"></i>@_viewers.Count
+								<i class="bi bi-eye me-1"></i>@_postViewCount
 							</div>
 						</div>
 
@@ -207,7 +208,7 @@
 											@if (_replyToCommentId == comment.Id)
 											{
 												<EditForm Model="_replyModel"
-												OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+													OnValidSubmit="()=>AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
 													<div class="input-group mb-2">
 														<input type="text"
@@ -305,7 +306,7 @@
 	<ChildContent>
 		@if (_reactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like))
 		{
-			@foreach (var reaction in _reactions)
+			@foreach (var reaction in _reactions.OrderByDescending(x => x.CreatedDate))
 			{
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
 				{
@@ -372,7 +373,7 @@
 	<ChildContent>
 		@if (_reactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike))
 		{
-			@foreach (var reaction in _reactions)
+			@foreach (var reaction in _reactions.OrderByDescending(x => x.CreatedDate))
 			{
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
 				{
@@ -447,7 +448,7 @@
 		}
 		else
 		{
-			@foreach (var viewer in _viewers)
+			@foreach (var viewer in _viewers.OrderByDescending(x => x.ReadDate))
 			{
 
 				<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
@@ -530,9 +531,9 @@
 	};
 	private int? _likeCount;
 	private int? _dislikeCount;
+	private int? _postViewCount;
 	private int? _newReactionId;
 	private int? _oldReactionId;
-	private int? _loggedInUserLastReaction;
 	private int? _replyToCommentId;
 	private bool _isApiBusy = false;
 	private bool _isBusy = true;
@@ -557,17 +558,25 @@
 	protected override async Task OnParametersSetAsync()
 	{
 		ResetPage();
-		await StartTasksAsync();
+		CheckUserLoggedIn();
+		GetUserRoleId();
+		IsUserPostOwner();
+
+		await StartTasksWithUserRoleAsync();
+
 		await StartReactionHubConnectionAsync();
 		await StartPostViewHubConnectionAsync();
 		await StartCommentHubConnectionAsync();
-		// await GetPostViewCountAsync();
-		CheckUserLoggedIn();
-		GetUserRoleId();
-		IsUserPostOwner(_isPostHaveError);
-		UpdatePostReactionCounts();
-		UpdatePostReactionButtons();
-		await ReadPostAsync();
+
+		if (allowedRoles.Contains(_userRoleId))
+		{
+			UpdatePostReactionCounts();
+			UpdatePostReactionButtons();
+		}
+
+		await ReadPostAsync(); 
+
+
 		_isBusy = false;
 
 	}
@@ -589,16 +598,31 @@
 					.WithAutomaticReconnect()
 					.Build();
 
-		_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
+
+
+		if (!allowedRoles.Contains(_userRoleId))
 		{
-			UpdateReactions(reaction, isReactionUpdated);
-			StateHasChanged();
-		});
+			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", (oldReactionId, newReactionId, userId) =>
+			{
+				UpdateReactions(oldReactionId, newReactionId, userId);
+				StateHasChanged();
+			});
+		}
+		else
+		{
+			_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
+			{
+				UpdateReactions(reaction, isReactionUpdated);
+				StateHasChanged();
+			});
+		}
 
 		await _reactionHubConnection.StartAsync();
 		await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
 
 	}
+
+
 	private async Task StartPostViewHubConnectionAsync()
 	{
 		_postViewHubConnection = new HubConnectionBuilder()
@@ -606,15 +630,29 @@
 					.WithAutomaticReconnect()
 					.Build();
 
-		_postViewHubConnection.On<int, PostViewersDto>("PostViewedAsync", (postId, postViewerDto) =>
-	{
-			if (_viewers == null)
-				_viewers = new List<PostViewersDto>();
 
-			_viewers.Add(postViewerDto);
+		if (allowedRoles.Contains(_userRoleId))
+		{
+			_postViewHubConnection.On<int, PostViewersDto>("PostViewedAsync", (postId, postViewerDto) =>
+			{
+				if (_viewers == null)
+					_viewers = new List<PostViewersDto>();
 
-			StateHasChanged();
-		});
+				_viewers.Add(postViewerDto);
+				_postViewCount = _viewers.Count;
+
+				StateHasChanged();
+			});
+		}
+		else
+		{
+			_postViewHubConnection.On<int>("PostViewedAnonymousAsync", postId =>
+			{
+				_postViewCount++;
+				StateHasChanged();
+
+			});
+		}
 
 		await _postViewHubConnection.StartAsync();
 		await _postViewHubConnection.SendAsync("JoinPostPostViewCountGroup", postId);
@@ -623,9 +661,9 @@
 	private async Task StartCommentHubConnectionAsync()
 	{
 		_commentHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/commenthub")
-					.WithAutomaticReconnect()
-					.Build();
+		.WithUrl("https://localhost:7292/commenthub")
+		.WithAutomaticReconnect()
+		.Build();
 
 		_commentHubConnection.On<CommentsDto, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
 		{
@@ -633,7 +671,8 @@
 			if (isAdded)
 			{
 				if (_comments == null)
-					_comments = new List<CommentsDto>();
+					_comments = new List<CommentsDto>
+				();
 				_comments.Insert(0, commentDto);
 			}
 			else
@@ -648,7 +687,8 @@
 			if (comment != null)
 			{
 				if (comment.CommentReplies == null)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>();
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>
+						();
 
 				if (isAdded)
 					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
@@ -662,20 +702,60 @@
 		await _commentHubConnection.StartAsync();
 		await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId);
 	}
-	private async Task StartTasksAsync()
-	{
-		var postTask = PostApi.GetPostByIdAsync(postId);
-		var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
-		var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-		var postViewTask = PostViewApi.GetPostsViewersAsync(postId);
-		await Task.WhenAll(postTask, reactionsTask, commentsTask, postViewTask);
 
-		var reactionsTaskResult = await reactionsTask;
-		GetPost(postTask.Result);
-		GetComments(commentsTask.Result);
-		GetReactions(reactionsTask.Result);
-		GetPostViewers(postViewTask.Result);
+	private async Task StartTasksWithUserRoleAsync()
+	{
+		if (!_isUserLoggedIn)
+		{
+			var postTask = PostApi.GetPostByIdAsync(postId);
+			var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+			var postViewCountTask = PostViewApi.GetPostViewCountAsync(postId);
+			var postLikeCountTask = ReactionApi.GetPostLikeCountAsync(postId);
+			var postDislikeCountTask = ReactionApi.GetPostDislikeCountAsync(postId);
+
+			await Task.WhenAll(postTask, commentsTask, postViewCountTask, postLikeCountTask, postDislikeCountTask);
+
+			GetPost(postTask.Result);
+			GetComments(commentsTask.Result);
+			GetPostViewCount(postViewCountTask.Result);
+			GetPostLikeCount(postLikeCountTask.Result);
+			GetPostDislikeCount(postDislikeCountTask.Result);
+		}
+		else if (allowedRoles.Contains(_userRoleId))
+		{
+			var postTask = PostApi.GetPostByIdAsync(postId);
+			var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+			var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
+			var viewersTask = PostViewApi.GetPostsViewersAsync(postId);
+
+			await Task.WhenAll(postTask, commentsTask, reactionsTask, viewersTask );
+
+			GetPost(postTask.Result);
+			GetComments(commentsTask.Result);
+			GetReactions(reactionsTask.Result);
+			GetPostViewers(viewersTask.Result); 
+
+		}
+		else
+		{
+			var postTask = PostApi.GetPostByIdAsync(postId);
+			var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+			var postLikeCountTask = ReactionApi.GetPostLikeCountAsync(postId);
+			var postDislikeCountTask = ReactionApi.GetPostDislikeCountAsync(postId);
+			var userReactionTask = ReactionApi.GetUserReactionTypeIdAsync(postId, _currentUserId);
+			var postViewCountTask = PostViewApi.GetPostViewCountAsync(postId);
+
+			await Task.WhenAll(postTask, commentsTask, postLikeCountTask, postDislikeCountTask, userReactionTask, postViewCountTask);
+
+			GetPost(postTask.Result);
+			GetComments(commentsTask.Result);
+			GetPostLikeCount(postLikeCountTask.Result);
+			GetPostDislikeCount(postDislikeCountTask.Result);
+			GetUserReactionTypeId(userReactionTask.Result);
+			GetPostViewCount(postViewCountTask.Result);
+		}
 	}
+
 	private void CheckUserLoggedIn()
 	{
 		_isUserLoggedIn = AuthStateProvider.IsLoggedIn;
@@ -687,10 +767,8 @@
 		else
 			_userRoleId = null;
 	}
-	private void IsUserPostOwner(bool IsPostError)
+	private void IsUserPostOwner()
 	{
-		if (IsPostError)
-			return;
 
 		if (_postDto == null)
 			return;
@@ -844,21 +922,15 @@
 	{
 		if (!_isUserLoggedIn)
 			return;
+
+		var response = await PostViewApi.ReadPostAsync(postId, _currentUserId);
 		try
 		{
-			var response = await PostViewApi.ReadPostAsync(postId, _currentUserId);
 			if (!response.IsSuccess)
 			{
 				_isPostHaveError = true;
 				_errorMessage = response.ErrorMessage;
 			}
-
-			// if (response.IsSuccess)
-			// {
-			// 	var (viewCount, id) = response.Data;
-			// 	await _postViewHubConnection.SendAsync("NotifyPostRead", postId, viewCount);
-			// 	// await _postViewHubConnection.SendAsync("NotifyPostRead", postId);
-			// }
 		}
 		catch (Exception ex)
 		{
@@ -873,7 +945,6 @@
 	}
 	private void UpdatePostReactionButtons()
 	{
-
 		_isAlreadyLiked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
 		_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 	}
@@ -892,6 +963,60 @@
 		UpdatePostReactionButtons();
 	}
 
+	private void UpdateReactions(int? oldReactionId, int newReactionId, Guid UserId)
+	{
+		var oldLikeCount = _likeCount;
+		var oldDislikeCount = _dislikeCount;
+		if (oldReactionId == null || oldReactionId == (int)ReactionTypeEnum.Cancelled)
+		{
+			if (newReactionId == (int)ReactionTypeEnum.Like)
+				_likeCount++;
+			else
+				_dislikeCount++;
+		}
+		else if (oldReactionId == (int)ReactionTypeEnum.Like)
+		{
+			if (newReactionId == (int)ReactionTypeEnum.Dislike)
+			{
+				_likeCount--;
+				_dislikeCount++;
+			}
+			else
+				_likeCount--;
+		}
+		else if (oldReactionId == (int)ReactionTypeEnum.Dislike)
+		{
+			if (newReactionId == (int)ReactionTypeEnum.Like)
+			{
+				_dislikeCount--;
+				_likeCount++;
+			}
+			else
+				_dislikeCount--;
+		}
+
+
+		if (_currentUserId == UserId)
+		{
+			if (newReactionId == (int)ReactionTypeEnum.Like)
+			{
+				_isAlreadyLiked = true;
+				_isAlreadyDisliked = false;
+			}
+			else if (newReactionId == (int)ReactionTypeEnum.Dislike)
+			{
+				_isAlreadyLiked = false;
+				_isAlreadyDisliked = true;
+			}
+			else
+			{
+				_isAlreadyLiked = false;
+				_isAlreadyDisliked = false;
+			}
+
+		}
+	}
+
 	private string GetUserGenderName(int genderId)
 	{
 		switch (genderId)
@@ -902,6 +1027,42 @@
 				return "Kadın";
 			default:
 				return "";
+		}
+	}
+	private void GetUserReactionTypeId(ApiResponses<int?> response)
+	{
+		if (_isPostHaveError)
+			return;
+		try
+		{
+			if (response.IsSuccess)
+			{
+
+				if (response.Data == (int)ReactionTypeEnum.Like)
+					_isAlreadyLiked = true;
+				else if (response.Data == (int)ReactionTypeEnum.Dislike)
+					_isAlreadyDisliked = true;
+				else
+				{
+					_isAlreadyLiked = false;
+					_isAlreadyDisliked = false;
+				}
+
+
+				if (_errorMessage != null)
+					_errorMessage = null;
+				_isPostHaveError = false;
+			}
+			else
+			{
+				_errorMessage = response.ErrorMessage;
+				_isPostHaveError = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
 		}
 	}
 	private void GetPost(ApiResponses<PostDto> response)
@@ -954,6 +1115,83 @@
 			_errorMessage = ex.Message;
 		}
 	}
+	private void GetPostLikeCount(ApiResponses<int> response)
+	{
+		if (_isPostHaveError)
+			return;
+		try
+		{
+			if (response.IsSuccess)
+			{
+				_likeCount = response.Data;
+				if (_errorMessage != null)
+					_errorMessage = null;
+				_isPostHaveError = false;
+			}
+			else
+			{
+				_errorMessage = response.ErrorMessage;
+				_isPostHaveError = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
+		}
+	}
+	private void GetPostDislikeCount(ApiResponses<int> response)
+	{
+		if (_isPostHaveError)
+			return;
+		try
+		{
+			if (response.IsSuccess)
+			{
+				_dislikeCount = response.Data;
+				_isPostHaveError = false;
+
+				if (_errorMessage != null)
+					_errorMessage = null;
+			}
+			else
+			{
+				_errorMessage = response.ErrorMessage;
+				_isPostHaveError = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
+		}
+	}
+	private void GetPostViewCount(ApiResponses<int> response)
+	{
+		if (_isPostHaveError)
+			return;
+		try
+		{
+			if (response.IsSuccess)
+			{
+				_postViewCount = response.Data;
+				_isPostHaveError = false;
+
+				if (_errorMessage != null)
+					_errorMessage = null;
+			}
+			else
+			{
+				_errorMessage = response.ErrorMessage;
+				_isPostHaveError = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
+		}
+	}
 	private void GetComments(ApiResponses<List<CommentsDto>> response)
 	{
 		if (_isPostHaveError)
@@ -989,6 +1227,7 @@
 			if (response.IsSuccess)
 			{
 				_viewers = response.Data;
+				_postViewCount = _viewers.Count;
 				_viewersErrorMessage = null;
 				_isViwersHaveError = false;
 			}
@@ -1007,6 +1246,7 @@
 			_viewersErrorMessage = ex.Message;
 		}
 	}
+
 	private void ShowUserProfile()
 	{
 		NavigationManager.NavigateTo($"/profile/{_postDto.UserId}");

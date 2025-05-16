@@ -5,6 +5,7 @@ namespace ItirafEt.Web.Apis
 {
     public interface IReactionApi
     {
+        [Headers("Authorization: Bearer")]
         [Get("/api/getPostReaction/")]
         Task<ApiResponses<List<ReactionDto>>> GetPostReactionsAsync(int postId);
 
@@ -15,5 +16,15 @@ namespace ItirafEt.Web.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/dislikePost/")]
         Task<ApiResponses> DislikePostAsync(int postId, Guid UserId);
+
+        [Get("/api/getPostLikeCount/")]
+        Task<ApiResponses<int>> GetPostLikeCountAsync(int postId);
+
+        [Get("/api/getPostDislikeCount/")]
+        Task<ApiResponses<int>> GetPostDislikeCountAsync(int postId);
+
+        [Headers("Authorization: Bearer")]
+        [Get("/api/getUserReactionTypeId/")]
+        Task<ApiResponses<int?>> GetUserReactionTypeIdAsync(int postId, Guid? UserId);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.HubServices
@@ -25,6 +26,13 @@ namespace ItirafEt.Api.HubServices
             await _hubContext.Clients
                 .Group($"category-{categoryId}")
                 .SendAsync("UpdatePostLikeCountAsync", postId, likeCount);
+        }
+
+        public async Task PostLikedOrDislikedAnonymousAsync(int postId, int? oldReactionTypeId, int newReactionTypeId, Guid UserId)
+        {
+            await _hubContext.Clients
+                .Group($"post-{postId}")
+                .SendAsync("PostLikedOrDislikedAnonymousAsync", oldReactionTypeId, newReactionTypeId, UserId);
         }
 
     }

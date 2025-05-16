@@ -67,6 +67,8 @@ namespace ItirafEt.Api.Services
 
             await _postViewHubService.PostViewedAsync(postId, postViewerDto);
             await _postViewHubService.UpdatePostViewCountAsync(post.CategoryId, postId);
+            await _postViewHubService.PostViewedAnonymousAsync(postId);
+                
 
             return ApiResponses.Success();
 
@@ -82,7 +84,7 @@ namespace ItirafEt.Api.Services
 
             //int postCategoryId = postCategoryIdAndViewCount.CategoryId;
             //int postViewCount = postCategoryIdAndViewCount.ViewCount;
-
+            
             //await _postViewHub.Clients
             //    .Group($"post-{postId}")
             //    .SendAsync("PostRead", postCategoryId, postId, postViewCount);
@@ -113,6 +115,16 @@ namespace ItirafEt.Api.Services
                 .ToListAsync();
 
             return ApiResponses<List<PostViewersDto>>.Success(postViewers);
+        }
+
+        public async Task<ApiResponses<int>> GetPostViewCountAsync(int postId)
+        {
+            var postViewCount = await _context.UserReadPosts
+                .AsNoTracking()
+                .Where(urp => urp.PostId == postId)
+                .CountAsync();
+
+            return ApiResponses<int>.Success(postViewCount);
         }
 
         //public async Task<ApiResponses<int>> GetPostReadCountAsync(int postId)
