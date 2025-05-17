@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ItirafEt.Api.Data.Migrations
+namespace ItirafEt.Api.Migrations
 {
     [DbContext(typeof(dbContext))]
-    [Migration("20250412192235_mig2")]
-    partial class mig2
+    [Migration("20250517220003_mig1")]
+    partial class mig1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -89,10 +89,10 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<int?>("ParentCommentId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("PostId")
+                    b.Property<int>("PostId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedDate")
+                    b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("UserId")
@@ -175,7 +175,7 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<Guid>("ReactingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ReactionId")
+                    b.Property<int>("ReactionId")
                         .HasColumnType("int");
 
                     b.Property<string>("ReportExplanation")
@@ -189,16 +189,17 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasIndex("CommentId");
 
-                    b.HasIndex("ReactingUserId");
-
                     b.HasIndex("ReactionId");
 
                     b.HasIndex("ReportName");
 
+                    b.HasIndex("ReactingUserId", "CommentId")
+                        .IsUnique();
+
                     b.ToTable("CommentReactions");
                 });
 
-            modelBuilder.Entity("ItirafEt.Api.Data.Entities.Conversation", b =>
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.CommentReport", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -206,9 +207,38 @@ namespace ItirafEt.Api.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ConversationTitle")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<int>("CommentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReportExplanation")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<int>("ReportTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReportingUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("ReportTypeId");
+
+                    b.HasIndex("ReportingUserId");
+
+                    b.ToTable("CommentReports");
+                });
+
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.Conversation", b =>
+                {
+                    b.Property<Guid>("ConversationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("InitiatorId")
                         .HasColumnType("uniqueidentifier");
@@ -219,17 +249,10 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<bool>("IsDeletedByUser2")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastMessageDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastMessagePreview")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
                     b.Property<Guid>("ResponderId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
+                    b.HasKey("ConversationId");
 
                     b.HasIndex("InitiatorId");
 
@@ -293,8 +316,8 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DeviceInfo")
                         .IsRequired()
@@ -314,6 +337,9 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.Property<bool>("IsVisibleToResponderUser")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ReadDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
@@ -375,20 +401,51 @@ namespace ItirafEt.Api.Data.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
-                    b.Property<int?>("ReportTypeId")
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("ReactionTypeId");
+
+                    b.HasIndex("ReactingUserId", "MessageId")
+                        .IsUnique();
+
+                    b.ToTable("MessageReactions");
+                });
+
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.MessageReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReportExplanation")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<int>("ReportTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReportingUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("MessageId");
 
-                    b.HasIndex("ReactingUserId");
-
-                    b.HasIndex("ReactionTypeId");
-
                     b.HasIndex("ReportTypeId");
 
-                    b.ToTable("MessageReactions");
+                    b.HasIndex("ReportingUserId");
+
+                    b.ToTable("MessageReports");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Post", b =>
@@ -399,7 +456,7 @@ namespace ItirafEt.Api.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -512,27 +569,54 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<Guid>("ReactingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ReactionTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReportExplanation")
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
-
-                    b.Property<int?>("ReportTypeId")
+                    b.Property<int>("ReactionTypeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
 
-                    b.HasIndex("ReactingUserId");
-
                     b.HasIndex("ReactionTypeId");
+
+                    b.HasIndex("ReactingUserId", "PostId")
+                        .IsUnique();
+
+                    b.ToTable("PostReaction");
+                });
+
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.PostReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReportExplanation")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<int>("ReportTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReportingUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
 
                     b.HasIndex("ReportTypeId");
 
-                    b.ToTable("PostReaction");
+                    b.HasIndex("ReportingUserId");
+
+                    b.ToTable("PostReports");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.ReactionType", b =>
@@ -545,12 +629,29 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.HasKey("Id");
 
                     b.ToTable("ReactionType");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Like"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Dislike"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Cancelled"
+                        });
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.ReportType", b =>
@@ -610,6 +711,15 @@ namespace ItirafEt.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AdminastorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("BannedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("BannedDateUntil")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
 
@@ -624,7 +734,10 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Property<int>("GenderId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsBanned")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsPremium")
@@ -652,6 +765,8 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AdminastorUserId");
+
                     b.HasIndex("Email")
                         .IsUnique();
 
@@ -672,7 +787,8 @@ namespace ItirafEt.Api.Data.Migrations
                             CreatedDate = new DateTime(2025, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "umutgunenc@gmail.com",
                             GenderId = 2,
-                            IsActive = true,
+                            IsBanned = false,
+                            IsDeleted = false,
                             IsPremium = true,
                             IsTermOfUse = true,
                             PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
@@ -707,15 +823,35 @@ namespace ItirafEt.Api.Data.Migrations
                     b.ToTable("UserBlocks");
                 });
 
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.UserReadPost", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReadDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId", "PostId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("UserReadPosts");
+                });
+
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Comment", b =>
                 {
                     b.HasOne("ItirafEt.Api.Data.Entities.Comment", "ParentComment")
                         .WithMany("Replies")
                         .HasForeignKey("ParentCommentId");
 
-                    b.HasOne("ItirafEt.Api.Data.Entities.Post", null)
+                    b.HasOne("ItirafEt.Api.Data.Entities.Post", "Post")
                         .WithMany("Comments")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.User", "User")
                         .WithMany("Comments")
@@ -724,6 +860,8 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("ParentComment");
+
+                    b.Navigation("Post");
 
                     b.Navigation("User");
                 });
@@ -768,8 +906,10 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "Reaction")
-                        .WithMany()
-                        .HasForeignKey("ReactionId");
+                        .WithMany("CommentReactions")
+                        .HasForeignKey("ReactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
                         .WithMany()
@@ -782,6 +922,33 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Navigation("Reaction");
 
                     b.Navigation("ReportType");
+                });
+
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.CommentReport", b =>
+                {
+                    b.HasOne("ItirafEt.Api.Data.Entities.Comment", "Comment")
+                        .WithMany("CommentReports")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
+                        .WithMany()
+                        .HasForeignKey("ReportTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ItirafEt.Api.Data.Entities.User", "ReportingUser")
+                        .WithMany("CommentReports")
+                        .HasForeignKey("ReportingUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("ReportType");
+
+                    b.Navigation("ReportingUser");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Conversation", b =>
@@ -848,33 +1015,58 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "ReactionType")
-                        .WithMany()
+                        .WithMany("MessageReactions")
                         .HasForeignKey("ReactionTypeId");
-
-                    b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
-                        .WithMany()
-                        .HasForeignKey("ReportTypeId");
 
                     b.Navigation("Message");
 
                     b.Navigation("ReactingUser");
 
                     b.Navigation("ReactionType");
+                });
+
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.MessageReport", b =>
+                {
+                    b.HasOne("ItirafEt.Api.Data.Entities.Message", "Message")
+                        .WithMany("MessageReports")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
+                        .WithMany()
+                        .HasForeignKey("ReportTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ItirafEt.Api.Data.Entities.User", "ReportingUser")
+                        .WithMany("MessageReports")
+                        .HasForeignKey("ReportingUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Message");
 
                     b.Navigation("ReportType");
+
+                    b.Navigation("ReportingUser");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Post", b =>
                 {
-                    b.HasOne("ItirafEt.Api.Data.Entities.Category", null)
+                    b.HasOne("ItirafEt.Api.Data.Entities.Category", "Category")
                         .WithMany("Posts")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.User", "User")
                         .WithMany("Posts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("User");
                 });
@@ -913,24 +1105,51 @@ namespace ItirafEt.Api.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReactionType", "ReactionType")
-                        .WithMany()
-                        .HasForeignKey("ReactionTypeId");
-
-                    b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
-                        .WithMany()
-                        .HasForeignKey("ReportTypeId");
+                        .WithMany("PostReactions")
+                        .HasForeignKey("ReactionTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Post");
 
                     b.Navigation("ReactingUser");
 
                     b.Navigation("ReactionType");
+                });
+
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.PostReport", b =>
+                {
+                    b.HasOne("ItirafEt.Api.Data.Entities.Post", "Post")
+                        .WithMany("PostReports")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
+                        .WithMany()
+                        .HasForeignKey("ReportTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ItirafEt.Api.Data.Entities.User", "ReportingUser")
+                        .WithMany("PostReports")
+                        .HasForeignKey("ReportingUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Post");
 
                     b.Navigation("ReportType");
+
+                    b.Navigation("ReportingUser");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.User", b =>
                 {
+                    b.HasOne("ItirafEt.Api.Data.Entities.User", "AdminastorUser")
+                        .WithMany()
+                        .HasForeignKey("AdminastorUserId");
+
                     b.HasOne("ItirafEt.Api.Data.Entities.GenderType", "Gender")
                         .WithMany("Users")
                         .HasForeignKey("GenderId")
@@ -942,6 +1161,8 @@ namespace ItirafEt.Api.Data.Migrations
                         .HasForeignKey("RoleName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AdminastorUser");
 
                     b.Navigation("Gender");
 
@@ -967,6 +1188,25 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Navigation("BlockerUser");
                 });
 
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.UserReadPost", b =>
+                {
+                    b.HasOne("ItirafEt.Api.Data.Entities.Post", "Post")
+                        .WithMany("Readers")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ItirafEt.Api.Data.Entities.User", "User")
+                        .WithMany("ReadPosts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Category", b =>
                 {
                     b.Navigation("Posts");
@@ -975,6 +1215,8 @@ namespace ItirafEt.Api.Data.Migrations
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Comment", b =>
                 {
                     b.Navigation("CommentReactions");
+
+                    b.Navigation("CommentReports");
 
                     b.Navigation("Replies");
                 });
@@ -994,11 +1236,26 @@ namespace ItirafEt.Api.Data.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("MessageReactions");
+
+                    b.Navigation("MessageReports");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Post", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("PostReactions");
+
+                    b.Navigation("PostReports");
+
+                    b.Navigation("Readers");
+                });
+
+            modelBuilder.Entity("ItirafEt.Api.Data.Entities.ReactionType", b =>
+                {
+                    b.Navigation("CommentReactions");
+
+                    b.Navigation("MessageReactions");
 
                     b.Navigation("PostReactions");
                 });
@@ -1018,6 +1275,8 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.Navigation("CommentReactions");
 
+                    b.Navigation("CommentReports");
+
                     b.Navigation("Comments");
 
                     b.Navigation("ConversationsInitiated");
@@ -1026,11 +1285,17 @@ namespace ItirafEt.Api.Data.Migrations
 
                     b.Navigation("MessageReactions");
 
+                    b.Navigation("MessageReports");
+
                     b.Navigation("PostHistories");
 
                     b.Navigation("PostReactions");
 
+                    b.Navigation("PostReports");
+
                     b.Navigation("Posts");
+
+                    b.Navigation("ReadPosts");
 
                     b.Navigation("SentMessages");
                 });

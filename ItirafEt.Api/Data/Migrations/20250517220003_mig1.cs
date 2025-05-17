@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace ItirafEt.Api.Data.Migrations
+namespace ItirafEt.Api.Migrations
 {
     /// <inheritdoc />
     public partial class mig1 : Migration
@@ -20,6 +20,7 @@ namespace ItirafEt.Api.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CategoryName = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    CategoryIconUrl = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     isActive = table.Column<bool>(type: "bit", nullable: false),
                     CategoryOrder = table.Column<int>(type: "int", nullable: false)
                 },
@@ -47,7 +48,7 @@ namespace ItirafEt.Api.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -89,7 +90,11 @@ namespace ItirafEt.Api.Data.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    BannedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BannedDateUntil = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AdminastorUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsBanned = table.Column<bool>(type: "bit", nullable: false),
                     IsPremium = table.Column<bool>(type: "bit", nullable: false),
                     IsTermOfUse = table.Column<bool>(type: "bit", nullable: false),
                     RoleName = table.Column<string>(type: "nvarchar(64)", nullable: false),
@@ -110,25 +115,26 @@ namespace ItirafEt.Api.Data.Migrations
                         principalTable: "Roles",
                         principalColumn: "Name",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Users_Users_AdminastorUserId",
+                        column: x => x.AdminastorUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Conversations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     InitiatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ResponderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ConversationTitle = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
-                    LastMessageDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastMessagePreview = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     IsDeletedByUser1 = table.Column<bool>(type: "bit", nullable: false),
                     IsDeletedByUser2 = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Conversations", x => x.Id);
+                    table.PrimaryKey("PK_Conversations", x => x.ConversationId);
                     table.CheckConstraint("CK_Conversation_DifferentUsers", "InitiatorId != ResponderId");
                     table.ForeignKey(
                         name: "FK_Conversations_Users_InitiatorId",
@@ -155,10 +161,10 @@ namespace ItirafEt.Api.Data.Migrations
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IpAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: false),
-                    DeviceInfo = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: true)
+                    DeviceInfo = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -167,7 +173,8 @@ namespace ItirafEt.Api.Data.Migrations
                         name: "FK_Posts_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Posts_Users_UserId",
                         column: x => x.UserId,
@@ -214,10 +221,11 @@ namespace ItirafEt.Api.Data.Migrations
                     IpAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: false),
                     DeviceInfo = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
                     SentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReadDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsRead = table.Column<bool>(type: "bit", nullable: false),
                     IsVisibleToInitiatorUser = table.Column<bool>(type: "bit", nullable: false),
                     IsVisibleToResponderUser = table.Column<bool>(type: "bit", nullable: false),
-                    ConversationId = table.Column<int>(type: "int", nullable: false)
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -226,7 +234,7 @@ namespace ItirafEt.Api.Data.Migrations
                         name: "FK_Messages_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
-                        principalColumn: "Id",
+                        principalColumn: "ConversationId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Messages_Users_SenderId",
@@ -247,10 +255,10 @@ namespace ItirafEt.Api.Data.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IpAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: false),
                     DeviceInfo = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParentCommentId = table.Column<int>(type: "int", nullable: true),
-                    PostId = table.Column<int>(type: "int", nullable: true)
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    ParentCommentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -264,7 +272,8 @@ namespace ItirafEt.Api.Data.Migrations
                         name: "FK_Comments_Posts_PostId",
                         column: x => x.PostId,
                         principalTable: "Posts",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Comments_Users_UserId",
                         column: x => x.UserId,
@@ -314,10 +323,8 @@ namespace ItirafEt.Api.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReactingUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PostId = table.Column<int>(type: "int", nullable: false),
-                    ReactionTypeId = table.Column<int>(type: "int", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReportTypeId = table.Column<int>(type: "int", nullable: true),
-                    ReportExplanation = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true)
+                    ReactionTypeId = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -332,15 +339,71 @@ namespace ItirafEt.Api.Data.Migrations
                         name: "FK_PostReaction_ReactionType_ReactionTypeId",
                         column: x => x.ReactionTypeId,
                         principalTable: "ReactionType",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_PostReaction_ReportType_ReportTypeId",
-                        column: x => x.ReportTypeId,
-                        principalTable: "ReportType",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PostReaction_Users_ReactingUserId",
                         column: x => x.ReactingUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostReports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ReportingUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    ReportTypeId = table.Column<int>(type: "int", nullable: false),
+                    ReportExplanation = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostReports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostReports_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostReports_ReportType_ReportTypeId",
+                        column: x => x.ReportTypeId,
+                        principalTable: "ReportType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostReports_Users_ReportingUserId",
+                        column: x => x.ReportingUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserReadPosts",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    ReadDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserReadPosts", x => new { x.UserId, x.PostId });
+                    table.ForeignKey(
+                        name: "FK_UserReadPosts_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserReadPosts_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -376,7 +439,6 @@ namespace ItirafEt.Api.Data.Migrations
                     MessageId = table.Column<int>(type: "int", nullable: false),
                     ReactionTypeId = table.Column<int>(type: "int", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReportTypeId = table.Column<int>(type: "int", nullable: true),
                     ReportExplanation = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true)
                 },
                 constraints: table =>
@@ -394,13 +456,43 @@ namespace ItirafEt.Api.Data.Migrations
                         principalTable: "ReactionType",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_MessageReactions_ReportType_ReportTypeId",
-                        column: x => x.ReportTypeId,
-                        principalTable: "ReportType",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_MessageReactions_Users_ReactingUserId",
                         column: x => x.ReactingUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MessageReports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ReportingUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<int>(type: "int", nullable: false),
+                    ReportTypeId = table.Column<int>(type: "int", nullable: false),
+                    ReportExplanation = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageReports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MessageReports_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MessageReports_ReportType_ReportTypeId",
+                        column: x => x.ReportTypeId,
+                        principalTable: "ReportType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MessageReports_Users_ReportingUserId",
+                        column: x => x.ReportingUserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -451,7 +543,7 @@ namespace ItirafEt.Api.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReactingUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CommentId = table.Column<int>(type: "int", nullable: false),
-                    ReactionId = table.Column<int>(type: "int", nullable: true),
+                    ReactionId = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReportName = table.Column<int>(type: "int", nullable: true),
                     ReportExplanation = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true)
@@ -469,7 +561,8 @@ namespace ItirafEt.Api.Data.Migrations
                         name: "FK_CommentReactions_ReactionType_ReactionId",
                         column: x => x.ReactionId,
                         principalTable: "ReactionType",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_CommentReactions_ReportType_ReportName",
                         column: x => x.ReportName,
@@ -478,6 +571,41 @@ namespace ItirafEt.Api.Data.Migrations
                     table.ForeignKey(
                         name: "FK_CommentReactions_Users_ReactingUserId",
                         column: x => x.ReactingUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CommentReports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ReportingUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CommentId = table.Column<int>(type: "int", nullable: false),
+                    ReportTypeId = table.Column<int>(type: "int", nullable: false),
+                    ReportExplanation = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommentReports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CommentReports_Comments_CommentId",
+                        column: x => x.CommentId,
+                        principalTable: "Comments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CommentReports_ReportType_ReportTypeId",
+                        column: x => x.ReportTypeId,
+                        principalTable: "ReportType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CommentReports_Users_ReportingUserId",
+                        column: x => x.ReportingUserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -495,6 +623,16 @@ namespace ItirafEt.Api.Data.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "ReactionType",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Like" },
+                    { 2, "Dislike" },
+                    { 3, "Cancelled" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Roles",
                 column: "Name",
                 values: new object[]
@@ -508,8 +646,8 @@ namespace ItirafEt.Api.Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "BirthDate", "CreatedDate", "Email", "GenderId", "IsActive", "IsPremium", "IsTermOfUse", "PasswordHash", "ProfilePictureUrl", "RoleName", "UserName" },
-                values: new object[] { new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), new DateTime(1989, 5, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2025, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "umutgunenc@gmail.com", 2, true, true, true, "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==", null, "SuperAdmin", "admin" });
+                columns: new[] { "Id", "AdminastorUserId", "BannedDate", "BannedDateUntil", "BirthDate", "CreatedDate", "Email", "GenderId", "IsBanned", "IsDeleted", "IsPremium", "IsTermOfUse", "PasswordHash", "ProfilePictureUrl", "RoleName", "UserName" },
+                values: new object[] { new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), null, null, null, new DateTime(1989, 5, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2025, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "umutgunenc@gmail.com", 2, false, false, true, true, "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==", null, "SuperAdmin", "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_CategoryOrder",
@@ -538,9 +676,10 @@ namespace ItirafEt.Api.Data.Migrations
                 column: "CommentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommentReactions_ReactingUserId",
+                name: "IX_CommentReactions_ReactingUserId_CommentId",
                 table: "CommentReactions",
-                column: "ReactingUserId");
+                columns: new[] { "ReactingUserId", "CommentId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CommentReactions_ReactionId",
@@ -551,6 +690,21 @@ namespace ItirafEt.Api.Data.Migrations
                 name: "IX_CommentReactions_ReportName",
                 table: "CommentReactions",
                 column: "ReportName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommentReports_CommentId",
+                table: "CommentReports",
+                column: "CommentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommentReports_ReportingUserId",
+                table: "CommentReports",
+                column: "ReportingUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommentReports_ReportTypeId",
+                table: "CommentReports",
+                column: "ReportTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_ParentCommentId",
@@ -588,9 +742,10 @@ namespace ItirafEt.Api.Data.Migrations
                 column: "MessageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MessageReactions_ReactingUserId",
+                name: "IX_MessageReactions_ReactingUserId_MessageId",
                 table: "MessageReactions",
-                column: "ReactingUserId");
+                columns: new[] { "ReactingUserId", "MessageId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_MessageReactions_ReactionTypeId",
@@ -598,8 +753,18 @@ namespace ItirafEt.Api.Data.Migrations
                 column: "ReactionTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MessageReactions_ReportTypeId",
-                table: "MessageReactions",
+                name: "IX_MessageReports_MessageId",
+                table: "MessageReports",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReports_ReportingUserId",
+                table: "MessageReports",
+                column: "ReportingUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReports_ReportTypeId",
+                table: "MessageReports",
                 column: "ReportTypeId");
 
             migrationBuilder.CreateIndex(
@@ -628,9 +793,10 @@ namespace ItirafEt.Api.Data.Migrations
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostReaction_ReactingUserId",
+                name: "IX_PostReaction_ReactingUserId_PostId",
                 table: "PostReaction",
-                column: "ReactingUserId");
+                columns: new[] { "ReactingUserId", "PostId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PostReaction_ReactionTypeId",
@@ -638,8 +804,18 @@ namespace ItirafEt.Api.Data.Migrations
                 column: "ReactionTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostReaction_ReportTypeId",
-                table: "PostReaction",
+                name: "IX_PostReports_PostId",
+                table: "PostReports",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostReports_ReportingUserId",
+                table: "PostReports",
+                column: "ReportingUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostReports_ReportTypeId",
+                table: "PostReports",
                 column: "ReportTypeId");
 
             migrationBuilder.CreateIndex(
@@ -661,6 +837,16 @@ namespace ItirafEt.Api.Data.Migrations
                 name: "IX_UserBlocks_BlockerUserId",
                 table: "UserBlocks",
                 column: "BlockerUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserReadPosts_PostId",
+                table: "UserReadPosts",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_AdminastorUserId",
+                table: "Users",
+                column: "AdminastorUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
@@ -695,10 +881,16 @@ namespace ItirafEt.Api.Data.Migrations
                 name: "CommentReactions");
 
             migrationBuilder.DropTable(
+                name: "CommentReports");
+
+            migrationBuilder.DropTable(
                 name: "MessageAttachment");
 
             migrationBuilder.DropTable(
                 name: "MessageReactions");
+
+            migrationBuilder.DropTable(
+                name: "MessageReports");
 
             migrationBuilder.DropTable(
                 name: "PostHistories");
@@ -707,7 +899,13 @@ namespace ItirafEt.Api.Data.Migrations
                 name: "PostReaction");
 
             migrationBuilder.DropTable(
+                name: "PostReports");
+
+            migrationBuilder.DropTable(
                 name: "UserBlocks");
+
+            migrationBuilder.DropTable(
+                name: "UserReadPosts");
 
             migrationBuilder.DropTable(
                 name: "Comments");

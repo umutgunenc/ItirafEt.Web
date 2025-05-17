@@ -32,12 +32,14 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public DateTime SentDate { get; set; }
 
+        public DateTime? ReadDate { get; set; }
+
         public bool IsRead { get; set; } = false;
         public bool IsVisibleToInitiatorUser { get; set; } = true;
         public bool IsVisibleToResponderUser { get; set; } = true;
 
         [Required]
-        public int ConversationId { get; set; }
+        public Guid ConversationId { get; set; }
 
         [ForeignKey(nameof(SenderId))]
         public virtual User Sender { get; set; }

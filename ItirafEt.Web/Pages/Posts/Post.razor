@@ -3,6 +3,7 @@
 @inject IReactionApi ReactionApi
 @inject ICommentApi CommentApi
 @inject IPostViewApi PostViewApi
+@inject IMessageApi MessageApi
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
@@ -33,7 +34,7 @@
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
 					<p class="card-text text-break"
-					style="text-align: justify;
+					   style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
@@ -45,7 +46,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -53,7 +54,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -63,7 +64,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="ReportPost"></i>
+									   style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -90,7 +91,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -98,7 +99,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -108,7 +109,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="ReportPost"></i>
+									   style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -122,9 +123,9 @@
 						<div class="d-flex align-items-center gap-3">
 							<!-- Profil Fotoğrafı -->
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-							class="rounded-circle"
-							width="56" height="56"
-							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+								 class="rounded-circle"
+								 width="56" height="56"
+								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 
 							<!-- Kullanıcı Bilgileri -->
 							<div class="d-flex flex-column">
@@ -151,7 +152,7 @@
 											</span>
 										}
 
-										<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(_postDto.UserId)">
+										<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(_postDto.UserId)">
 											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 										</a>
 									</div>
@@ -175,10 +176,10 @@
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -208,13 +209,13 @@
 											@if (_replyToCommentId == comment.Id)
 											{
 												<EditForm Model="_replyModel"
-													OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+														  OnValidSubmit="()=>AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
 													<div class="input-group mb-2">
 														<input type="text"
-														class="form-control form-control-sm"
-														placeholder="Cevabınızı yazın..."
-														@bind="_replyModel.Content" />
+															   class="form-control form-control-sm"
+															   placeholder="Cevabınızı yazın..."
+															   @bind="_replyModel.Content" />
 														<div class="input-group-append">
 															<button class="btn btn-sm btn-outline-primary" type="submit">
 																@* @onclick="() => AddReplyAsync(comment.Id)" *@
@@ -271,15 +272,15 @@
 								</div>
 
 								<EditForm Model="_commentModel"
-								OnValidSubmit="AddCommentAsync">
+										  OnValidSubmit="AddCommentAsync">
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -316,9 +317,9 @@
 							<div class="d-flex align-items-center gap-2 gap-md-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-								class="rounded-circle"
-								width="56" height="56"
-								style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+									 class="rounded-circle"
+									 width="56" height="56"
+									 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -345,7 +346,7 @@
 													<i class="bi bi-gender-female me-1"></i>Kadın
 												</span>
 											}
-											<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(reaction.ReactingUserId)">
+											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
 												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 											</a>
 										</div>
@@ -383,9 +384,9 @@
 							<div class="d-flex align-items-center gap-2 gap-sm-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-								class="rounded-circle"
-								width="56" height="56"
-								style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+									 class="rounded-circle"
+									 width="56" height="56"
+									 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -413,7 +414,7 @@
 												</span>
 											}
 
-											<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(reaction.ReactingUserId)">
+											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
 												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 											</a>
 										</div>
@@ -457,9 +458,9 @@
 						<div class="d-flex align-items-center gap-2 gap-sm-4">
 							<!-- Profil Fotoğrafı -->
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-							class="rounded-circle"
-							width="56" height="56"
-							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+								 class="rounded-circle"
+								 width="56" height="56"
+								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 							<div class="d-flex flex-column">
 								<div class="d-flex align-items-center gap-1 gap-md-3 mb-2">
 									<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(viewer.PostViewerUserId)">@viewer.PostViewerUserName</h5>
@@ -487,7 +488,7 @@
 											</span>
 										}
 
-										<a href="#" style="text-decoration: none; color:lightseagreen;" @onclick="()=>SendMessage(viewer.PostViewerUserId)">
+										<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(viewer.PostViewerUserId)">
 											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 										</a>
 									</div>
@@ -504,7 +505,18 @@
 	</FooterContent>
 </ModalComponent>
 
+<ModalComponent @ref="_sendMessageErrorModel" Title="Hata" TitleClass="mx-auto">
+	<ChildContent>
 
+		<div class="alert alert-danger" role="alert">
+			@_sendMessageError
+		</div>
+
+	</ChildContent>
+	<FooterContent>
+		<button class="btn blue col text-white fw-medium" @onclick="_sendMessageErrorModel.Close">Kapat</button>
+	</FooterContent>
+</ModalComponent>
 @code {
 	[Parameter]
 	public int postId { get; set; }
@@ -515,12 +527,14 @@
 	private List<CommentsDto>? _comments = new();
 	private List<ReactionDto>? _reactions = new();
 	private List<PostViewersDto>? _viewers = new();
+	private ConversationDto _conversationDto = new();
 	private HubConnection _reactionHubConnection;
 	private HubConnection _commentHubConnection;
 	private HubConnection _postViewHubConnection;
 	private ModalComponent? _likesModel;
 	private ModalComponent? _dislikeModel;
 	private ModalComponent? _viewerModel;
+	private ModalComponent? _sendMessageErrorModel;
 	private Guid? _currentUserId;
 	private List<string> allowedRoles = new List<string>
 	{
@@ -532,8 +546,6 @@
 	private int? _likeCount;
 	private int? _dislikeCount;
 	private int? _postViewCount;
-	private int? _newReactionId;
-	private int? _oldReactionId;
 	private int? _replyToCommentId;
 	private bool _isApiBusy = false;
 	private bool _isBusy = true;
@@ -544,13 +556,13 @@
 	private bool _showComments = false;
 	private bool _isCommentsHaveError = false;
 	private bool _isPostHaveError = false;
-	private bool _isViwersHaveError = false;
 	private string? _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
 	private string? _viewersErrorMessage;
 	private string? _replyText;
 	private string? _userRoleId = null;
+	private string? _sendMessageError ;
 
 
 
@@ -574,7 +586,7 @@
 			UpdatePostReactionButtons();
 		}
 
-		await ReadPostAsync(); 
+		await ReadPostAsync();
 
 
 		_isBusy = false;
@@ -588,7 +600,6 @@
 		_showComments = false;
 		_isCommentsHaveError = false;
 		_commentErrorMessage = null;
-		_isViwersHaveError = false;
 
 	}
 	private async Task StartReactionHubConnectionAsync()
@@ -621,8 +632,6 @@
 		await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
 
 	}
-
-
 	private async Task StartPostViewHubConnectionAsync()
 	{
 		_postViewHubConnection = new HubConnectionBuilder()
@@ -702,7 +711,6 @@
 		await _commentHubConnection.StartAsync();
 		await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId);
 	}
-
 	private async Task StartTasksWithUserRoleAsync()
 	{
 		if (!_isUserLoggedIn)
@@ -728,12 +736,12 @@
 			var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
 			var viewersTask = PostViewApi.GetPostsViewersAsync(postId);
 
-			await Task.WhenAll(postTask, commentsTask, reactionsTask, viewersTask );
+			await Task.WhenAll(postTask, commentsTask, reactionsTask, viewersTask);
 
 			GetPost(postTask.Result);
 			GetComments(commentsTask.Result);
 			GetReactions(reactionsTask.Result);
-			GetPostViewers(viewersTask.Result); 
+			GetPostViewers(viewersTask.Result);
 
 		}
 		else
@@ -791,6 +799,10 @@
 	private void NavigateToPricing()
 	{
 		NavigationManager.NavigateTo("/pricing");
+	}
+	private void NavigateToSendConversation(Guid conversationId)
+	{
+		NavigationManager.NavigateTo($"/conversations/{conversationId}");
 	}
 	private async Task LikePostAsync()
 	{
@@ -852,7 +864,7 @@
 		if (!_isUserLoggedIn)
 			NavigateToLogin();
 	}
-	private void SendMessage(Guid reciverUserId)
+	private async Task SendMessageAsync(Guid receiverUserId)
 	{
 		if (!_isUserLoggedIn)
 		{
@@ -863,9 +875,27 @@
 
 		if (allowedRoles.Contains(userRole))
 		{
-			// Mesaj gönderme işlemi
-			// Mesaj gönderme API çağrısı yapılabilir
-			// Örnek: await MessageApi.SendMessageAsync(_postDto.UserId, messageContent);
+			var response = await MessageApi.GetConversationDtoAsync(_currentUserId.Value, receiverUserId);
+			_sendMessageErrorModel.Close();
+			_sendMessageError = null;
+			try
+			{
+				if (response.IsSuccess)
+				{
+					_conversationDto = response.Data;
+					NavigateToSendConversation(_conversationDto.ConversationId);
+				}
+				else
+				{
+					_sendMessageErrorModel.Open();
+					_sendMessageError = response.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
+			{
+				_sendMessageErrorModel.Open();
+				_sendMessageError = ex.Message;
+			}
 		}
 		else
 			NavigateToPricing();
@@ -1228,22 +1258,22 @@
 			{
 				_viewers = response.Data;
 				_postViewCount = _viewers.Count;
-				_viewersErrorMessage = null;
-				_isViwersHaveError = false;
+				_errorMessage = null;
+				_isPostHaveError = false;
 			}
 			else
 			{
 				_viewers = null;
-				_viewersErrorMessage = response.ErrorMessage;
-				_isViwersHaveError = true;
+				_errorMessage = response.ErrorMessage;
+				_isPostHaveError = true;
 			}
 
 		}
 		catch (Exception ex)
 		{
 			_viewers = null;
-			_isViwersHaveError = true;
-			_viewersErrorMessage = ex.Message;
+			_isPostHaveError = true;
+			_errorMessage = ex.Message;
 		}
 	}
 

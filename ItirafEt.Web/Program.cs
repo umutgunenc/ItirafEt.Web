@@ -56,6 +56,8 @@ static void ConfigureRefit(IServiceCollection services)
     services.AddRefitClient<IPostViewApi>(GetRefitSettings)
      .ConfigureHttpClient(SetHttpClient);
 
+    services.AddRefitClient<IMessageApi>(GetRefitSettings)
+    .ConfigureHttpClient(SetHttpClient);
 
     static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
 

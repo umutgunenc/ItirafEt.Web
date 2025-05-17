@@ -28,7 +28,7 @@ namespace ItirafEt.Web.Pages.Auth
         public override Task<AuthenticationState> GetAuthenticationStateAsync() => _authStateTask;
 
 
-        public LoggedInUser User { get; private set; }
+        public LoggedInUser? User { get; private set; }
         public bool IsInitializing { get; private set; } = true;
         public bool IsLoggedIn => User != null;
 
