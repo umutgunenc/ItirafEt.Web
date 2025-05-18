@@ -1,165 +1,273 @@
 ﻿@page "/conversations/{ConversationId:guid}"
 
+@inject NavigationManager NavigationManager
+@inject IMessageApi MessageApi
+@inject AuthStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
 
-<div class="chat-container">
-    <!-- Header -->
-    <div class="chat-header d-flex align-items-center">
-        <div class="position-relative me-3">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div class="online-status"></div>
-        </div>
-        <div>
-            <h5 class="mb-0">John Doe</h5>
-            <small class="text-muted">Çevrimiçi</small>
-        </div>
-    </div>
+@if (_isLoading)
+{
+	<div class="d-flex justify-content-center align-items-center"
+	style="height:75vh">
+		<div class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+	</div>
+}
+else if (_isError)
+{
+	<div class="col-lg-7 mx-auto py-5">
+		<div class="alert alert-danger" role="alert">
+			@_errorMessage
+		</div>
+	</div>
 
-    <!-- Mesajlar -->
-    <div class="chat-messages">
-        <!-- Örnek Mesajlar -->
-        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
+}
+else
+{
+	<div class="chat-container col-lg-7 mx-auto">
+		<!-- Header -->
+		<div class="chat-header d-flex align-items-center">
+			<div class="position-relative me-3">
+				<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
+				class="rounded-circle"
+				width="56"
+				height="56"
+				style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+				alt="profile">
+			</div>
+			<div>
+				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto.ResponderUser.UserName</h5>
+				@* <small class="text-muted">Çevrimiçi</small> *@
+			</div>
+		</div>
 
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>
-                <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
+		<!-- Mesajlar -->
+		<div class="chat-messages bg-light-subtle" @ref="_messagesDiv">
 
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
+			@foreach (var message in _conversationDto.Messages)
+			{
+				if (message.SenderId == _currentUserId)
+				{
+					<div class="message-out">
+						<div>@message.Content</div>
+						<div class="time-text" style=" color:rgba(255,255,255,0.7)">
+							@if (message.CreatedDate.Day < DateTime.Now.Day)
+							{
+								@message.CreatedDate.ToString("HH:mm dd MMMM yyyy")
+							}
+							else
+							{
+								@message.CreatedDate.ToString("HH:mm")
+							}
+						</div>
+					</div>
+				}
+				else
+				{
+					<div class="message-in bg-primary-subtle">
+						<div>@message.Content</div>
+						<div class="time-text text-dark-50">
+							@if (message.CreatedDate.Day < DateTime.Now.Day)
+							{
+								@message.CreatedDate.ToString("HH:mm dd MMMM yyyy")
+							}
+							else
+							{
+								@message.CreatedDate.ToString("HH:mm")
+							}
+						</div>
+					</div>
+				}
+			}
 
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
+			<!-- Örnek Mesajlar -->
+			@* 			<div class="message-in bg-primary-subtle">
+				<div>Merhaba! Nasılsın?</div>
+				<div class="time-text text-dark-50">10:45 AM</div>
+			</div>
 
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
+			<div class="message-out">
+				<div>İyiyim teşekkür ederim, sen nasılsın?</div>
+				<div class="time-text" style=" color:rgba(255,255,255,0.7)">10:46 AM</div>
+			</div> *@
 
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
+		</div>
 
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
+		<!-- Mesaj Gönderme Alanı -->
+		<div class="message-input">
+			<div class="input-group">
+				<input type="text" class="form-control rounded-pill" placeholder="Bir mesaj yazın..." @bind-value="_messageDto.Content">
+				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="SendPhotoAsync">
+					<i class="bi bi-image text-white"></i>
+				</button>
+				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="()=>SendMessageAsync(_messageDto)">
+					@* <i class="fas fa-paper-plane"></i> *@
+					<i class="bi bi-send-check text-white"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+}
 
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
-
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
-
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
-
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
-
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
-
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>        <div class="message-in">
-            <img src="https://via.placeholder.com/40" class="avatar" alt="profile">
-            <div>Merhaba! Nasılsın?</div>
-            <div class="time-text">10:45 AM</div>
-        </div>
-
-        <div class="message-out">
-            <div>İyiyim teşekkür ederim, sen nasılsın?</div>
-            <div class="time-text">10:46 AM</div>
-        </div>
-        <!-- Daha fazla mesaj örneği -->
-        <!-- ... -->
-    </div>
-
-    <!-- Mesaj Gönderme Alanı -->
-    <div class="message-input">
-        <div class="input-group">
-            <input type="text" class="form-control rounded-pill" placeholder="Bir mesaj yazın...">
-            <button class="btn blue rounded-circle ms-2 align-items-center justify-content-center">
-                @* <i class="fas fa-paper-plane"></i> *@
-                <i class="bi bi-send-check text-white"></i>
-            </button>
-        </div>
-    </div>
-</div>
 @code {
 
-	[Parameter]	
-    public Guid ConversationId { get; set; }
+	[Parameter]
+	public Guid ConversationId { get; set; }
 
-    protected override async Task OnParametersSetAsync()
-    { 
+	private ElementReference _messagesDiv;
+	private ConversationDto _conversationDto;
+	private MessageDto _messageDto = new MessageDto();
+	private HubConnection? _hubConnection;
+	private string? _errorMessage;
+	private bool _isError = false;
+	private bool _isLoading = true;
+	private bool _canUserReadMessage = true;
+	private Guid _currentUserId;
+	private Guid _reciverUserId;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		GetCurrentUserId();
+		await CanUserReadMessageAsync(ConversationId, _currentUserId);
+		if (_canUserReadMessage)
+		{
+			await GetConversationAsync();
+			await StartHubConnection();
+		}
+
+
+	}
+
+	private async Task SendMessageAsync(MessageDto messageDto)
+	{
+		if (string.IsNullOrWhiteSpace(messageDto.Content))
+			return;
+		messageDto.ReceiverId = _conversationDto.ResponderUser.UserId;
+		messageDto.SenderId = _currentUserId;
+
+		var response = await MessageApi.SendMessageAsync(ConversationId, messageDto);
+		messageDto.Content = string.Empty;
+
+		try
+		{
+			if (!response.IsSuccess)
+			{
+				_isError = true;
+				_errorMessage = response.ErrorMessage;
+				return;
+			}
+		}
+		catch (Exception ex)
+		{
+
+			_isError = true;
+			_errorMessage = ex.Message;
+		}
+	}
+
+	private async Task StartHubConnection()
+	{
+		_hubConnection = new HubConnectionBuilder()
+			.WithUrl("https://localhost:7292/messagehub")
+			.WithAutomaticReconnect()
+			.Build();
+
+		_hubConnection.On<Guid, MessageDto>("SendMessageAsync", async (conversationId, messageDto) =>
+		{
+			await AddMessageAsync(messageDto);
+		});
+
+
+		await _hubConnection.StartAsync();
+		await _hubConnection.SendAsync("JoinMessageGroup", ConversationId);
+	}
+
+	private async Task SendPhotoAsync()
+	{
+		// Fotoğraf gönderme işlemi
 		await Task.Delay(1000);
+	}
 
-    }
+	private async Task CanUserReadMessageAsync(Guid conversationId, Guid userId)
+	{
+		var result = await MessageApi.CanUserReadMessageApiAsync(conversationId, userId);
+		try
+		{
+			if (!result.IsSuccess)
+			{
+				_isLoading = false;
+				_canUserReadMessage = false;
+				_isError = true;
+				_errorMessage = result.ErrorMessage;
+				return;
+			}
+		}
+		catch (Exception ex)
+		{
+			
+			_isLoading = false;
+			_isError = true;
+			_errorMessage = result.ErrorMessage;
+		}
+		
+	}
+
+	private void NavigateToUserProfile()
+	{
+
+		NavigationManager.NavigateTo($"/profile/{_conversationDto.ResponderUser.UserId}");
+
+	}
+
+	private async Task GetConversationAsync()
+	{
+		_errorMessage = null;
+		_isError = false;
+		_isLoading = true;
+		var result = await MessageApi.GetConversationAsync(ConversationId, _currentUserId);
+		try
+		{
+			if (!result.IsSuccess)
+			{
+				_isError = true;
+				_isLoading = false;
+				_errorMessage = result.ErrorMessage;
+				return;
+			}
+			_conversationDto = result.Data;
+			_isLoading = false;
+		}
+		catch (Exception)
+		{
+			_isError = true;
+			_isLoading = false;
+			_errorMessage = result.ErrorMessage;
+		}
+	}
+
+	private void GetCurrentUserId()
+	{
+		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
+		}
+	}
+
+	private async Task AddMessageAsync(MessageDto newMsg)
+	{
+		if (_conversationDto.Messages.Count == 0 || _conversationDto.Messages == null)
+			_conversationDto.Messages = new List<MessageDto>();
+
+		_conversationDto.Messages.Add(newMsg);
+
+		StateHasChanged();
+		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
+	}
 
 }

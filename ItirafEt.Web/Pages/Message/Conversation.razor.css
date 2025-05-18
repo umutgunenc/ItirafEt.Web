@@ -2,8 +2,8 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    background-color: #f0f2f5;
-    height: calc(100vh - 56px);
+/*    background-color: #f0f2f5;
+*/    height: calc(100vh - 56px);
 }
 
 /* Header */
@@ -35,13 +35,12 @@
 
 /* Mesaj Balonları */
 .message-in {
-    background: white;
     border-radius: 15px;
     padding: 12px 15px;
     max-width: 70%;
     align-self: flex-start;
     position: relative;
-    margin-left: 50px;
+
 }
 
 .message-out {
@@ -53,15 +52,6 @@
     align-self: flex-end;
 }
 
-/* Avatar ve Zaman */
-.avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    position: absolute;
-    left: -50px;
-    top: 0;
-}
 
 .time-text {
     font-size: 0.75rem;
@@ -70,7 +60,7 @@
 }
 
 /* Online Status */
-.online-status {
+/*.online-status {
     width: 10px;
     height: 10px;
     background: #31a24c;
@@ -79,12 +69,23 @@
     bottom: 0;
     right: -5px;
     border: 2px solid white;
-}
+}*/
 
 /* Responsive Ayarlar */
 @media (min-width: 992px) {
     .chat-container {
-        height: calc(100vh - 56px);
+        height: calc(90vh);
         overflow: hidden;
+        padding-top: 5vh;
+        border-radius: 0px 0px 16px 16px;
+    }
+
+    .chat-header {
+        background-color: white;
+        padding: 1rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 1;
+        flex-shrink: 0;
+        border-radius: 16px 16px 0px 0px;
     }
 }

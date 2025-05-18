@@ -34,7 +34,7 @@
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
 					<p class="card-text text-break"
-					   style="text-align: justify;
+					style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
@@ -46,7 +46,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								   style="cursor:pointer" @onclick="LikePostAsync"></i>
+								style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -54,7 +54,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -64,7 +64,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportPost"></i>
+									style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -91,7 +91,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								   style="cursor:pointer" @onclick="LikePostAsync"></i>
+								style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -99,7 +99,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -109,7 +109,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportPost"></i>
+									style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -123,9 +123,9 @@
 						<div class="d-flex align-items-center gap-3">
 							<!-- Profil Fotoğrafı -->
 							<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-								 class="rounded-circle"
-								 width="56" height="56"
-								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+							class="rounded-circle"
+							width="56" height="56"
+							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 
 							<!-- Kullanıcı Bilgileri -->
 							<div class="d-flex flex-column">
@@ -151,10 +151,11 @@
 												<i class="bi bi-gender-female me-1"></i>Kadın
 											</span>
 										}
-
-										<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(_postDto.UserId)">
-											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-										</a>
+										@if (_currentUserId != _postDto.UserId)
+										{
+											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(_postDto.UserId)">
+												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+										</a>}
 									</div>
 								</div>
 							</div>
@@ -346,9 +347,13 @@
 													<i class="bi bi-gender-female me-1"></i>Kadın
 												</span>
 											}
-											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
-												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-											</a>
+											@if (_currentUserId != reaction.ReactingUserId)
+											{
+																							<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
+													<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+												</a>
+											}
+
 										</div>
 									</div>
 								</div>
@@ -413,10 +418,13 @@
 													<i class="bi bi-gender-female me-1"></i>Kadın
 												</span>
 											}
+											@if (_currentUserId != reaction.ReactingUserId)
+											{
+																							<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
+													<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+												</a>
+											}
 
-											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
-												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-											</a>
 										</div>
 									</div>
 								</div>
@@ -487,394 +495,399 @@
 												<i class="bi bi-gender-female me-1"></i>Kadın
 											</span>
 										}
+										@if (_currentUserId != viewer.PostViewerUserId)
+										{
+											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(viewer.PostViewerUserId)">
+												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+											</a>
+										}
 
-										<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(viewer.PostViewerUserId)">
-											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-										</a>
+											
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
+										}
+				}
+			</ChildContent>
+			<FooterContent>
+				<button class="btn blue col text-white fw-medium" @onclick="_viewerModel.Close">Kapat</button>
+			</FooterContent>
+		</ModalComponent>
+
+		<ModalComponent @ref="_sendMessageErrorModel" Title="Hata" TitleClass="mx-auto">
+			<ChildContent>
+
+				<div class="alert alert-danger" role="alert">
+							@_sendMessageError
 				</div>
-			}
-		}
-	</ChildContent>
-	<FooterContent>
-		<button class="btn blue col text-white fw-medium" @onclick="_viewerModel.Close">Kapat</button>
-	</FooterContent>
-</ModalComponent>
 
-<ModalComponent @ref="_sendMessageErrorModel" Title="Hata" TitleClass="mx-auto">
-	<ChildContent>
+			</ChildContent>
+			<FooterContent>
+				<button class="btn blue col text-white fw-medium" @onclick="_sendMessageErrorModel.Close">Kapat</button>
+			</FooterContent>
+		</ModalComponent>
+				@code {
+		[Parameter]
+		public int postId { get; set; }
 
-		<div class="alert alert-danger" role="alert">
-			@_sendMessageError
-		</div>
-
-	</ChildContent>
-	<FooterContent>
-		<button class="btn blue col text-white fw-medium" @onclick="_sendMessageErrorModel.Close">Kapat</button>
-	</FooterContent>
-</ModalComponent>
-@code {
-	[Parameter]
-	public int postId { get; set; }
-
-	private PostDto? _postDto = new();
-	private CommentsDto _commentModel = new();
-	private CommentsDto _replyModel = new();
-	private List<CommentsDto>? _comments = new();
-	private List<ReactionDto>? _reactions = new();
-	private List<PostViewersDto>? _viewers = new();
-	private ConversationDto _conversationDto = new();
-	private HubConnection _reactionHubConnection;
-	private HubConnection _commentHubConnection;
-	private HubConnection _postViewHubConnection;
-	private ModalComponent? _likesModel;
-	private ModalComponent? _dislikeModel;
-	private ModalComponent? _viewerModel;
-	private ModalComponent? _sendMessageErrorModel;
-	private Guid? _currentUserId;
-	private List<string> allowedRoles = new List<string>
+		private PostDto? _postDto = new();
+		private CommentsDto _commentModel = new();
+		private CommentsDto _replyModel = new();
+		private List<CommentsDto>? _comments = new();
+		private List<ReactionDto>? _reactions = new();
+		private List<PostViewersDto>? _viewers = new();
+		private ConversationDto _conversationDto = new();
+		private HubConnection _reactionHubConnection;
+		private HubConnection _commentHubConnection;
+		private HubConnection _postViewHubConnection;
+		private ModalComponent? _likesModel;
+		private ModalComponent? _dislikeModel;
+		private ModalComponent? _viewerModel;
+		private ModalComponent? _sendMessageErrorModel;
+		private Guid? _currentUserId;
+		private List<string> allowedRoles = new List<string>
 	{
 		nameof(UserRoleEnum.SuperAdmin),
 		nameof(UserRoleEnum.Admin),
 		nameof(UserRoleEnum.Moderator),
 		nameof(UserRoleEnum.SuperUser)
 	};
-	private int? _likeCount;
-	private int? _dislikeCount;
-	private int? _postViewCount;
-	private int? _replyToCommentId;
-	private bool _isApiBusy = false;
-	private bool _isBusy = true;
-	private bool _isPostOwner = false;
-	private bool _isUserLoggedIn = false;
-	private bool _isAlreadyLiked = false;
-	private bool _isAlreadyDisliked = false;
-	private bool _showComments = false;
-	private bool _isCommentsHaveError = false;
-	private bool _isPostHaveError = false;
-	private string? _newCommentText;
-	private string? _errorMessage;
-	private string? _commentErrorMessage;
-	private string? _viewersErrorMessage;
-	private string? _replyText;
-	private string? _userRoleId = null;
-	private string? _sendMessageError ;
+		private int? _likeCount;
+		private int? _dislikeCount;
+		private int? _postViewCount;
+		private int? _replyToCommentId;
+		private bool _isApiBusy = false;
+		private bool _isBusy = true;
+		private bool _isPostOwner = false;
+		private bool _isUserLoggedIn = false;
+		private bool _isAlreadyLiked = false;
+		private bool _isAlreadyDisliked = false;
+		private bool _showComments = false;
+		private bool _isCommentsHaveError = false;
+		private bool _isPostHaveError = false;
+		private string? _newCommentText;
+		private string? _errorMessage;
+		private string? _commentErrorMessage;
+		private string? _viewersErrorMessage;
+		private string? _replyText;
+		private string? _userRoleId = null;
+		private string? _sendMessageError;
 
 
 
 
-	protected override async Task OnParametersSetAsync()
-	{
-		ResetPage();
-		CheckUserLoggedIn();
-		GetUserRoleId();
-		IsUserPostOwner();
-
-		await StartTasksWithUserRoleAsync();
-
-		await StartReactionHubConnectionAsync();
-		await StartPostViewHubConnectionAsync();
-		await StartCommentHubConnectionAsync();
-
-		if (allowedRoles.Contains(_userRoleId))
+		protected override async Task OnParametersSetAsync()
 		{
-			UpdatePostReactionCounts();
-			UpdatePostReactionButtons();
-		}
+			ResetPage();
+			CheckUserLoggedIn();
+			GetUserRoleId();
+			IsUserPostOwner();
 
-		await ReadPostAsync();
+			await StartTasksWithUserRoleAsync();
 
+			await StartReactionHubConnectionAsync();
+			await StartPostViewHubConnectionAsync();
+			await StartCommentHubConnectionAsync();
 
-		_isBusy = false;
-
-	}
-	private void ResetPage()
-	{
-		_isPostHaveError = false;
-		_isApiBusy = false;
-		_isBusy = true;
-		_showComments = false;
-		_isCommentsHaveError = false;
-		_commentErrorMessage = null;
-
-	}
-	private async Task StartReactionHubConnectionAsync()
-	{
-		_reactionHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/reactionhub")
-					.WithAutomaticReconnect()
-					.Build();
-
-
-
-		if (!allowedRoles.Contains(_userRoleId))
-		{
-			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", (oldReactionId, newReactionId, userId) =>
+			if (allowedRoles.Contains(_userRoleId))
 			{
-				UpdateReactions(oldReactionId, newReactionId, userId);
-				StateHasChanged();
-			});
+				UpdatePostReactionCounts();
+				UpdatePostReactionButtons();
+			}
+
+			await ReadPostAsync();
+
+
+			_isBusy = false;
+
 		}
-		else
+		private void ResetPage()
 		{
-			_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
-			{
-				UpdateReactions(reaction, isReactionUpdated);
-				StateHasChanged();
-			});
+			_isPostHaveError = false;
+			_isApiBusy = false;
+			_isBusy = true;
+			_showComments = false;
+			_isCommentsHaveError = false;
+			_commentErrorMessage = null;
+
 		}
-
-		await _reactionHubConnection.StartAsync();
-		await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
-
-	}
-	private async Task StartPostViewHubConnectionAsync()
-	{
-		_postViewHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/postviewhub")
-					.WithAutomaticReconnect()
-					.Build();
-
-
-		if (allowedRoles.Contains(_userRoleId))
+		private async Task StartReactionHubConnectionAsync()
 		{
-			_postViewHubConnection.On<int, PostViewersDto>("PostViewedAsync", (postId, postViewerDto) =>
+			_reactionHubConnection = new HubConnectionBuilder()
+						.WithUrl("https://localhost:7292/reactionhub")
+						.WithAutomaticReconnect()
+						.Build();
+
+
+
+			if (!allowedRoles.Contains(_userRoleId))
 			{
-				if (_viewers == null)
-					_viewers = new List<PostViewersDto>();
-
-				_viewers.Add(postViewerDto);
-				_postViewCount = _viewers.Count;
-
-				StateHasChanged();
-			});
-		}
-		else
-		{
-			_postViewHubConnection.On<int>("PostViewedAnonymousAsync", postId =>
-			{
-				_postViewCount++;
-				StateHasChanged();
-
-			});
-		}
-
-		await _postViewHubConnection.StartAsync();
-		await _postViewHubConnection.SendAsync("JoinPostPostViewCountGroup", postId);
-
-	}
-	private async Task StartCommentHubConnectionAsync()
-	{
-		_commentHubConnection = new HubConnectionBuilder()
-		.WithUrl("https://localhost:7292/commenthub")
-		.WithAutomaticReconnect()
-		.Build();
-
-		_commentHubConnection.On<CommentsDto, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
-		{
-
-			if (isAdded)
-			{
-				if (_comments == null)
-					_comments = new List<CommentsDto>
-				();
-				_comments.Insert(0, commentDto);
+				_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", (oldReactionId, newReactionId, userId) =>
+				{
+					UpdateReactions(oldReactionId, newReactionId, userId);
+					StateHasChanged();
+				});
 			}
 			else
-				_comments.Remove(commentDto);
-
-			StateHasChanged();
-		});
-
-		_commentHubConnection.On<CommentsDto, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
-		{
-			var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
-			if (comment != null)
 			{
-				if (comment.CommentReplies == null)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>
-						();
+				_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
+				{
+					UpdateReactions(reaction, isReactionUpdated);
+					StateHasChanged();
+				});
+			}
+
+			await _reactionHubConnection.StartAsync();
+			await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
+
+		}
+		private async Task StartPostViewHubConnectionAsync()
+		{
+			_postViewHubConnection = new HubConnectionBuilder()
+						.WithUrl("https://localhost:7292/postviewhub")
+						.WithAutomaticReconnect()
+						.Build();
+
+
+			if (allowedRoles.Contains(_userRoleId))
+			{
+				_postViewHubConnection.On<int, PostViewersDto>("PostViewedAsync", (postId, postViewerDto) =>
+				{
+					if (_viewers == null)
+						_viewers = new List<PostViewersDto>();
+
+					_viewers.Add(postViewerDto);
+					_postViewCount = _viewers.Count;
+
+					StateHasChanged();
+				});
+			}
+			else
+			{
+				_postViewHubConnection.On<int>("PostViewedAnonymousAsync", postId =>
+				{
+					_postViewCount++;
+					StateHasChanged();
+
+				});
+			}
+
+			await _postViewHubConnection.StartAsync();
+			await _postViewHubConnection.SendAsync("JoinPostPostViewCountGroup", postId);
+
+		}
+		private async Task StartCommentHubConnectionAsync()
+		{
+			_commentHubConnection = new HubConnectionBuilder()
+			.WithUrl("https://localhost:7292/commenthub")
+			.WithAutomaticReconnect()
+			.Build();
+
+			_commentHubConnection.On<CommentsDto, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
+			{
 
 				if (isAdded)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
+				{
+					if (_comments == null)
+						_comments = new List<CommentsDto>
+					();
+					_comments.Insert(0, commentDto);
+				}
 				else
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies.RemoveAll(r => r.Id == replyDto.Id);
+					_comments.Remove(commentDto);
+
+				StateHasChanged();
+			});
+
+			_commentHubConnection.On<CommentsDto, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
+			{
+				var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
+				if (comment != null)
+				{
+					if (comment.CommentReplies == null)
+						_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>
+							();
+
+					if (isAdded)
+						_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
+					else
+						_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies.RemoveAll(r => r.Id == replyDto.Id);
+				}
+
+				StateHasChanged();
+			});
+
+			await _commentHubConnection.StartAsync();
+			await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId);
+		}
+		private async Task StartTasksWithUserRoleAsync()
+		{
+			if (!_isUserLoggedIn)
+			{
+				var postTask = PostApi.GetPostByIdAsync(postId);
+				var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+				var postViewCountTask = PostViewApi.GetPostViewCountAsync(postId);
+				var postLikeCountTask = ReactionApi.GetPostLikeCountAsync(postId);
+				var postDislikeCountTask = ReactionApi.GetPostDislikeCountAsync(postId);
+
+				await Task.WhenAll(postTask, commentsTask, postViewCountTask, postLikeCountTask, postDislikeCountTask);
+
+				GetPost(postTask.Result);
+				GetComments(commentsTask.Result);
+				GetPostViewCount(postViewCountTask.Result);
+				GetPostLikeCount(postLikeCountTask.Result);
+				GetPostDislikeCount(postDislikeCountTask.Result);
 			}
+			else if (allowedRoles.Contains(_userRoleId))
+			{
+				var postTask = PostApi.GetPostByIdAsync(postId);
+				var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+				var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
+				var viewersTask = PostViewApi.GetPostsViewersAsync(postId);
 
-			StateHasChanged();
-		});
+				await Task.WhenAll(postTask, commentsTask, reactionsTask, viewersTask);
 
-		await _commentHubConnection.StartAsync();
-		await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId);
-	}
-	private async Task StartTasksWithUserRoleAsync()
-	{
-		if (!_isUserLoggedIn)
-		{
-			var postTask = PostApi.GetPostByIdAsync(postId);
-			var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-			var postViewCountTask = PostViewApi.GetPostViewCountAsync(postId);
-			var postLikeCountTask = ReactionApi.GetPostLikeCountAsync(postId);
-			var postDislikeCountTask = ReactionApi.GetPostDislikeCountAsync(postId);
+				GetPost(postTask.Result);
+				GetComments(commentsTask.Result);
+				GetReactions(reactionsTask.Result);
+				GetPostViewers(viewersTask.Result);
 
-			await Task.WhenAll(postTask, commentsTask, postViewCountTask, postLikeCountTask, postDislikeCountTask);
+			}
+			else
+			{
+				var postTask = PostApi.GetPostByIdAsync(postId);
+				var commentsTask = CommentApi.GetPostCommentsAsync(postId);
+				var postLikeCountTask = ReactionApi.GetPostLikeCountAsync(postId);
+				var postDislikeCountTask = ReactionApi.GetPostDislikeCountAsync(postId);
+				var userReactionTask = ReactionApi.GetUserReactionTypeIdAsync(postId, _currentUserId);
+				var postViewCountTask = PostViewApi.GetPostViewCountAsync(postId);
 
-			GetPost(postTask.Result);
-			GetComments(commentsTask.Result);
-			GetPostViewCount(postViewCountTask.Result);
-			GetPostLikeCount(postLikeCountTask.Result);
-			GetPostDislikeCount(postDislikeCountTask.Result);
+				await Task.WhenAll(postTask, commentsTask, postLikeCountTask, postDislikeCountTask, userReactionTask, postViewCountTask);
+
+				GetPost(postTask.Result);
+				GetComments(commentsTask.Result);
+				GetPostLikeCount(postLikeCountTask.Result);
+				GetPostDislikeCount(postDislikeCountTask.Result);
+				GetUserReactionTypeId(userReactionTask.Result);
+				GetPostViewCount(postViewCountTask.Result);
+			}
 		}
-		else if (allowedRoles.Contains(_userRoleId))
+
+		private void CheckUserLoggedIn()
 		{
-			var postTask = PostApi.GetPostByIdAsync(postId);
-			var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-			var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
-			var viewersTask = PostViewApi.GetPostsViewersAsync(postId);
-
-			await Task.WhenAll(postTask, commentsTask, reactionsTask, viewersTask);
-
-			GetPost(postTask.Result);
-			GetComments(commentsTask.Result);
-			GetReactions(reactionsTask.Result);
-			GetPostViewers(viewersTask.Result);
-
+			_isUserLoggedIn = AuthStateProvider.IsLoggedIn;
 		}
-		else
+		private void GetUserRoleId()
 		{
-			var postTask = PostApi.GetPostByIdAsync(postId);
-			var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-			var postLikeCountTask = ReactionApi.GetPostLikeCountAsync(postId);
-			var postDislikeCountTask = ReactionApi.GetPostDislikeCountAsync(postId);
-			var userReactionTask = ReactionApi.GetUserReactionTypeIdAsync(postId, _currentUserId);
-			var postViewCountTask = PostViewApi.GetPostViewCountAsync(postId);
-
-			await Task.WhenAll(postTask, commentsTask, postLikeCountTask, postDislikeCountTask, userReactionTask, postViewCountTask);
-
-			GetPost(postTask.Result);
-			GetComments(commentsTask.Result);
-			GetPostLikeCount(postLikeCountTask.Result);
-			GetPostDislikeCount(postDislikeCountTask.Result);
-			GetUserReactionTypeId(userReactionTask.Result);
-			GetPostViewCount(postViewCountTask.Result);
+			if (_isUserLoggedIn)
+				_userRoleId = AuthStateProvider.User?.roleId;
+			else
+				_userRoleId = null;
 		}
-	}
-
-	private void CheckUserLoggedIn()
-	{
-		_isUserLoggedIn = AuthStateProvider.IsLoggedIn;
-	}
-	private void GetUserRoleId()
-	{
-		if (_isUserLoggedIn)
-			_userRoleId = AuthStateProvider.User?.roleId;
-		else
-			_userRoleId = null;
-	}
-	private void IsUserPostOwner()
-	{
-
-		if (_postDto == null)
-			return;
-		if (_userRoleId == null)
-			return;
-
-		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
+		private void IsUserPostOwner()
 		{
-			_currentUserId = parsedId;
-			_isPostOwner = _postDto.UserId == _currentUserId;
+
+			if (_postDto == null)
+				return;
+			if (_userRoleId == null)
+				return;
+
+			if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
+			{
+				_currentUserId = parsedId;
+				_isPostOwner = _postDto.UserId == _currentUserId;
+			}
+			else
+				_isPostOwner = false;
 		}
-		else
-			_isPostOwner = false;
-	}
 
-	private void NavigateToLogin()
-	{
-		NavigationManager.NavigateTo("/login");
-	}
-	private void NavigateToPricing()
-	{
-		NavigationManager.NavigateTo("/pricing");
-	}
-	private void NavigateToSendConversation(Guid conversationId)
-	{
-		NavigationManager.NavigateTo($"/conversations/{conversationId}");
-	}
-	private async Task LikePostAsync()
-	{
-		if (_isApiBusy)
-			return;
-		_isApiBusy = true;
-		if (!_isUserLoggedIn)
+		private void NavigateToLogin()
 		{
-			_isApiBusy = false;
-			NavigateToLogin();
-			return;
+			NavigationManager.NavigateTo("/login");
 		}
-		try
+		private void NavigateToPricing()
 		{
-			var result = await ReactionApi.LikePostAsync(postId, _currentUserId.Value);
-			if (!result.IsSuccess)
+			NavigationManager.NavigateTo("/pricing");
+		}
+		private void NavigateToSendConversation(Guid conversationId)
+		{
+			NavigationManager.NavigateTo($"/conversations/{conversationId}");
+		}
+		private async Task LikePostAsync()
+		{
+			if (_isApiBusy)
+				return;
+			_isApiBusy = true;
+			if (!_isUserLoggedIn)
+			{
+				_isApiBusy = false;
+				NavigateToLogin();
+				return;
+			}
+			try
+			{
+				var result = await ReactionApi.LikePostAsync(postId, _currentUserId.Value);
+				if (!result.IsSuccess)
+				{
+					_isPostHaveError = true;
+					_errorMessage = result.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
 			{
 				_isPostHaveError = true;
-				_errorMessage = result.ErrorMessage;
+				_errorMessage = ex.Message;
 			}
-		}
-		catch (Exception ex)
-		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-		_isApiBusy = false;
-	}
-	private async Task DislikePostAsync()
-	{
-		if (_isApiBusy)
-			return;
-		_isApiBusy = true;
-		if (!_isUserLoggedIn)
-		{
 			_isApiBusy = false;
-			NavigateToLogin();
-			return;
 		}
-		try
+		private async Task DislikePostAsync()
 		{
-			var result = await ReactionApi.DislikePostAsync(postId, _currentUserId.Value);
-			if (!result.IsSuccess)
+			if (_isApiBusy)
+				return;
+			_isApiBusy = true;
+			if (!_isUserLoggedIn)
+			{
+				_isApiBusy = false;
+				NavigateToLogin();
+				return;
+			}
+			try
+			{
+				var result = await ReactionApi.DislikePostAsync(postId, _currentUserId.Value);
+				if (!result.IsSuccess)
+				{
+					_isPostHaveError = true;
+					_errorMessage = result.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
 			{
 				_isPostHaveError = true;
-				_errorMessage = result.ErrorMessage;
+				_errorMessage = ex.Message;
 			}
-		}
-		catch (Exception ex)
-		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-		_isApiBusy = false;
+			_isApiBusy = false;
 
-	}
-	private void ReportPost()
-	{
-		if (!_isUserLoggedIn)
-			NavigateToLogin();
-	}
-	private async Task SendMessageAsync(Guid receiverUserId)
-	{
-		if (!_isUserLoggedIn)
-		{
-			NavigateToLogin();
-			return;
 		}
-		var userRole = AuthStateProvider.User?.roleId;
-
-		if (allowedRoles.Contains(userRole))
+		private void ReportPost()
 		{
+			if (!_isUserLoggedIn)
+				NavigateToLogin();
+		}
+		private async Task SendMessageAsync(Guid receiverUserId)
+		{
+
+			if (!_isUserLoggedIn)
+			{
+				NavigateToLogin();
+				return;
+			}
+
+			if (receiverUserId == _currentUserId)
+				return;
+
 			var response = await MessageApi.GetConversationDtoAsync(_currentUserId.Value, receiverUserId);
 			_sendMessageErrorModel.Close();
 			_sendMessageError = null;
@@ -887,8 +900,15 @@
 				}
 				else
 				{
-					_sendMessageErrorModel.Open();
-					_sendMessageError = response.ErrorMessage;
+					var userRole = AuthStateProvider.User?.roleId;
+					if (!allowedRoles.Contains(userRole))
+						NavigateToPricing();
+					else
+					{
+						_sendMessageErrorModel.Open();
+						_sendMessageError = response.ErrorMessage;
+					}
+
 				}
 			}
 			catch (Exception ex)
@@ -896,483 +916,513 @@
 				_sendMessageErrorModel.Open();
 				_sendMessageError = ex.Message;
 			}
+
+
+
+
+
+
+
+			// if (allowedRoles.Contains(userRole))
+			// {
+			// 	var response = await MessageApi.GetConversationDtoAsync(_currentUserId.Value, receiverUserId);
+			// 	_sendMessageErrorModel.Close();
+			// 	_sendMessageError = null;
+			// 	try
+			// 	{
+			// 		if (response.IsSuccess)
+			// 		{
+			// 			_conversationDto = response.Data;
+			// 			NavigateToSendConversation(_conversationDto.ConversationId);
+			// 		}
+			// 		else
+			// 		{
+			// 			_sendMessageErrorModel.Open();
+			// 			_sendMessageError = response.ErrorMessage;
+			// 		}
+			// 	}
+			// 	catch (Exception ex)
+			// 	{
+			// 		_sendMessageErrorModel.Open();
+			// 		_sendMessageError = ex.Message;
+			// 	}
+			// }
+			// else
+			// 	NavigateToPricing();
 		}
-		else
-			NavigateToPricing();
-	}
-	private void ShowLikes()
-	{
-		if (!allowedRoles.Contains(_userRoleId))
+		private void ShowLikes()
 		{
-			NavigateToPricing();
-			return;
+			if (!allowedRoles.Contains(_userRoleId))
+			{
+				NavigateToPricing();
+				return;
+			}
+
+			_likesModel.Open();
+		}
+		private void ShowDislikes()
+		{
+			if (!allowedRoles.Contains(_userRoleId))
+			{
+				NavigateToPricing();
+				return;
+			}
+
+			_dislikeModel.Open();
+		}
+		private void ShowComments()
+		{
+			_showComments = !_showComments;
+		}
+		private void ToggleReplyBox(int commentId)
+		{
+			if (_replyToCommentId == commentId)
+			{
+				_replyToCommentId = null;
+				_replyText = string.Empty;
+			}
+			else
+			{
+				_replyToCommentId = commentId;
+				_replyText = string.Empty;
+			}
 		}
 
-		_likesModel.Open();
-	}
-	private void ShowDislikes()
-	{
-		if (!allowedRoles.Contains(_userRoleId))
+		private void ShowViwers()
 		{
-			NavigateToPricing();
-			return;
-		}
+			if (!allowedRoles.Contains(_userRoleId))
+			{
+				NavigateToPricing();
+				return;
+			}
 
-		_dislikeModel.Open();
-	}
-	private void ShowComments()
-	{
-		_showComments = !_showComments;
-	}
-	private void ToggleReplyBox(int commentId)
-	{
-		if (_replyToCommentId == commentId)
-		{
-			_replyToCommentId = null;
-			_replyText = string.Empty;
+			_viewerModel.Open();
 		}
-		else
+		private async Task ReadPostAsync()
 		{
-			_replyToCommentId = commentId;
-			_replyText = string.Empty;
-		}
-	}
+			if (!_isUserLoggedIn)
+				return;
 
-	private void ShowViwers()
-	{
-		if (!allowedRoles.Contains(_userRoleId))
-		{
-			NavigateToPricing();
-			return;
-		}
-
-		_viewerModel.Open();
-	}
-	private async Task ReadPostAsync()
-	{
-		if (!_isUserLoggedIn)
-			return;
-
-		var response = await PostViewApi.ReadPostAsync(postId, _currentUserId);
-		try
-		{
-			if (!response.IsSuccess)
+			var response = await PostViewApi.ReadPostAsync(postId, _currentUserId);
+			try
+			{
+				if (!response.IsSuccess)
+				{
+					_isPostHaveError = true;
+					_errorMessage = response.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
 			{
 				_isPostHaveError = true;
-				_errorMessage = response.ErrorMessage;
+				_errorMessage = ex.Message;
 			}
 		}
-		catch (Exception ex)
+		private void UpdatePostReactionCounts()
 		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
+			_likeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? 0;
+			_dislikeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? 0;
 		}
-	}
-	private void UpdatePostReactionCounts()
-	{
-		_likeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? 0;
-		_dislikeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? 0;
-	}
-	private void UpdatePostReactionButtons()
-	{
-		_isAlreadyLiked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
-		_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
-	}
-	private void UpdateReactions(ReactionDto? reaction, bool? isReactionUpdated)
-	{
-		if (isReactionUpdated == true)
+		private void UpdatePostReactionButtons()
 		{
-			var index = _reactions?.FindIndex(r => r.ReactingUserId == reaction.ReactingUserId) ?? -1;
-			if (index >= 0 && _reactions != null)
-				_reactions[index] = reaction;
+			_isAlreadyLiked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
+			_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 		}
-		else
-			_reactions?.Add(reaction);
-
-		UpdatePostReactionCounts();
-		UpdatePostReactionButtons();
-	}
-
-	private void UpdateReactions(int? oldReactionId, int newReactionId, Guid UserId)
-	{
-		var oldLikeCount = _likeCount;
-		var oldDislikeCount = _dislikeCount;
-		if (oldReactionId == null || oldReactionId == (int)ReactionTypeEnum.Cancelled)
+		private void UpdateReactions(ReactionDto? reaction, bool? isReactionUpdated)
 		{
-			if (newReactionId == (int)ReactionTypeEnum.Like)
-				_likeCount++;
-			else
-				_dislikeCount++;
-		}
-		else if (oldReactionId == (int)ReactionTypeEnum.Like)
-		{
-			if (newReactionId == (int)ReactionTypeEnum.Dislike)
+			if (isReactionUpdated == true)
 			{
-				_likeCount--;
-				_dislikeCount++;
+				var index = _reactions?.FindIndex(r => r.ReactingUserId == reaction.ReactingUserId) ?? -1;
+				if (index >= 0 && _reactions != null)
+					_reactions[index] = reaction;
 			}
 			else
-				_likeCount--;
-		}
-		else if (oldReactionId == (int)ReactionTypeEnum.Dislike)
-		{
-			if (newReactionId == (int)ReactionTypeEnum.Like)
-			{
-				_dislikeCount--;
-				_likeCount++;
-			}
-			else
-				_dislikeCount--;
+				_reactions?.Add(reaction);
+
+			UpdatePostReactionCounts();
+			UpdatePostReactionButtons();
 		}
 
-
-		if (_currentUserId == UserId)
+		private void UpdateReactions(int? oldReactionId, int newReactionId, Guid UserId)
 		{
-			if (newReactionId == (int)ReactionTypeEnum.Like)
+			var oldLikeCount = _likeCount;
+			var oldDislikeCount = _dislikeCount;
+			if (oldReactionId == null || oldReactionId == (int)ReactionTypeEnum.Cancelled)
 			{
-				_isAlreadyLiked = true;
-				_isAlreadyDisliked = false;
+				if (newReactionId == (int)ReactionTypeEnum.Like)
+					_likeCount++;
+				else
+					_dislikeCount++;
 			}
-			else if (newReactionId == (int)ReactionTypeEnum.Dislike)
+			else if (oldReactionId == (int)ReactionTypeEnum.Like)
 			{
-				_isAlreadyLiked = false;
-				_isAlreadyDisliked = true;
+				if (newReactionId == (int)ReactionTypeEnum.Dislike)
+				{
+					_likeCount--;
+					_dislikeCount++;
+				}
+				else
+					_likeCount--;
 			}
-			else
+			else if (oldReactionId == (int)ReactionTypeEnum.Dislike)
 			{
-				_isAlreadyLiked = false;
-				_isAlreadyDisliked = false;
+				if (newReactionId == (int)ReactionTypeEnum.Like)
+				{
+					_dislikeCount--;
+					_likeCount++;
+				}
+				else
+					_dislikeCount--;
 			}
 
-		}
-	}
 
-	private string GetUserGenderName(int genderId)
-	{
-		switch (genderId)
-		{
-			case (int)GenderEnum.Male:
-				return "Erkek";
-			case (int)GenderEnum.Female:
-				return "Kadın";
-			default:
-				return "";
-		}
-	}
-	private void GetUserReactionTypeId(ApiResponses<int?> response)
-	{
-		if (_isPostHaveError)
-			return;
-		try
-		{
-			if (response.IsSuccess)
+			if (_currentUserId == UserId)
 			{
-
-				if (response.Data == (int)ReactionTypeEnum.Like)
+				if (newReactionId == (int)ReactionTypeEnum.Like)
+				{
 					_isAlreadyLiked = true;
-				else if (response.Data == (int)ReactionTypeEnum.Dislike)
+					_isAlreadyDisliked = false;
+				}
+				else if (newReactionId == (int)ReactionTypeEnum.Dislike)
+				{
+					_isAlreadyLiked = false;
 					_isAlreadyDisliked = true;
+				}
 				else
 				{
 					_isAlreadyLiked = false;
 					_isAlreadyDisliked = false;
 				}
 
+			}
+		}
 
-				if (_errorMessage != null)
-					_errorMessage = null;
-				_isPostHaveError = false;
-			}
-			else
+		private string GetUserGenderName(int genderId)
+		{
+			switch (genderId)
 			{
-				_errorMessage = response.ErrorMessage;
+				case (int)GenderEnum.Male:
+					return "Erkek";
+				case (int)GenderEnum.Female:
+					return "Kadın";
+				default:
+					return "";
+			}
+		}
+		private void GetUserReactionTypeId(ApiResponses<int?> response)
+		{
+			if (_isPostHaveError)
+				return;
+			try
+			{
+				if (response.IsSuccess)
+				{
+
+					if (response.Data == (int)ReactionTypeEnum.Like)
+						_isAlreadyLiked = true;
+					else if (response.Data == (int)ReactionTypeEnum.Dislike)
+						_isAlreadyDisliked = true;
+					else
+					{
+						_isAlreadyLiked = false;
+						_isAlreadyDisliked = false;
+					}
+
+
+					if (_errorMessage != null)
+						_errorMessage = null;
+					_isPostHaveError = false;
+				}
+				else
+				{
+					_errorMessage = response.ErrorMessage;
+					_isPostHaveError = true;
+				}
+			}
+			catch (Exception ex)
+			{
 				_isPostHaveError = true;
+				_errorMessage = ex.Message;
 			}
 		}
-		catch (Exception ex)
+		private void GetPost(ApiResponses<PostDto> response)
 		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-	}
-	private void GetPost(ApiResponses<PostDto> response)
-	{
-		try
-		{
-			if (response.IsSuccess)
+			try
 			{
-				_postDto = response.Data;
-				_errorMessage = null;
-				_isPostHaveError = false;
+				if (response.IsSuccess)
+				{
+					_postDto = response.Data;
+					_errorMessage = null;
+					_isPostHaveError = false;
+
+				}
+				else
+				{
+					_postDto = null;
+					_isPostHaveError = true;
+					_errorMessage = response.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
+			{
+				_isPostHaveError = true;
+				_errorMessage = ex.Message;
+			}
+		}
+		private void GetReactions(ApiResponses<List<ReactionDto>> response)
+		{
+			if (_isPostHaveError)
+				return;
+			try
+			{
+				if (response.IsSuccess)
+				{
+					_reactions = response.Data;
+					if (_errorMessage != null)
+						_errorMessage = null;
+					_isPostHaveError = false;
+				}
+				else
+				{
+					_reactions = null;
+					_errorMessage = response.ErrorMessage;
+					_isPostHaveError = true;
+				}
+			}
+			catch (Exception ex)
+			{
+				_isPostHaveError = true;
+				_errorMessage = ex.Message;
+			}
+		}
+		private void GetPostLikeCount(ApiResponses<int> response)
+		{
+			if (_isPostHaveError)
+				return;
+			try
+			{
+				if (response.IsSuccess)
+				{
+					_likeCount = response.Data;
+					if (_errorMessage != null)
+						_errorMessage = null;
+					_isPostHaveError = false;
+				}
+				else
+				{
+					_errorMessage = response.ErrorMessage;
+					_isPostHaveError = true;
+				}
+			}
+			catch (Exception ex)
+			{
+				_isPostHaveError = true;
+				_errorMessage = ex.Message;
+			}
+		}
+		private void GetPostDislikeCount(ApiResponses<int> response)
+		{
+			if (_isPostHaveError)
+				return;
+			try
+			{
+				if (response.IsSuccess)
+				{
+					_dislikeCount = response.Data;
+					_isPostHaveError = false;
+
+					if (_errorMessage != null)
+						_errorMessage = null;
+				}
+				else
+				{
+					_errorMessage = response.ErrorMessage;
+					_isPostHaveError = true;
+				}
+			}
+			catch (Exception ex)
+			{
+				_isPostHaveError = true;
+				_errorMessage = ex.Message;
+			}
+		}
+		private void GetPostViewCount(ApiResponses<int> response)
+		{
+			if (_isPostHaveError)
+				return;
+			try
+			{
+				if (response.IsSuccess)
+				{
+					_postViewCount = response.Data;
+					_isPostHaveError = false;
+
+					if (_errorMessage != null)
+						_errorMessage = null;
+				}
+				else
+				{
+					_errorMessage = response.ErrorMessage;
+					_isPostHaveError = true;
+				}
+			}
+			catch (Exception ex)
+			{
+				_isPostHaveError = true;
+				_errorMessage = ex.Message;
+			}
+		}
+		private void GetComments(ApiResponses<List<CommentsDto>> response)
+		{
+			if (_isPostHaveError)
+				return;
+			try
+			{
+				if (response.IsSuccess)
+				{
+					_comments = response.Data
+						.OrderByDescending(c => c.CreatedDate)
+						.ToList();
+					_commentErrorMessage = null;
+				}
+				else
+				{
+					_comments = null;
+					_commentErrorMessage = response.ErrorMessage;
+				}
+				_isCommentsHaveError = false;
+			}
+			catch (Exception ex)
+			{
+				_isCommentsHaveError = true;
+				_commentErrorMessage = ex.Message;
+			}
+		}
+		private void GetPostViewers(ApiResponses<List<PostViewersDto>> response)
+		{
+			if (_isPostHaveError)
+				return;
+			try
+			{
+				if (response.IsSuccess)
+				{
+					_viewers = response.Data;
+					_postViewCount = _viewers.Count;
+					_errorMessage = null;
+					_isPostHaveError = false;
+				}
+				else
+				{
+					_viewers = null;
+					_errorMessage = response.ErrorMessage;
+					_isPostHaveError = true;
+				}
 
 			}
-			else
-			{
-				_postDto = null;
-				_isPostHaveError = true;
-				_errorMessage = response.ErrorMessage;
-			}
-		}
-		catch (Exception ex)
-		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-	}
-	private void GetReactions(ApiResponses<List<ReactionDto>> response)
-	{
-		if (_isPostHaveError)
-			return;
-		try
-		{
-			if (response.IsSuccess)
-			{
-				_reactions = response.Data;
-				if (_errorMessage != null)
-					_errorMessage = null;
-				_isPostHaveError = false;
-			}
-			else
-			{
-				_reactions = null;
-				_errorMessage = response.ErrorMessage;
-				_isPostHaveError = true;
-			}
-		}
-		catch (Exception ex)
-		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-	}
-	private void GetPostLikeCount(ApiResponses<int> response)
-	{
-		if (_isPostHaveError)
-			return;
-		try
-		{
-			if (response.IsSuccess)
-			{
-				_likeCount = response.Data;
-				if (_errorMessage != null)
-					_errorMessage = null;
-				_isPostHaveError = false;
-			}
-			else
-			{
-				_errorMessage = response.ErrorMessage;
-				_isPostHaveError = true;
-			}
-		}
-		catch (Exception ex)
-		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-	}
-	private void GetPostDislikeCount(ApiResponses<int> response)
-	{
-		if (_isPostHaveError)
-			return;
-		try
-		{
-			if (response.IsSuccess)
-			{
-				_dislikeCount = response.Data;
-				_isPostHaveError = false;
-
-				if (_errorMessage != null)
-					_errorMessage = null;
-			}
-			else
-			{
-				_errorMessage = response.ErrorMessage;
-				_isPostHaveError = true;
-			}
-		}
-		catch (Exception ex)
-		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-	}
-	private void GetPostViewCount(ApiResponses<int> response)
-	{
-		if (_isPostHaveError)
-			return;
-		try
-		{
-			if (response.IsSuccess)
-			{
-				_postViewCount = response.Data;
-				_isPostHaveError = false;
-
-				if (_errorMessage != null)
-					_errorMessage = null;
-			}
-			else
-			{
-				_errorMessage = response.ErrorMessage;
-				_isPostHaveError = true;
-			}
-		}
-		catch (Exception ex)
-		{
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-	}
-	private void GetComments(ApiResponses<List<CommentsDto>> response)
-	{
-		if (_isPostHaveError)
-			return;
-		try
-		{
-			if (response.IsSuccess)
-			{
-				_comments = response.Data
-					.OrderByDescending(c => c.CreatedDate)
-					.ToList();
-				_commentErrorMessage = null;
-			}
-			else
-			{
-				_comments = null;
-				_commentErrorMessage = response.ErrorMessage;
-			}
-			_isCommentsHaveError = false;
-		}
-		catch (Exception ex)
-		{
-			_isCommentsHaveError = true;
-			_commentErrorMessage = ex.Message;
-		}
-	}
-	private void GetPostViewers(ApiResponses<List<PostViewersDto>> response)
-	{
-		if (_isPostHaveError)
-			return;
-		try
-		{
-			if (response.IsSuccess)
-			{
-				_viewers = response.Data;
-				_postViewCount = _viewers.Count;
-				_errorMessage = null;
-				_isPostHaveError = false;
-			}
-			else
+			catch (Exception ex)
 			{
 				_viewers = null;
-				_errorMessage = response.ErrorMessage;
 				_isPostHaveError = true;
+				_errorMessage = ex.Message;
+			}
+		}
+
+		private void ShowUserProfile()
+		{
+			NavigationManager.NavigateTo($"/profile/{_postDto.UserId}");
+		}
+		private void ShowUserProfile(Guid UserId)
+		{
+			NavigationManager.NavigateTo($"/profile/{UserId}");
+		}
+
+		private async Task AddCommentAsync()
+		{
+			if (_isApiBusy)
+				return;
+			_isApiBusy = true;
+			if (!_isUserLoggedIn)
+			{
+				_isApiBusy = false;
+
+				NavigateToLogin();
+				return;
+			}
+			if (string.IsNullOrWhiteSpace(_commentModel.Content))
+			{
+				_isApiBusy = false;
+				return;
 			}
 
-		}
-		catch (Exception ex)
-		{
-			_viewers = null;
-			_isPostHaveError = true;
-			_errorMessage = ex.Message;
-		}
-	}
+			_newCommentText = _commentModel.Content.Trim();
+			if (string.IsNullOrWhiteSpace(_newCommentText))
+			{
+				_isApiBusy = false;
+				return;
+			}
 
-	private void ShowUserProfile()
-	{
-		NavigationManager.NavigateTo($"/profile/{_postDto.UserId}");
-	}
-	private void ShowUserProfile(Guid UserId)
-	{
-		NavigationManager.NavigateTo($"/profile/{UserId}");
-	}
-
-	private async Task AddCommentAsync()
-	{
-		if (_isApiBusy)
-			return;
-		_isApiBusy = true;
-		if (!_isUserLoggedIn)
-		{
-			_isApiBusy = false;
-
-			NavigateToLogin();
-			return;
-		}
-		if (string.IsNullOrWhiteSpace(_commentModel.Content))
-		{
-			_isApiBusy = false;
-			return;
-		}
-
-		_newCommentText = _commentModel.Content.Trim();
-		if (string.IsNullOrWhiteSpace(_newCommentText))
-		{
-			_isApiBusy = false;
-			return;
-		}
-
-		try
-		{
-			var result = await CommentApi.AddCommentAsync(postId, (Guid)_currentUserId, _commentModel);
-			if (!result.IsSuccess)
+			try
+			{
+				var result = await CommentApi.AddCommentAsync(postId, (Guid)_currentUserId, _commentModel);
+				if (!result.IsSuccess)
+				{
+					_isCommentsHaveError = true;
+					_commentErrorMessage = result.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
 			{
 				_isCommentsHaveError = true;
-				_commentErrorMessage = result.ErrorMessage;
+				_commentErrorMessage = ex.Message;
 			}
-		}
-		catch (Exception ex)
-		{
-			_isCommentsHaveError = true;
-			_commentErrorMessage = ex.Message;
-		}
-		_commentModel.Content = string.Empty;
-		_isApiBusy = false;
-
-	}
-
-	private async Task AddReplyAsync(int parentCommentId)
-	{
-		if (_isApiBusy)
-			return;
-
-		_isApiBusy = true;
-
-		if (!_isUserLoggedIn)
-		{
+			_commentModel.Content = string.Empty;
 			_isApiBusy = false;
-			NavigateToLogin();
-			return;
-		}
-		if (string.IsNullOrWhiteSpace(_replyModel.Content))
-		{
-			_isApiBusy = false;
-			return;
-		}
-		var _newReplyText = _replyModel.Content.Trim();
-		if (string.IsNullOrWhiteSpace(_newReplyText))
-		{
-			_isApiBusy = false;
-			return;
+
 		}
 
-		try
+		private async Task AddReplyAsync(int parentCommentId)
 		{
-			var result = await CommentApi.AddReplyCommentAsync(postId, parentCommentId, (Guid)_currentUserId, _replyModel);
-			if (!result.IsSuccess)
+			if (_isApiBusy)
+				return;
+
+			_isApiBusy = true;
+
+			if (!_isUserLoggedIn)
+			{
+				_isApiBusy = false;
+				NavigateToLogin();
+				return;
+			}
+			if (string.IsNullOrWhiteSpace(_replyModel.Content))
+			{
+				_isApiBusy = false;
+				return;
+			}
+			var _newReplyText = _replyModel.Content.Trim();
+			if (string.IsNullOrWhiteSpace(_newReplyText))
+			{
+				_isApiBusy = false;
+				return;
+			}
+
+			try
+			{
+				var result = await CommentApi.AddReplyCommentAsync(postId, parentCommentId, (Guid)_currentUserId, _replyModel);
+				if (!result.IsSuccess)
+				{
+					_isCommentsHaveError = true;
+					_commentErrorMessage = result.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
 			{
 				_isCommentsHaveError = true;
-				_commentErrorMessage = result.ErrorMessage;
+				_commentErrorMessage = ex.Message;
 			}
+			_replyModel.Content = string.Empty;
+			_replyToCommentId = null;
+			_isApiBusy = false;
 		}
-		catch (Exception ex)
-		{
-			_isCommentsHaveError = true;
-			_commentErrorMessage = ex.Message;
-		}
-		_replyModel.Content = string.Empty;
-		_replyToCommentId = null;
-		_isApiBusy = false;
-	}
 
 }
 

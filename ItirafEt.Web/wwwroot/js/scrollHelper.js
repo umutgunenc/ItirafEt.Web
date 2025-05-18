@@ -26,6 +26,30 @@ window.scrollHelper = {
     }
 };
 
+window.chatScrollHelper = {
+    scrollToBottom: function (element) {
+        if (element) {
+            element.scrollTop = element.scrollHeight;
+        }
+    }
+};
 
+
+window.chatScrollHelper = {
+    scrollToBottom: function (element) {
+        if (!element) return;
+
+        // threshold: alttan kaç px uzaklıktayken hala "en altta" kabul edelim
+        const threshold = 0;
+
+        const scrollPosition = element.scrollTop + element.clientHeight;
+        const scrollHeight = element.scrollHeight;
+
+        // Eğer en altta isek (veya threshold içinde kaldıysak), otomatik scroll yap
+        if (scrollHeight - scrollPosition <= threshold) {
+            element.scrollTop = scrollHeight;
+        }
+    }
+};
 
 

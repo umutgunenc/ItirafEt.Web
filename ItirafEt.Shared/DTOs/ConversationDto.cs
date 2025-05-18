@@ -9,10 +9,9 @@ namespace ItirafEt.Shared.DTOs
     public class ConversationDto
     {
         public Guid ConversationId { get; set; }
-        public Guid InitiatorId { get; set; }
-        public Guid ResponderId { get; set; }
-        public string InitiatorUserName { get; set; }
-        public string ResponderUserName { get; set; }
+        public Guid SenderUserId { get; set; }
+        public UserInfoDto ResponderUser { get; set; }
+        public List<MessageDto> Messages { get; set; }
 
     }
 }

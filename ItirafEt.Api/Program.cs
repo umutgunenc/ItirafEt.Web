@@ -74,11 +74,15 @@ builder.Services.AddTransient<PostService>();
 builder.Services.AddTransient<CommentService>();
 builder.Services.AddTransient<ReactionService>();
 builder.Services.AddTransient<PostViewService>();
+builder.Services.AddTransient<MessageService>();
+
+
 builder.Services.AddTransient<ReactionHubService>();
 builder.Services.AddTransient<CategoryHubService>();
 builder.Services.AddTransient<CommentHubService>();
 builder.Services.AddTransient<PostViewHubService>();
-builder.Services.AddTransient<MessageService>();
+builder.Services.AddTransient<MessageHubService>();
+
 
 var app = builder.Build();
 
@@ -107,6 +111,7 @@ app.MapHub<CategoryHub>("/categoryhub");
 app.MapHub<ReactionHub>("/reactionhub");
 app.MapHub<CommentHub>("/commenthub");
 app.MapHub<PostViewHub>("/postviewhub");
+app.MapHub<MessageHub>("/messagehub");
 
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();

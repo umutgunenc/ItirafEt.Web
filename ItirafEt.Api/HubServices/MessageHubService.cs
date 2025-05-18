@@ -11,11 +11,12 @@ namespace ItirafEt.Api.HubServices
         {
             _hubContext = hubContext;
         }
-        //public async Task SendMessageAsync(Guid senderUserId, Guid receiverUserId, MessageDto)
-        //{
-        //    await _hubContext.Clients
-        //        .Group($"message-sender-{senderUserId}-reciver-{receiverUserId}")
-        //        .SendAsync("SendMessageAsync", senderUserId, receiverUserId, MessageDto);
-        //}
+        public async Task SendMessageAsync(Guid conversationId, MessageDto messageDto)
+        {
+            await _hubContext.Clients
+                .Group($"conversation-{conversationId}")
+                .SendAsync("SendMessageAsync", conversationId, messageDto);
+        }
     }
 }
+
