@@ -26,28 +26,40 @@ window.scrollHelper = {
     }
 };
 
+//window.chatScrollHelper = {
+//    scrollToBottom: function (element) {
+//        if (element) {
+//            element.scrollTop = element.scrollHeight;
+//        }
+//    }
+//};
+
+
 window.chatScrollHelper = {
+
     scrollToBottom: function (element) {
         if (element) {
             element.scrollTop = element.scrollHeight;
         }
-    }
-};
+    },
 
 
-window.chatScrollHelper = {
-    scrollToBottom: function (element) {
+    scrollToBottomIfNeeded: function (element) {
         if (!element) return;
 
-        // threshold: alttan kaç px uzaklıktayken hala "en altta" kabul edelim
-        const threshold = 0;
+        const threshold = 300;
+        // ScrollHeight ile karşılaştırmadan önce mevcut pozisyonu al
+        const currentPosition = element.scrollTop + element.offsetHeight;
+        const isNearBottom = element.scrollHeight - currentPosition  <= threshold;
+        console.log(element.scrollHeight - currentPosition);
 
-        const scrollPosition = element.scrollTop + element.clientHeight;
-        const scrollHeight = element.scrollHeight;
-
-        // Eğer en altta isek (veya threshold içinde kaldıysak), otomatik scroll yap
-        if (scrollHeight - scrollPosition <= threshold) {
-            element.scrollTop = scrollHeight;
+        // Eğer en altta değilse scroll etme
+        if (isNearBottom) {
+            console.log("scroll yapılıyor");
+            // Raf kullanarak smooth scroll
+            requestAnimationFrame(() => {
+                element.scrollTop = element.scrollHeight;
+            });
         }
     }
 };

@@ -63,7 +63,7 @@
 	protected override async Task OnInitializedAsync()
 	{
 		while (AuthStateProvider.IsInitializing)
-			await Task.Delay(500);
+			await Task.Delay(1);
 	}
 
 	// private async Task LogOutAsync()

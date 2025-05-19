@@ -8,7 +8,7 @@
 @if (_isLoading)
 {
 	<div class="d-flex justify-content-center align-items-center"
-	style="height:75vh">
+		 style="height:75vh">
 		<div class="spinner-border text-primary" role="status">
 			<span class="visually-hidden">Loading...</span>
 		</div>
@@ -30,11 +30,11 @@ else
 		<div class="chat-header d-flex align-items-center">
 			<div class="position-relative me-3">
 				<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-				class="rounded-circle"
-				width="56"
-				height="56"
-				style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-				alt="profile">
+					 class="rounded-circle"
+					 width="56"
+					 height="56"
+					 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+					 alt="profile">
 			</div>
 			<div>
 				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto.ResponderUser.UserName</h5>
@@ -80,18 +80,6 @@ else
 					</div>
 				}
 			}
-
-			<!-- Örnek Mesajlar -->
-			@* 			<div class="message-in bg-primary-subtle">
-				<div>Merhaba! Nasılsın?</div>
-				<div class="time-text text-dark-50">10:45 AM</div>
-			</div>
-
-			<div class="message-out">
-				<div>İyiyim teşekkür ederim, sen nasılsın?</div>
-				<div class="time-text" style=" color:rgba(255,255,255,0.7)">10:46 AM</div>
-			</div> *@
-
 		</div>
 
 		<!-- Mesaj Gönderme Alanı -->
@@ -123,6 +111,7 @@ else
 	private bool _isError = false;
 	private bool _isLoading = true;
 	private bool _canUserReadMessage = true;
+	private bool _hasScrolled = false;
 	private Guid _currentUserId;
 	private Guid _reciverUserId;
 
@@ -135,8 +124,6 @@ else
 			await GetConversationAsync();
 			await StartHubConnection();
 		}
-
-
 	}
 
 	private async Task SendMessageAsync(MessageDto messageDto)
@@ -205,12 +192,12 @@ else
 		}
 		catch (Exception ex)
 		{
-			
+
 			_isLoading = false;
 			_isError = true;
 			_errorMessage = result.ErrorMessage;
 		}
-		
+
 	}
 
 	private void NavigateToUserProfile()
@@ -237,6 +224,12 @@ else
 			}
 			_conversationDto = result.Data;
 			_isLoading = false;
+
+
+			// await InvokeAsync(async () =>
+			// {
+			// 	await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
+			// });
 		}
 		catch (Exception)
 		{
@@ -251,10 +244,12 @@ else
 		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
 	}
 
+
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		if (firstRender)
+		if (!_hasScrolled && !_isLoading && !_isError && _conversationDto?.Messages?.Any() == true)
 		{
+			_hasScrolled = true;
 			await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
 		}
 	}
@@ -267,7 +262,7 @@ else
 		_conversationDto.Messages.Add(newMsg);
 
 		StateHasChanged();
-		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
+		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
 	}
 
 }

@@ -46,7 +46,8 @@ namespace ItirafEt.Web.Pages.Auth
             User = null;
             SetAuthStateTask();
             NotifyAuthenticationStateChanged(_authStateTask);
-            await _jSRuntime.InvokeVoidAsync("localStorage.removeItem", UserDataKey);
+            //await _jSRuntime.InvokeVoidAsync("localStorage.removeItem", UserDataKey);
+            await _jSRuntime.InvokeVoidAsync("localStorage.clear");
             _tokenCheckTimer?.Dispose();
 
         }
