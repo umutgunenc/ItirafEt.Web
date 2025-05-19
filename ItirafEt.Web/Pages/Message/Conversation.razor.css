@@ -42,7 +42,7 @@
     max-width: 70%;
     align-self: flex-start;
     position: relative;
-
+    overflow-wrap:break-word;
 }
 
 .message-out {
@@ -51,6 +51,7 @@
     border-radius: 15px;
     padding: 12px 15px;
     max-width: 70%;
+    overflow-wrap:break-word;
     align-self: flex-end;
 }
 

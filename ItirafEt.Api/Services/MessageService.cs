@@ -132,7 +132,7 @@ namespace ItirafEt.Api.Services
             {
                 Content = messageDto.Content,
                 ConversationId = conversationId,
-                SenderId = messageDto.SenderId,
+                SenderId = senderUser.Id,
                 SentDate = DateTime.Now,
                 IsRead = false,
                 IsVisibleToInitiatorUser = true,
@@ -151,6 +151,7 @@ namespace ItirafEt.Api.Services
                 Content = message.Content,
                 CreatedDate = message.SentDate,
                 SenderId = message.SenderId,
+                SenderUserName = senderUser.UserName,
             };
 
             await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);

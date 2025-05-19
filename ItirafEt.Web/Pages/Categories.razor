@@ -188,8 +188,10 @@
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		var dotNetRef = DotNetObjectReference.Create(this);
-		await JSRuntime.InvokeVoidAsync("addScrollListener", dotNetRef);
+
+			var dotNetRef = DotNetObjectReference.Create(this);
+			await JSRuntime.InvokeVoidAsync("addScrollListener", dotNetRef);
+		
 
 		if (State.ScrollY > 0 && !_hasRestoredScroll)
 		{
