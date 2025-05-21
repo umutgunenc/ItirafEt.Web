@@ -1,7 +1,7 @@
 ﻿using ItirafEt.Shared.DTOs;
 using Refit;
 
-namespace ItirafEt.Web.Apis
+namespace ItirafEt.SharedComponents.Apis
 {
 
     public interface IMessageApi
@@ -21,6 +21,10 @@ namespace ItirafEt.Web.Apis
         [Headers("Authorization: Bearer")]
         [Get("/api/message/CanUserReadConversation/")]
         Task<ApiResponses<bool>> CanUserReadMessageApiAsync(Guid conversationId, Guid userId);
+        
+        [Headers("Authorization: Bearer")]
+        [Get("/api/message/GetUserConversaions/")]
+        Task<ApiResponses<List<ConversationDto>>> GetUserConversaionsAsync(Guid userId);
 
 
     }

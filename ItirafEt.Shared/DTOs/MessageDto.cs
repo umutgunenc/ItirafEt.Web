@@ -9,6 +9,7 @@ namespace ItirafEt.Shared.DTOs
     public class MessageDto
     {
         public int Id { get; set; }
+        public Guid ConversationId { get; set; }
         public string Content { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ReadDate { get; set; }

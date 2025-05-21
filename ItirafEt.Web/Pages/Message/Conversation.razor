@@ -1,5 +1,4 @@
 ﻿@page "/conversations/{ConversationId:guid}"
-@using BlazorBootstrap
 
 @inject NavigationManager NavigationManager
 @inject IMessageApi MessageApi
@@ -98,8 +97,8 @@ else
 		</div>
 	</div>
 }
-<Toasts class="p-3" Messages="_toastMessages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.BottomRight" />
-
+@* <Toasts class="p-3" Messages="_toastMessages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.BottomRight" />
+ *@
 
 @code {
 
@@ -117,7 +116,7 @@ else
 	private bool _hasScrolled = false;
 	private Guid _currentUserId;
 	private Guid _reciverUserId;
-	private List<ToastMessage> _toastMessages = new List<ToastMessage>();
+	// private List<ToastMessage> _toastMessages = new List<ToastMessage>();
 
 
 
@@ -174,8 +173,8 @@ else
 
 		_hubConnection.On<Guid, MessageDto>("SendMessageAsync", async (conversationId, messageDto) =>
 		{
-			if (_currentUserId != messageDto.SenderId)
-				ShowToastMessage(ToastType.Primary, messageDto);
+			// if (_currentUserId != messageDto.SenderId)
+				// ShowToastMessage(ToastType.Primary, messageDto);
 
 			await AddMessageAsync(messageDto);
 		});
@@ -280,24 +279,24 @@ else
 		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
 	}
 
-	private void ShowToastMessage(ToastType toastType, MessageDto messageDto)
-	{
-		_toastMessages.Add(CreateToastMessage(toastType, messageDto));
-	}
+	// private void ShowToastMessage(ToastType toastType, MessageDto messageDto)
+	// {
+	// 	_toastMessages.Add(CreateToastMessage(toastType, messageDto));
+	// }
 
 
-	private ToastMessage CreateToastMessage(ToastType toastType, MessageDto messageDto)
-	{
-		return new ToastMessage
-			{
-				Type = toastType,
-				Title = $"{messageDto.SenderUserName} Size Mesaj Gönderdi",
-				HelpText = $"{DateTime.Now.ToString("HH:mm")}",
-				Message = messageDto.Content.Length > 50
-						? $"{messageDto.Content.Substring(0, 50)}..."
-							: $"{messageDto.Content}...",
-					Content = @<div><button class="btn btn-sm blue mt-2 text-white">Mesajı Göster</button></div>
-			};
-	}
+	// private ToastMessage CreateToastMessage(ToastType toastType, MessageDto messageDto)
+	// {
+	// 	return new ToastMessage
+	// 		{
+	// 			Type = toastType,
+	// 			Title = $"{messageDto.SenderUserName} Size Mesaj Gönderdi",
+	// 			HelpText = $"{DateTime.Now.ToString("HH:mm")}",
+	// 			Message = messageDto.Content.Length > 50
+	// 					? $"{messageDto.Content.Substring(0, 50)}..."
+	// 						: $"{messageDto.Content}...",
+	// 				Content = @<div><button class="btn btn-sm blue mt-2 text-white">Mesajı Göster</button></div>
+	// 		};
+	// }
 
 }

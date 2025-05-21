@@ -1,8 +1,10 @@
 using Blazored.LocalStorage;
+using ItirafEt.Shared.ClientServices;
 using ItirafEt.Shared.ClientServices.State;
+using ItirafEt.SharedComponents.Apis;
+using ItirafEt.SharedComponents.ClientServices;
 using ItirafEt.SharedComponents.Services;
 using ItirafEt.Web;
-using ItirafEt.Web.Apis;
 using ItirafEt.Web.Pages.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,6 +26,7 @@ builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthStateProvider>();
+builder.Services.AddSingleton<ConversationService>();
 builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
 builder.Services.AddAuthorizationCore();
 

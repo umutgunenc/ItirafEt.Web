@@ -1,8 +1,9 @@
 ﻿using ItirafEt.Shared.DTOs;
 using Refit;
 
-namespace ItirafEt.Web.Apis
-{
+namespace ItirafEt.SharedComponents.Apis 
+{ 
+
     public interface IAuthApi
     {
         [Post("/api/auth/login")]

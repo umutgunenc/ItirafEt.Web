@@ -26,6 +26,28 @@ namespace ItirafEt.Api.Services
             _context = context;
             _hubService = hubService;
         }
+
+        public async Task<ApiResponses<List<ConversationDto>>> GetUserConversaionsAsync(Guid userId)
+        {
+            var conversations = await _context.Conversations
+                .AsNoTracking()
+                .Where(c => c.InitiatorId == userId || c.ResponderId == userId)
+                .ToListAsync();
+
+            if (conversations.Count == 0)
+                return ApiResponses<List<ConversationDto>>.Fail("Mesajlaşma Bulunamadı.");
+
+            var returnConversationsDto  = new List<ConversationDto>();
+            foreach (var conversation in conversations)
+            {
+                var responderUserId = conversation.InitiatorId == userId ? conversation.ResponderId : conversation.InitiatorId;
+                var conversationDto = await ConversationToConversationDtoWithLastMessageAsync(conversation, responderUserId, userId);
+                returnConversationsDto.Add(conversationDto);
+            }
+
+
+            return ApiResponses<List<ConversationDto>>.Success(returnConversationsDto);
+        }
         public async Task<ApiResponses<bool>> CanUserReadConversationAsync(Guid conversationId, Guid userId)
         {
             var conversation = await _context.Conversations
@@ -152,9 +174,12 @@ namespace ItirafEt.Api.Services
                 CreatedDate = message.SentDate,
                 SenderId = message.SenderId,
                 SenderUserName = senderUser.UserName,
+                ConversationId = message.ConversationId,
             };
 
-            await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);
+            await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto); 
+            await _hubService.SendMessageNotificationAsync(conversationId, returnMessageDto); 
+
             return ApiResponses<MessageDto>.Success(returnMessageDto);
 
         }
@@ -170,9 +195,20 @@ namespace ItirafEt.Api.Services
             };
         }
 
-        private async Task<UserInfoDto> GetResponderUserAsync (Guid RespondoerId)
+        private async Task<ConversationDto> ConversationToConversationDtoWithLastMessageAsync(Conversation conversation, Guid responderId, Guid senderUserId)
         {
-            return await _context.Users.Where(x=>x.Id == RespondoerId)
+            return new ConversationDto
+            {
+                ConversationId = conversation.ConversationId,
+                SenderUserId = senderUserId,
+                ResponderUser = await GetResponderUserAsync(responderId),
+                Messages = await GetConversationLastMessagesAsync(conversation)
+            };
+        }
+
+        private async Task<UserInfoDto> GetResponderUserAsync(Guid RespondoerId)
+        {
+            return await _context.Users.Where(x => x.Id == RespondoerId)
                 .AsNoTracking()
                 .Select(x => new UserInfoDto
                 {
@@ -194,6 +230,7 @@ namespace ItirafEt.Api.Services
                 .Select(m => new MessageDto
                 {
                     Id = m.Id,
+                    ConversationId = m.ConversationId,
                     Content = m.Content,
                     CreatedDate = m.SentDate,
                     ReadDate = m.ReadDate,
@@ -207,9 +244,32 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            if (messages.Count  == 0)
-                return new List<MessageDto?>();
             return messages;
+        }
+
+        private async Task<List<MessageDto>> GetConversationLastMessagesAsync(Conversation conversation)
+        {
+            return await _context.Messages
+                .AsNoTracking()
+                .Where(m => m.ConversationId == conversation.ConversationId)
+                .OrderByDescending(m => m.SentDate) // son mesaj üstte
+                .Select(m=> new MessageDto
+                {
+                    Id = m.Id,
+                    ConversationId = m.ConversationId,
+                    Content = m.Content,
+                    CreatedDate = m.SentDate,
+                    ReadDate = m.ReadDate,
+                    SenderId = m.SenderId,
+                    ReceiverId = conversation.ResponderId,
+                    IsRead = m.IsRead,
+                    IsDeletedBySender = m.IsVisibleToInitiatorUser,
+                    IsDeletedByReceiver = m.IsVisibleToResponderUser,
+                    SenderIpAddress = m.IpAddress,
+                    SenderDeviceInfo = m.DeviceInfo
+                })
+                .Take(1)
+                .ToListAsync();
         }
 
     }
