@@ -21,7 +21,7 @@
 				<!-- Kategoriler -->
 				<li class="nav-item dropdown order-lg-1">
 					<a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-						<i class="bi bi-folder2-open fs-5 "></i> Kategoriler
+						<i class="bi bi-folder2-open fs-5 "></i> <span class="ms-2">Kategoriler</span>
 					</a>
 					<ul class="dropdown-menu border-0 shadow-lg" style="background: rgba(75, 108, 183, 0.9); backdrop-filter: blur(10px);">
 						@foreach (var category in _categories)
@@ -57,7 +57,8 @@
 
 							<li class="nav-item dropdown">
 								<a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-									<i class="@(_isHaveMessages ? "bi bi-person-fill-check text-danger" : "bi  bi-person-check") fs-5"></i>@AuthStateProvider.User?.userName.ToUpper()
+									<i class="@(_isHaveMessages ? "bi bi-person-fill-check" : "bi  bi-person-check") fs-5" style="@(_isHaveMessages ? "transition : 2s; color: red;" : "transition : 2s;")"></i>
+									<span class="ms-2">@AuthStateProvider.User?.userName.ToUpper()</span>
 								</a>
 								<ul class="dropdown-menu border-0 shadow-lg" style="background: rgba(75, 108, 183, 0.9); backdrop-filter: blur(10px);">
 									<li>
@@ -92,13 +93,13 @@
 								<li class="nav-item">
 									<NavLink class="nav-link text-white d-flex align-items-center gap-1" href="/login" @onclick="CollapseMenuAsync">
 										<i class="bi bi-person-circle fs-5"></i>
-										Giriş
+										<span class="ms-2">Giriş</span>
 									</NavLink>
 								</li>
 								<li class="nav-item">
 									<NavLink class="nav-link text-white d-flex align-items-center gap-1" href="/register" @onclick="CollapseMenuAsync">
 										<i class="bi bi-person-plus-fill fs-5"></i>
-										Kayıt Ol
+										<span class="ms-2">Kayıt Ol</span>
 									</NavLink>
 								</li>
 							</ul>
@@ -110,9 +111,10 @@
 	</div>
 </nav>
 
-<Toasts class="p-3" Messages="_toastMessages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.BottomRight" />
+<Toasts class="p-3 custom-toast" Messages="_toastMessages" Placement="ToastsPlacement.BottomRight" StackLength="3" AutoHide="true" Delay="3000"/>
 
-@* @code {
+<div>
+	@* @code {
 
 
 	private List<CategoryDto>? _categories = new List<CategoryDto>();
@@ -332,8 +334,10 @@
 
 
 } *@
+</div>
 
-		@code {
+
+@code {
 	private List<CategoryDto>? _categories = new();
 	private List<ConversationDto> _conversationDtos = new();
 	private List<ToastMessage> _toastMessages = new();
@@ -353,7 +357,7 @@
 	{
 
 		AuthStateProvider.AuthenticationStateChanged += async (task) => await OnAuthStateChanged(task);
-
+		// _isHaveMessages = true;
 		while (AuthStateProvider.IsInitializing)
 			await Task.Delay(500);
 
@@ -422,16 +426,16 @@
 
 		_categoryHubConnection.On<CategoryDto>("CategoryInfoChangedAsync", (category) =>
 		{
-			UpdateCategories(category);
-			StateHasChanged();
+	UpdateCategories(category);
+	StateHasChanged();
 		});
-		
+
 		_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync", (categoryId, isPostAdded) =>
 		{
-			UpdateCategories(categoryId, isPostAdded);
-			StateHasChanged();
+	UpdateCategories(categoryId, isPostAdded);
+	StateHasChanged();
 		});
-		
+
 		await _categoryHubConnection.StartAsync();
 		await _categoryHubConnection.SendAsync("JoinCategoryInfoChangedGroup");
 		await _categoryHubConnection.SendAsync("JoinCategoryPostCountChangedGroup");
@@ -452,7 +456,7 @@
 				existing.PostCount = category.PostCount;
 			}
 		}
-		else  
+		else
 			_categories?.Add(category);
 
 		_categories = _categories?.OrderBy(c => c.CategoryOrder).ToList();
@@ -462,9 +466,7 @@
 	{
 		var category = _categories?.FirstOrDefault(c => c.Id == categoryId);
 		if (category != null)
-		{
 			category.PostCount += isPostAdded ? 1 : -1;
-		}
 	}
 
 	private async Task CollapseMenuAsync()
@@ -492,14 +494,17 @@
 
 	private ToastMessage CreateToastMessage(ToastType toastType, MessageDto messageDto)
 	{
-		return new ToastMessage
+		var tosatMessage = new ToastMessage
 				{
+					// AutoHide = true,
+					CustomIconName = "bi bi-envelope-fill text-danger fs-4",
 					Type = toastType,
-					Title = $"{messageDto.SenderUserName} Size Mesaj Gönderdi",
+					Title = $"{messageDto.SenderUserName.ToUpper()} Size Mesaj Gönderdi",
 					HelpText = $"{DateTime.Now:HH:mm}",
 					Message = messageDto.Content.Length > 50 ? $"{messageDto.Content.Substring(0, 50)}..." : messageDto.Content,
-					Content = @<div><button class="btn btn-sm blue mt-2 text-white" @onclick="() => NavigateToConversation(messageDto.ConversationId)">Mesajı Göster</button></div>
+					Content = @<div><button class="btn btn-sm transparent-button mt-2 text-white" @onclick="() => NavigateToConversation(messageDto.ConversationId)">Mesajı Göster</button></div>
 		};
+		return tosatMessage;
 	}
 
 	private bool CheckCurrentChatPage(string conversationId)
@@ -527,7 +532,8 @@
 
 		_conversationHubConnection.On<Guid, MessageDto>("SendMessageNotificationAsync", (conversationId, messageDto) =>
 		{
-			if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId != messageDto.SenderId){
+			if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId != messageDto.SenderId)
+			{
 				_isHaveMessages = true;
 				ShowToastMessage(ToastType.Danger, messageDto);
 			}
@@ -542,7 +548,8 @@
 		}
 	}
 
-	private void UpdateMessageButton(){
+	private void UpdateMessageButton()
+	{
 
 	}
 }

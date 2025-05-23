@@ -1,0 +1,42 @@
+﻿.custom-toast .toast {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2px);
+    color: black;
+    border-left: 6px solid red;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.custom-toast .toast-header {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2px);
+    color: #000;
+    font-weight: 300;
+}
+
+.custom-toast .toast-body {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2px);
+    color: #000;
+    font-weight: 300;
+}
+
+.toast-container {
+    background-color: rgba(255, 255, 255, 0.0);
+}
+
+.transparent-button {
+    background: linear-gradient(135deg, rgba(75, 108, 183, 0.6) 0%, rgba(24, 40, 72, 0.6) 100%);
+    backdrop-filter: blur(2px);
+    transition: all 0.3s ease;
+    color: white;
+    border: none;
+    backdrop-filter: blur(2px);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+    .transparent-button:hover {
+        background: linear-gradient(135deg, rgba(75, 108, 183, 0.8) 0%, rgba(24, 40, 72, 0.8) 100%);
+        transform: translateY(-1px);
+    }
