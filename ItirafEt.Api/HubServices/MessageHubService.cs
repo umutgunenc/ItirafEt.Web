@@ -24,7 +24,12 @@ namespace ItirafEt.Api.HubServices
                 .Group($"conversation-{conversationId}")
                 .SendAsync("SendMessageNotificationAsync", conversationId, messageDto);
         }
-
+        public async Task ReadMessageAsync(Guid conversationId, MessageDto messageDto)
+        {
+            await _hubContext.Clients
+                .Group($"conversation-{conversationId}")
+                .SendAsync("ReadMessageAsync", conversationId, messageDto);
+        }
         //public async Task SendMessageNotificationAsync(Guid conversationId,MessageDto messageDto,string connectionId) 
         //{
         //    await _hubContext.Clients

@@ -1,19 +1,4 @@
-﻿//window.scrollHelper = {
-//    getScrollY: () => window.pageYOffset,
-//    setScrollY: y => {
-//        setTimeout(() => {
-//            document.documentElement.style.scrollBehavior = 'auto';
-
-//            window.scrollTo({
-//                top: y,
-//                left: 0
-//            });
-
-//        }, 50);
-//    }
-//};
-
-window.scrollHelper = {
+﻿window.scrollHelper = {
     getScrollY: () => window.pageYOffset,
     setScrollY: y => {
         document.documentElement.style.scrollBehavior = 'auto';
@@ -42,7 +27,6 @@ window.chatScrollHelper = {
         const threshold = 300;
         const currentPosition = element.scrollTop + element.offsetHeight;
         const isNearBottom = element.scrollHeight - currentPosition  <= threshold;
-        console.log(element.scrollHeight - currentPosition);
 
         if (isNearBottom) {
             requestAnimationFrame(() => {
@@ -51,5 +35,3 @@ window.chatScrollHelper = {
         }
     }
 };
-
-

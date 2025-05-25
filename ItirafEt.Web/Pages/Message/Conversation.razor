@@ -4,6 +4,8 @@
 @inject IMessageApi MessageApi
 @inject AuthStateProvider AuthStateProvider
 @inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
 
 @if (_isLoading)
 {
@@ -43,44 +45,40 @@ else
 		</div>
 
 		<!-- Mesajlar -->
-		<div class="chat-messages bg-light-subtle" @ref="_messagesDiv">
 
+		<div class="chat-messages bg-light-subtle" @ref="_messagesDiv">
 			@foreach (var message in _conversationDto.Messages)
 			{
-				if (message.SenderId == _currentUserId)
-				{
-					<div class="message-out">
-						<div>@message.Content</div>
-						<div class="time-text" style=" color:rgba(255,255,255,0.7)">
-							@if (message.CreatedDate.Day < DateTime.Now.Day)
-							{
-								@message.CreatedDate.ToString("HH:mm dd MMMM yyyy")
-							}
-							else
-							{
-								@message.CreatedDate.ToString("HH:mm")
-							}
-						</div>
+				var isMine = message.SenderId == _currentUserId;
+				var baseClass = isMine ? "message-out" : "message-in bg-primary-subtle";
+				var fullClass = $"{baseClass} chat-message d-flex flex-column";
+
+				<div id="message-@message.Id" class="@fullClass">
+					<div class="message-content">@message.Content</div>
+
+					<div class="message-meta d-flex justify-content-between align-items-end mt-1">
+						<small class="message-time pe-3 @(isMine ? "text-white-50" : "text-muted")">
+							@message.CreatedDate.ToString("HH:mm")
+						</small>
+
+						@if (isMine)
+						{
+							<div class="read-status">
+								@if (message.IsRead)
+								{
+									<i class="bi bi-check2-all text-white"></i>
+								}
+								else
+								{
+									<i class="bi bi-check2"></i>
+								}
+							</div>
+						}
 					</div>
-				}
-				else
-				{
-					<div class="message-in bg-primary-subtle">
-						<div>@message.Content</div>
-						<div class="time-text text-dark-50">
-							@if (message.CreatedDate.Day < DateTime.Now.Day)
-							{
-								@message.CreatedDate.ToString("HH:mm dd MMMM yyyy")
-							}
-							else
-							{
-								@message.CreatedDate.ToString("HH:mm")
-							}
-						</div>
-					</div>
-				}
+				</div>
 			}
 		</div>
+
 
 		<!-- Mesaj Gönderme Alanı -->
 		<div class="message-input">
@@ -97,15 +95,13 @@ else
 		</div>
 	</div>
 }
-@* <Toasts class="p-3" Messages="_toastMessages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.BottomRight" />
- *@
 
 @code {
 
 	[Parameter]
 	public Guid ConversationId { get; set; }
-
 	private ElementReference _messagesDiv;
+
 	private ConversationDto _conversationDto;
 	private MessageDto _messageDto = new MessageDto();
 	private HubConnection? _hubConnection;
@@ -116,24 +112,47 @@ else
 	private bool _hasScrolled = false;
 	private Guid _currentUserId;
 	private Guid _reciverUserId;
-	// private List<ToastMessage> _toastMessages = new List<ToastMessage>();
-
-
-
-
-
-
 
 
 
 	protected override async Task OnParametersSetAsync()
 	{
 		GetCurrentUserId();
+
 		await CanUserReadMessageAsync(ConversationId, _currentUserId);
 		if (_canUserReadMessage)
 		{
 			await GetConversationAsync();
 			await StartHubConnection();
+			await ReadAllMessageAsync();
+		}
+
+	}
+	private async Task ReadAllMessageAsync()
+	{
+		foreach (var message in _conversationDto.Messages)
+		{
+			await ReadMessageAsync(message);
+		}
+	}
+	private async Task ReadMessageAsync(MessageDto message)
+	{
+
+		if (message.IsRead)
+			return;
+		if (message.SenderId == _currentUserId)
+			return;
+
+		try
+		{
+			var result = await MessageApi.ReadMessageAsync(message.ConversationId, message);
+
+		}
+		catch (Exception ex)
+		{
+			_isError = true;
+			_errorMessage = ex.Message;
+			throw;
 		}
 	}
 
@@ -173,10 +192,20 @@ else
 
 		_hubConnection.On<Guid, MessageDto>("SendMessageAsync", async (conversationId, messageDto) =>
 		{
-			// if (_currentUserId != messageDto.SenderId)
-				// ShowToastMessage(ToastType.Primary, messageDto);
-
 			await AddMessageAsync(messageDto);
+			await ReadMessageAsync(messageDto);
+		});
+
+		_hubConnection.On<Guid, MessageDto>("ReadMessageAsync", async (conversationId, messageDto) =>
+		{
+
+			var message = _conversationDto.Messages.FirstOrDefault(m => m.Id == messageDto.Id);
+
+			message.IsRead = messageDto.IsRead;
+			message.ReadDate = messageDto.ReadDate;
+
+			await InvokeAsync(StateHasChanged);
+
 		});
 
 
@@ -204,9 +233,8 @@ else
 				return;
 			}
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-
 			_isLoading = false;
 			_isError = true;
 			_errorMessage = result.ErrorMessage;
@@ -216,9 +244,7 @@ else
 
 	private void NavigateToUserProfile()
 	{
-
 		NavigationManager.NavigateTo($"/profile/{_conversationDto.ResponderUser.UserId}");
-
 	}
 
 	private async Task GetConversationAsync()
@@ -240,10 +266,10 @@ else
 			_isLoading = false;
 
 
-			// await InvokeAsync(async () =>
-			// {
-			// 	await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
-			// });
+			await InvokeAsync(async () =>
+			{
+				await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
+			});
 		}
 		catch (Exception)
 		{
@@ -258,45 +284,36 @@ else
 		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
 	}
 
-
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		if (!_hasScrolled && !_isLoading && !_isError && _conversationDto?.Messages?.Any() == true)
+
+		if (!_hasScrolled && _conversationDto?.Messages?.Any() == true)
 		{
 			_hasScrolled = true;
 			await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
 		}
 	}
 
-	private async Task AddMessageAsync(MessageDto newMsg)
+	private async Task AddMessageAsync(MessageDto newMessage)
 	{
 		if (_conversationDto.Messages.Count == 0 || _conversationDto.Messages == null)
 			_conversationDto.Messages = new List<MessageDto>();
 
-		_conversationDto.Messages.Add(newMsg);
+		_conversationDto.Messages.Add(newMessage);
 
 		StateHasChanged();
+
+		await Task.Delay(100);
 		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
+
 	}
 
-	// private void ShowToastMessage(ToastType toastType, MessageDto messageDto)
-	// {
-	// 	_toastMessages.Add(CreateToastMessage(toastType, messageDto));
-	// }
-
-
-	// private ToastMessage CreateToastMessage(ToastType toastType, MessageDto messageDto)
-	// {
-	// 	return new ToastMessage
-	// 		{
-	// 			Type = toastType,
-	// 			Title = $"{messageDto.SenderUserName} Size Mesaj Gönderdi",
-	// 			HelpText = $"{DateTime.Now.ToString("HH:mm")}",
-	// 			Message = messageDto.Content.Length > 50
-	// 					? $"{messageDto.Content.Substring(0, 50)}..."
-	// 						: $"{messageDto.Content}...",
-	// 				Content = @<div><button class="btn btn-sm blue mt-2 text-white">Mesajı Göster</button></div>
-	// 		};
-	// }
-
+	public async ValueTask DisposeAsync()
+	{
+		if (_hubConnection != null)
+		{
+			await _hubConnection.StopAsync();
+			await _hubConnection.DisposeAsync();
+		}
+	}
 }

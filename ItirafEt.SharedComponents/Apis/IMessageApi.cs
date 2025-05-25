@@ -26,7 +26,9 @@ namespace ItirafEt.SharedComponents.Apis
         [Get("/api/message/GetUserConversaions/")]
         Task<ApiResponses<List<ConversationDto>>> GetUserConversaionsAsync(Guid userId);
 
-
+        [Headers("Authorization: Bearer")]
+        [Post("/api/message/readMessage/")]
+        Task<ApiResponses> ReadMessageAsync(Guid ConversationId, MessageDto messageDto);
     }
 }
 

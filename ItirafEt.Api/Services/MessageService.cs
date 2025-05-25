@@ -37,7 +37,7 @@ namespace ItirafEt.Api.Services
             if (conversations.Count == 0)
                 return ApiResponses<List<ConversationDto>>.Fail("Mesajlaşma Bulunamadı.");
 
-            var returnConversationsDto  = new List<ConversationDto>();
+            var returnConversationsDto = new List<ConversationDto>();
             foreach (var conversation in conversations)
             {
                 var responderUserId = conversation.InitiatorId == userId ? conversation.ResponderId : conversation.InitiatorId;
@@ -170,6 +170,7 @@ namespace ItirafEt.Api.Services
 
             var returnMessageDto = new MessageDto
             {
+                Id = message.Id,
                 Content = message.Content,
                 CreatedDate = message.SentDate,
                 SenderId = message.SenderId,
@@ -177,10 +178,44 @@ namespace ItirafEt.Api.Services
                 ConversationId = message.ConversationId,
             };
 
-            await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto); 
-            await _hubService.SendMessageNotificationAsync(conversationId, returnMessageDto); 
+            await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);
+            await _hubService.SendMessageNotificationAsync(conversationId, returnMessageDto);
 
             return ApiResponses<MessageDto>.Success(returnMessageDto);
+
+        }
+
+        public async Task<ApiResponses> ReadMessageAsync(Guid conversationId, MessageDto messageDto)
+        {
+            var conversation = await _context.Conversations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
+            if (conversation == null)
+                return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
+            if (conversation.InitiatorId != messageDto.SenderId && conversation.ResponderId != messageDto.SenderId)
+                return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
+
+            var message = await _context.Messages
+                .Where(m => m.Id == messageDto.Id)
+                .FirstOrDefaultAsync();
+
+            if (message == null)
+                return ApiResponses.Fail("Mesaj Bulunamadı.");
+
+            if (message.IsRead)
+                return ApiResponses.Fail("Mesaj zaten okunmuş.");
+
+
+            message.ReadDate = DateTime.Now;
+            message.IsRead = true;
+            _context.Update(message);
+            await _context.SaveChangesAsync();
+
+            messageDto.ReadDate = message.ReadDate;
+            messageDto.IsRead = message.IsRead;
+            await _hubService.ReadMessageAsync(conversationId, messageDto);
+
+            return ApiResponses.Success();
 
         }
 
@@ -253,7 +288,7 @@ namespace ItirafEt.Api.Services
                 .AsNoTracking()
                 .Where(m => m.ConversationId == conversation.ConversationId)
                 .OrderByDescending(m => m.SentDate) // son mesaj üstte
-                .Select(m=> new MessageDto
+                .Select(m => new MessageDto
                 {
                     Id = m.Id,
                     ConversationId = m.ConversationId,

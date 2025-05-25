@@ -42,6 +42,15 @@ namespace ItirafEt.Api.EndPoints
                 return Results.Ok(result);
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
+
+            app.MapPost("/api/message/readMessage", async (Guid conversationId, MessageDto messageDto, MessageService messageService) =>
+            {
+                return Results.Ok(await messageService.ReadMessageAsync(conversationId, messageDto));
+
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
+
             return app;
         }
 

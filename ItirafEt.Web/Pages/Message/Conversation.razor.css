@@ -70,6 +70,15 @@
         transform: scale(1.15);
     }
 
+.read-status {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.bi-check2, .bi-check2-all {
+    font-size: 0.9em;
+}
+
 /* Online Status */
 /*.online-status {
     width: 10px;
