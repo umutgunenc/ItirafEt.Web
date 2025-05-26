@@ -1,8 +1,11 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Diagnostics;
+using System.Linq;
+using System.Net.NetworkInformation;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
+using ItirafEt.Shared.ClientServices.State;
 using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
@@ -225,8 +228,7 @@ namespace ItirafEt.Api.Services
             {
                 ConversationId = conversation.ConversationId,
                 SenderUserId = senderUserId,
-                ResponderUser = await GetResponderUserAsync(responderId),
-                Messages = await GetConversationMessagesAsync(conversation)
+                ResponderUser = await GetResponderUserAsync(responderId)
             };
         }
 
@@ -237,7 +239,7 @@ namespace ItirafEt.Api.Services
                 ConversationId = conversation.ConversationId,
                 SenderUserId = senderUserId,
                 ResponderUser = await GetResponderUserAsync(responderId),
-                Messages = await GetConversationLastMessagesAsync(conversation)
+                LastMessage = await GetConversationLastMessagesAsync(conversation)
             };
         }
 
@@ -282,12 +284,12 @@ namespace ItirafEt.Api.Services
             return messages;
         }
 
-        private async Task<List<MessageDto>> GetConversationLastMessagesAsync(Conversation conversation)
+        private async Task<MessageDto?> GetConversationLastMessagesAsync(Conversation conversation)
         {
             return await _context.Messages
                 .AsNoTracking()
                 .Where(m => m.ConversationId == conversation.ConversationId)
-                .OrderByDescending(m => m.SentDate) // son mesaj üstte
+                .OrderByDescending(m => m.SentDate) 
                 .Select(m => new MessageDto
                 {
                     Id = m.Id,
@@ -303,8 +305,55 @@ namespace ItirafEt.Api.Services
                     SenderIpAddress = m.IpAddress,
                     SenderDeviceInfo = m.DeviceInfo
                 })
-                .Take(1)
+                .FirstOrDefaultAsync();
+                
+        }
+
+        public async Task<ApiResponses<InfiniteScrollState<MessageDto>>> GetConversationMessagesAsync(ConversationDto conversation, DateTime? nextBefore, int take)
+        {
+            var isThereConversation = await _context.Conversations
+                .AsNoTracking()
+                .AnyAsync(c => c.ConversationId == conversation.ConversationId);
+
+
+            if (!isThereConversation)
+                return ApiResponses<InfiniteScrollState<MessageDto>>.Fail("Mesajlaşma Bulunamadı.");
+
+            var messages = await _context.Messages
+                .AsNoTracking()
+                .Where(m => m.ConversationId == conversation.ConversationId && m.SentDate < nextBefore.Value)
+                .OrderByDescending(m => m.SentDate)
+                .Take(take)
+                .Select(m => new MessageDto
+                {
+                    Id = m.Id,
+                    ConversationId = m.ConversationId,
+                    Content = m.Content,
+                    CreatedDate = m.SentDate,
+                    ReadDate = m.ReadDate,
+                    SenderId = m.SenderId,
+                    ReceiverId = conversation.ResponderUser.UserId,
+                    IsRead = m.IsRead,
+                    IsDeletedBySender = m.IsVisibleToInitiatorUser,
+                    IsDeletedByReceiver = m.IsVisibleToResponderUser,
+
+                })
                 .ToListAsync();
+
+
+            //messages.Reverse(); 
+
+            var hasMore = messages.Count == take;
+            var nextBeforeDateTime = hasMore ? messages.Last().CreatedDate : (DateTime?)null;
+            var scrollStateMessageList = new InfiniteScrollState<MessageDto>
+            {
+                Items = messages,
+                HasMore = hasMore,
+                NextBefore = nextBeforeDateTime
+            };
+
+            return ApiResponses<InfiniteScrollState<MessageDto>>.Success(scrollStateMessageList);
+
         }
 
     }

@@ -15,9 +15,21 @@
 window.chatScrollHelper = {
 
     scrollToBottom: function (element) {
-        if (element) {
-            element.scrollTop = element.scrollHeight;
-        }
+        return new Promise((resolve, reject) => {
+            try {
+                if (element) {
+                    element.scrollTop = element.scrollHeight;
+
+                    setTimeout(() => {
+                        resolve();
+                    }, 1000);
+                } else {
+                    resolve();
+                }
+            } catch (e) {
+                reject(e);
+            }
+        });
     },
 
 
@@ -33,5 +45,18 @@ window.chatScrollHelper = {
                 element.scrollTop = element.scrollHeight;
             });
         }
-    }
+    },
+
+
+    setupInfiniteScroll: function (elementId, dotNetObjRef, threshold) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        el.addEventListener("scroll", () => {
+            const distanceFromTop = el.scrollHeight + el.scrollTop - el.clientHeight;
+            if (distanceFromTop <= threshold) {
+                dotNetObjRef.invokeMethodAsync("OnScrollToTopAsync");
+            }
+        });
+    },
+
 };

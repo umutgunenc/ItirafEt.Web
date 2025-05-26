@@ -13,7 +13,7 @@ namespace ItirafEt.Api.EndPoints
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             app.MapPost("/api/message/GetConversation", async (Guid conversationId, Guid senderUserId, MessageService messageService) =>
-                Results.Ok(await messageService.GetConversationAsync(conversationId,senderUserId)))
+                Results.Ok(await messageService.GetConversationAsync(conversationId, senderUserId)))
                   .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
 
@@ -32,7 +32,7 @@ namespace ItirafEt.Api.EndPoints
             app.MapGet("/api/message/CanUserReadConversation", async (Guid conversationId, Guid userId, MessageService messageService) =>
             {
                 var result = await messageService.CanUserReadConversationAsync(conversationId, userId);
-                    return Results.Ok(result);
+                return Results.Ok(result);
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
@@ -49,6 +49,11 @@ namespace ItirafEt.Api.EndPoints
                 return Results.Ok(await messageService.ReadMessageAsync(conversationId, messageDto));
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
+            app.MapPost("/api/message/getConversationMessages", async (ConversationDto conversation, DateTime? nextBefore, int take, MessageService messageService) =>
+                Results.Ok(await messageService.GetConversationMessagesAsync(conversation, nextBefore, take)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
 
 
             return app;

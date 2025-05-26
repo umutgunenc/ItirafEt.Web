@@ -11,7 +11,7 @@ namespace ItirafEt.Shared.DTOs
         public Guid ConversationId { get; set; }
         public Guid SenderUserId { get; set; }
         public UserInfoDto ResponderUser { get; set; }
-        public List<MessageDto> Messages { get; set; }
+        public MessageDto? LastMessage { get; set; }
 
     }
 }

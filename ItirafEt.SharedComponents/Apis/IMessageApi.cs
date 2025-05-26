@@ -1,4 +1,5 @@
-﻿using ItirafEt.Shared.DTOs;
+﻿using ItirafEt.Shared.ClientServices.State;
+using ItirafEt.Shared.DTOs;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis
@@ -29,6 +30,10 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/message/readMessage/")]
         Task<ApiResponses> ReadMessageAsync(Guid ConversationId, MessageDto messageDto);
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/message/getConversationMessages/")]
+        Task<ApiResponses<InfiniteScrollState<MessageDto>>> GetConversationMessagesAsync(ConversationDto conversation, DateTime? nextBefore, int take);
     }
 }
 
