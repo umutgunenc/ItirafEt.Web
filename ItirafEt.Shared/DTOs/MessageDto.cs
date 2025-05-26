@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace ItirafEt.Shared.DTOs
 {
@@ -16,14 +17,13 @@ namespace ItirafEt.Shared.DTOs
         public Guid SenderId { get; set; }
         public Guid ReceiverId { get; set; }
         public string SenderUserName { get; set; }
-        public string ReceiverUserName { get; set; }
-        public string? SenderProfileImageUrl { get; set; }
-        public string? ReceiverProfileImageUrl { get; set; }
         public bool IsRead { get; set; }
         public bool IsDeletedBySender { get; set; }
         public bool IsDeletedByReceiver { get; set; }
         public string SenderIpAddress { get; set; }
         public string SenderDeviceInfo { get; set; }
+        public string? PhotoUrl { get; set; }
+        public IFormFile? Photo { get; set; }
 
     }
 }

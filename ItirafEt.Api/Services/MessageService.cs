@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Linq;
+using System.Net.Mail;
 using System.Net.NetworkInformation;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
@@ -153,6 +154,30 @@ namespace ItirafEt.Api.Services
             if (!((conversation.InitiatorId == messageDto.SenderId && conversation.ResponderId == messageDto.ReceiverId) || (conversation.InitiatorId == messageDto.ReceiverId && conversation.ResponderId == messageDto.SenderId)))
                 return ApiResponses<MessageDto>.Fail("Mesaj gönderilemedi.");
 
+
+            if (messageDto.Photo != null)
+            {
+                List<string> allowedExtendions = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
+
+                var extension = Path.GetExtension(messageDto.Photo.FileName).ToLowerInvariant();
+
+                if (!allowedExtendions.Contains(extension))
+                    return ApiResponses<MessageDto>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
+
+
+                if (messageDto.Photo.Length > 10 * 1024 * 1024) // 5 MB limit
+                    return ApiResponses<MessageDto>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
+
+
+                var fileName = $"{Guid.NewGuid()}_{messageDto.Photo.FileName}";
+                var filePath = Path.Combine("wwwroot", "uploads", "messages", fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await messageDto.Photo.CopyToAsync(stream);
+                }
+                messageDto.PhotoUrl = $"/uploads/messages/{fileName}";
+            }
+
             var message = new Message
             {
                 Content = messageDto.Content,
@@ -164,7 +189,8 @@ namespace ItirafEt.Api.Services
                 IsVisibleToResponderUser = true,
                 ReadDate = null,
                 IpAddress = messageDto.SenderIpAddress,
-                DeviceInfo = messageDto.SenderDeviceInfo
+                DeviceInfo = messageDto.SenderDeviceInfo,
+                PhotoUrl = messageDto.PhotoUrl
 
             };
             await _context.Messages.AddAsync(message);
@@ -179,6 +205,7 @@ namespace ItirafEt.Api.Services
                 SenderId = message.SenderId,
                 SenderUserName = senderUser.UserName,
                 ConversationId = message.ConversationId,
+                PhotoUrl = message.PhotoUrl,
             };
 
             await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);
@@ -289,7 +316,7 @@ namespace ItirafEt.Api.Services
             return await _context.Messages
                 .AsNoTracking()
                 .Where(m => m.ConversationId == conversation.ConversationId)
-                .OrderByDescending(m => m.SentDate) 
+                .OrderByDescending(m => m.SentDate)
                 .Select(m => new MessageDto
                 {
                     Id = m.Id,
@@ -306,7 +333,7 @@ namespace ItirafEt.Api.Services
                     SenderDeviceInfo = m.DeviceInfo
                 })
                 .FirstOrDefaultAsync();
-                
+
         }
 
         public async Task<ApiResponses<InfiniteScrollState<MessageDto>>> GetConversationMessagesAsync(ConversationDto conversation, DateTime? nextBefore, int take)
@@ -336,6 +363,7 @@ namespace ItirafEt.Api.Services
                     IsRead = m.IsRead,
                     IsDeletedBySender = m.IsVisibleToInitiatorUser,
                     IsDeletedByReceiver = m.IsVisibleToResponderUser,
+                    PhotoUrl = m.PhotoUrl,
 
                 })
                 .ToListAsync();

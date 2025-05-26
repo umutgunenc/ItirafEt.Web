@@ -10,7 +10,7 @@
 @if (_isLoading)
 {
 	<div class="d-flex justify-content-center align-items-center"
-	style="height:75vh">
+		 style="height:75vh">
 		<div class="spinner-border text-primary" role="status">
 			<span class="visually-hidden">Loading...</span>
 		</div>
@@ -32,11 +32,11 @@ else
 		<div class="chat-header d-flex align-items-center">
 			<div class="position-relative me-3">
 				<img src="https://cdn05.zipify.com/bWSYBuu1Sq051fHeVVXWQ0o5Oak=/fit-in/3840x0/8b6f8bed855a41dfb6f5d7fe89d2d86b/pot013-blog-hero-horizontal-51.jpeg"
-				class="profile-photo rounded-circle"
-				width="56"
-				height="56"
-				style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-				alt="profile">
+					 class="profile-photo rounded-circle"
+					 width="56"
+					 height="56"
+					 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+					 alt="profile">
 			</div>
 			<div>
 				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto.ResponderUser.UserName</h5>
@@ -88,20 +88,99 @@ else
 
 
 		<!-- Mesaj Gönderme Alanı -->
-		<div class="message-input">
+		@* 		<div class="message-input">
 			<div class="input-group">
-				<input type="text" class="form-control rounded-pill" placeholder="Bir mesaj yazın..." @bind-value="_messageDto.Content">
-				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="SendPhotoAsync">
+				<input type="text" class="form-control rounded-pill" placeholder="Bir mesaj yazın..." @bind-value="_messageDto.Content" @onkeydown="HandleKeyPress" @bind-value:event="oninput">
+				<input type="file" class="form-control" id="uploadPhoto" display="none" >
+
+				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="() => SendPhotoAsync(_messageDto)">
 					<i class="bi bi-image text-white"></i>
 				</button>
-				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="()=>SendMessageAsync(_messageDto)">
-					@* <i class="fas fa-paper-plane"></i> *@
+				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="()=>SendMessageAsync(_messageDto)" >
 					<i class="bi bi-send-check text-white"></i>
 				</button>
 			</div>
+		</div> *@
+		<div class="message-input">
+			<div class="input-group align-items-center">
+				<!-- Mesaj Metni -->
+				<input type="text"
+					   class="form-control rounded-pill"
+					   placeholder="Bir mesaj yazın..."
+					   @bind="_messageDto.Content"
+					   @bind:event="oninput"
+					   @onkeydown="HandleKeyPress" />
+
+				<!-- Gizli file input (sadece .jpg/.jpeg/.png/.gif izinli) -->
+				<InputFile id="uploadPhoto"
+						   accept=".jpg,.jpeg,.png,.gif"
+						   style="display: none;"
+						   OnChange="OnFileSelected" />
+
+				<!-- Fotoğraf Butonu: label for uploadPhoto olduğu için tıklayınca file dialog açılır -->
+				<label for="uploadPhoto"
+					   class="btn blue rounded-circle ms-3 align-items-center justify-content-center"
+					   style="cursor: pointer;">
+					<i class="bi bi-image text-white"></i>
+				</label>
+
+				<!-- Gönder Butonu -->
+				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center"
+						@onclick="() => SendMessageAsync(_messageDto)">
+					<i class="bi bi-send-check text-white"></i>
+				</button>
+			</div>
+			@if (_messageErrorMessage != null)
+			{
+				<div class="text-danger mx-2 my-2">
+					@_messageErrorMessage
+				</div>
+			}
+			@if (_messageSuccesMessage != null)
+			{
+				<div class="text-succes mx-2 my-2">
+					@_messageSuccesMessage
+				</div>
+			}
 		</div>
 	</div>
+
 }
+
+<ModalComponent @ref="_sendPhoto" Title="Fotoğraf Gönder" TitleClass="mx-auto" ChildClass="py-0 mx-auto h-100 d-inline-block mb-0">
+	<ChildContent>
+		<div class="bg-light-subtle">
+			<img src="@_previewImageUrl"
+				 class="b-3"
+				 style="
+				 max-height: 60vh;
+				 max-width: 100%;
+				 height: auto;
+				 width: -webkit-fill-available;
+				 object-fit: contain;">
+		</div>
+		<div class="message-input bg-light-subtle px-1">
+			<div class="input-group align-items-center">
+				<input type="text"
+					   class="form-control rounded-pill"
+					   placeholder="Bir mesaj yazın..."
+					   @bind="_messageDto.Content"
+					   @bind:event="oninput"
+					   @onkeydown="HandleKeyPress" />
+
+				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center"
+						@onclick="() => SendMessageAsync(_messageDto)">
+					<i class="bi bi-send-check text-white"></i>
+				</button>
+
+			</div>
+		</div>
+	</ChildContent>
+	<FooterContent>
+		<button class="btn blue col text-white fw-medium" @onclick="_sendPhoto.Close">Kapat</button>
+	</FooterContent>
+</ModalComponent>
+
 
 @code {
 
@@ -109,12 +188,18 @@ else
 	public Guid ConversationId { get; set; }
 	private ElementReference _messagesDiv;
 	private DotNetObjectReference<Conversation>? _dotNetRef;
+	private IBrowserFile? _selectedFile;  // InputFile için
+	private string? _previewImageUrl;
+
+	private ModalComponent _sendPhoto = new ModalComponent();
 
 	private ConversationDto _conversationDto;
 	private InfiniteScrollState<MessageDto> _conversationMessages = new();
 	private MessageDto _messageDto = new();
 	private HubConnection? _hubConnection;
 	private string? _errorMessage;
+	private string? _messageErrorMessage;
+	private string? _messageSuccesMessage;
 	private bool _isError = false;
 	private bool _isLoading = true;
 	private bool _canUserReadMessage = true;
@@ -125,6 +210,7 @@ else
 
 	private double _oldScrollHeight;
 	private bool _shouldPreserveScroll;
+
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -225,12 +311,53 @@ else
 		}
 	}
 
+	private async Task HandleKeyPress(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter")
+			await SendMessageAsync(_messageDto);
+	}
+
+	private async Task OnFileSelected(InputFileChangeEventArgs e)
+	{
+
+		_selectedFile = e.File;
+
+		if (_selectedFile != null)
+		{
+			_messageErrorMessage = null;
+			_messageSuccesMessage = null;
+
+			if (_selectedFile.Size > 10 * 1024 * 1024)
+				_messageErrorMessage = "Dosya boyutu 10 MB'dan büyük olamaz.";
+			else if (!IsValidImageType(_selectedFile.ContentType))
+				_messageErrorMessage = "Sadece .jpg, .jpeg, .png ve .gif dosyaları yüklenebilir.";
+			else
+			{
+				using var ms = new MemoryStream();
+				await _selectedFile.OpenReadStream(10 * 1024 * 1024).CopyToAsync(ms);
+				var bytes = ms.ToArray();
+				_previewImageUrl = $"data:{_selectedFile.ContentType};base64,{Convert.ToBase64String(bytes)}";
+				_sendPhoto.Open();
+			}
+
+			StateHasChanged();
+		}
+
+	}
+
+	private bool IsValidImageType(string contentType)
+	{
+		var validTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+
+		return validTypes.Contains(contentType.ToLowerInvariant());
+	}
+
 	private async Task StartHubConnection()
 	{
 		_hubConnection = new HubConnectionBuilder()
-			.WithUrl("https://localhost:7292/messagehub")
-			.WithAutomaticReconnect()
-			.Build();
+		.WithUrl("https://localhost:7292/messagehub")
+		.WithAutomaticReconnect()
+		.Build();
 
 		_hubConnection.On<Guid, MessageDto>("SendMessageAsync", async (conversationId, messageDto) =>
 		{
@@ -255,7 +382,7 @@ else
 		await _hubConnection.SendAsync("JoinMessageGroup", ConversationId);
 	}
 
-	private async Task SendPhotoAsync()
+	private async Task SendPhotoAsync(MessageDto messageDto)
 	{
 		// Fotoğraf gönderme işlemi
 		await Task.Delay(1000);
@@ -349,7 +476,7 @@ else
 		if (_conversationMessages?.Items?.Count == 0 || _conversationMessages == null)
 			_conversationMessages = new InfiniteScrollState<MessageDto>();
 
-		_conversationMessages.Items.Add(newMessage);
+		_conversationMessages.Items.Insert(0, newMessage);
 
 		StateHasChanged();
 
@@ -412,4 +539,4 @@ else
 		}
 
 	}
-}
+	}

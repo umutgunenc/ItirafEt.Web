@@ -7,7 +7,6 @@ namespace ItirafEt.Api.Data.Entities
     {
         public Message()
         {
-            Attachments = new HashSet<MessageAttachment>();
             MessageReactions = new HashSet<MessageReaction>();
             MessageReports = new HashSet<MessageReport>();
 
@@ -46,7 +45,9 @@ namespace ItirafEt.Api.Data.Entities
 
         [ForeignKey(nameof(ConversationId))]
         public virtual Conversation Conversation { get; set; }
-        public virtual ICollection<MessageAttachment> Attachments { get; set; }
+
+        public string? PhotoUrl { get; set; }
+
         public virtual ICollection<MessageReaction> MessageReactions { get; set; }
         public virtual ICollection<MessageReport> MessageReports { get; set; }
 

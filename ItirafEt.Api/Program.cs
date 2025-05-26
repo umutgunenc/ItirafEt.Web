@@ -86,6 +86,8 @@ builder.Services.AddTransient<MessageHubService>();
 
 var app = builder.Build();
 
+app.UseStaticFiles();  
+
 #if DEBUG
 ApplyDbMigrations(app.Services);
 #endif
