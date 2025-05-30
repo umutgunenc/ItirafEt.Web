@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
+using System.Security.Claims;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
@@ -9,7 +10,9 @@ using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.ClientServices.State;
 using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Services
@@ -17,7 +20,9 @@ namespace ItirafEt.Api.Services
     public class MessageService
     {
         private readonly dbContext _context;
-        private readonly MessageHubService _hubService;
+        private readonly MessageHubService _hubService; 
+        private readonly IWebHostEnvironment _env;
+
         private readonly List<string> _allowedRoles = new()
         {
             UserRoleEnum.SuperAdmin.ToString(),
@@ -25,10 +30,11 @@ namespace ItirafEt.Api.Services
             UserRoleEnum.Moderator.ToString(),
             UserRoleEnum.SuperUser.ToString()
         };
-        public MessageService(dbContext context, MessageHubService hubService)
+        public MessageService(dbContext context, MessageHubService hubService, IWebHostEnvironment env)
         {
             _context = context;
             _hubService = hubService;
+            _env = env;
         }
 
         public async Task<ApiResponses<List<ConversationDto>>> GetUserConversaionsAsync(Guid userId)
@@ -261,7 +267,91 @@ namespace ItirafEt.Api.Services
 
         }
 
+        //public async Task<ApiResponses> GetMessagePhotoAsync(MessageDto dto,string fileName)
+        //{
+        //    if (string.IsNullOrEmpty(dto.PhotoUrl))
+        //        return ApiResponses.Fail("Fotoğraf URL'si boş veya geçersiz.");
 
+        //    if (dto.ConversationId == Guid.Empty)
+        //        return ApiResponses.Fail("Geçersiz Mesajlaşma ID'si.");
+
+        //    var conversation = await _context.Conversations
+        //        .AsNoTracking()
+        //        .FirstOrDefaultAsync(c => c.ConversationId == dto.ConversationId);
+
+        //    if (conversation == null)
+        //        return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
+
+        //    if (conversation.InitiatorId != dto.SenderId && conversation.ResponderId != dto.ReceiverId)
+        //        return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
+
+        //    var message = await _context.Messages
+        //        .AsNoTracking()
+        //        .FirstOrDefaultAsync(m => m.PhotoUrl.Contains(fileName));
+
+        //    if (message == null)
+        //        return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
+
+        //    var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", filename);
+
+        //    if (!System.IO.File.Exists(path))
+        //        return NotFound();
+
+        //    var mime = "image/jpeg"; // MIME türünü uzantıya göre belirleyebilirsin
+        //    var bytes = await System.IO.File.ReadAllBytesAsync(path);
+        //    return File(bytes, mime);
+
+
+        //}
+
+
+        public async Task<IResult> GetMessagePhotoAsync(string fileName, ClaimsPrincipal user)
+        {
+            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdString, out var userId))
+                return Results.Unauthorized();
+
+            var message = await _context.Messages
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.PhotoUrl.EndsWith(fileName));
+
+            if (message == null)
+                return Results.NotFound();
+
+            var conversation = await _context.Conversations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.ConversationId == message.ConversationId);
+
+            if (conversation == null)
+                return Results.NotFound();
+
+            if (conversation.InitiatorId != userId && conversation.ResponderId != userId)
+                return Results.Forbid();
+
+            var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", conversation.ConversationId.ToString(),message.PhotoUrl);
+
+            if (!System.IO.File.Exists(path))
+                return Results.NotFound();
+
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(fileName, out string? mime))
+                mime = "application/octet-stream";
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(path);
+            return Results.File(bytes, mime);
+        }
+
+        private static string GetMimeType(string fileName)
+        {
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            return ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                _ => "application/octet-stream"
+            };
+        }
         public async Task<ApiResponses> ReadMessageAsync(Guid conversationId, MessageDto messageDto)
         {
             var conversation = await _context.Conversations

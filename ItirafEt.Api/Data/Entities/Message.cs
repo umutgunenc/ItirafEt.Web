@@ -9,7 +9,6 @@ namespace ItirafEt.Api.Data.Entities
         {
             MessageReactions = new HashSet<MessageReaction>();
             MessageReports = new HashSet<MessageReport>();
-
         }
 
         [Key]
@@ -20,12 +19,11 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public Guid SenderId { get; set; }
 
-        [Required]
         [MaxLength(45)]
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
 
         [MaxLength(512)]
-        public string DeviceInfo { get; set; }
+        public string? DeviceInfo { get; set; }
 
         [Required]
         public DateTime SentDate { get; set; }

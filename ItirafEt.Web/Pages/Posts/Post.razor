@@ -535,12 +535,12 @@
 	private CommentsDto _commentModel = new();
 	private CommentsDto _replyModel = new();
 	private List<CommentsDto>? _comments = new();
-	private List<ReactionDto>? _reactions = new();
+	private List<ReactionDto> _reactions = new();
 	private List<PostViewersDto>? _viewers = new();
-	private ConversationDto _conversationDto = new();
-	private HubConnection _reactionHubConnection;
-	private HubConnection _commentHubConnection;
-	private HubConnection _postViewHubConnection;
+	private ConversationDto? _conversationDto = new();
+	private HubConnection? _reactionHubConnection;
+	private HubConnection? _commentHubConnection;
+	private HubConnection? _postViewHubConnection;
 	private ModalComponent? _likesModel;
 	private ModalComponent? _dislikeModel;
 	private ModalComponent? _viewerModel;
@@ -569,13 +569,9 @@
 	private string? _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
-	private string? _viewersErrorMessage;
 	private string? _replyText;
 	private string? _userRoleId = null;
 	private string? _sendMessageError;
-
-
-
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -1026,7 +1022,7 @@
 		_isAlreadyLiked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
 		_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 	}
-	private void UpdateReactions(ReactionDto? reaction, bool? isReactionUpdated)
+	private void UpdateReactions(ReactionDto reaction, bool? isReactionUpdated)
 	{
 		if (isReactionUpdated == true)
 		{

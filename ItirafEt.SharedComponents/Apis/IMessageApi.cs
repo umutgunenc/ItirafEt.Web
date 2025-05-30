@@ -39,6 +39,11 @@ namespace ItirafEt.SharedComponents.Apis
         Task<ApiResponses<List<ConversationDto>>> GetUserConversaionsAsync(Guid userId);
 
         [Headers("Authorization: Bearer")]
+        [Get("/api/message/photo/")]
+        Task<Stream> GetPhotoAsync([Query] string filename);
+
+
+        [Headers("Authorization: Bearer")]
         [Post("/api/message/readMessage/")]
         Task<ApiResponses> ReadMessageAsync(Guid ConversationId, MessageDto messageDto);
 

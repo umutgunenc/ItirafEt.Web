@@ -55,14 +55,23 @@ else
 				var fullClass = $"{baseClass} chat-message d-flex flex-column";
 
 				<div id="message-@message.Id" class="d-flex flex-column @fullClass">
-					@if(!string.IsNullOrEmpty(message.PhotoUrl)){
+					@if (!string.IsNullOrEmpty(message.PhotoUrl))
+					{
 						<div class="message-photo mb-2">
-							<img src="@($"{ApiBaseUrl.BaseUrl}{message.PhotoUrl}")"
-								 class="rounded"
-								 style="max-width: 100%; object-fit: cover;">
+							@if (_photoCache.TryGetValue(message.PhotoUrl, out var base64Data))
+							{
+								<img src="@base64Data"
+									 class="rounded"
+									 style="max-width: 100%; object-fit: cover; pointer-events: none;" />
+							}
+							else
+							{
+
+								<span>Default Foto Error Ekle</span>
+							}
 						</div>
 					}
-					
+
 					<div class="message-content">@message.Content</div>
 
 					<div class="message-meta d-flex justify-content-between align-items-end mt-1">
@@ -95,21 +104,6 @@ else
 			}
 		</div>
 
-
-		<!-- Mesaj Gönderme Alanı -->
-		@* 		<div class="message-input">
-			<div class="input-group">
-				<input type="text" class="form-control rounded-pill" placeholder="Bir mesaj yazın..." @bind-value="_messageDto.Content" @onkeydown="HandleKeyPress" @bind-value:event="oninput">
-				<input type="file" class="form-control" id="uploadPhoto" display="none" >
-
-				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="() => SendPhotoAsync(_messageDto)">
-					<i class="bi bi-image text-white"></i>
-				</button>
-				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center" @onclick="()=>SendMessageAsync(_messageDto)" >
-					<i class="bi bi-send-check text-white"></i>
-				</button>
-			</div>
-		</div> *@
 		<div class="message-input">
 			<div class="input-group align-items-center">
 				<!-- Mesaj Metni -->
@@ -197,13 +191,12 @@ else
 	public Guid ConversationId { get; set; }
 	private ElementReference _messagesDiv;
 	private DotNetObjectReference<Conversation>? _dotNetRef;
-	private IBrowserFile? _selectedFile;  // InputFile için
+	private IBrowserFile? _selectedFile;
 	private string? _previewImageUrl;
-
+	private Dictionary<string, string> _photoCache = new();
 	private ModalComponent _sendPhotoModal = new ModalComponent();
-
-	private ConversationDto _conversationDto;
-	private InfiniteScrollState<MessageDto> _conversationMessages = new();
+	private ConversationDto? _conversationDto;
+	private InfiniteScrollState<MessageDto>? _conversationMessages = new();
 	private CreateMessageDto _messageDto = new();
 	private HubConnection? _hubConnection;
 	private string? _errorMessage;
@@ -213,13 +206,9 @@ else
 	private bool _isLoading = true;
 	private bool _canUserReadMessage = true;
 	private bool _hasScrolled = false;
+	private bool _shouldPreserveScroll = false;
 	private bool _isApiBusy = false;
 	private Guid _currentUserId;
-	private Guid _reciverUserId;
-
-	private double _oldScrollHeight;
-	private bool _shouldPreserveScroll;
-
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -235,7 +224,50 @@ else
 		}
 
 	}
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (_conversationMessages?.Items?.Any() == true)
+		{
+			if (!_hasScrolled)
+			{
+				_hasScrolled = true;
+				await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
+			}
 
+			_dotNetRef = DotNetObjectReference.Create(this);
+			await JSRuntime.InvokeVoidAsync("chatScrollHelper.setupInfiniteScroll", "messageDiv", _dotNetRef, 150);
+		}
+
+	}
+	private async Task<string> GetMessagePhotoAsBase64Async(string fileName)
+	{
+		try
+		{
+			var stream = await MessageApi.GetPhotoAsync(fileName);
+
+			if (stream == null)
+				return string.Empty;
+
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream);
+			var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+			var extension = Path.GetExtension(fileName).ToLowerInvariant();
+			var mime = extension switch
+			{
+				".jpg" or ".jpeg" => "image/jpeg",
+				".png" => "image/png",
+				".gif" => "image/gif",
+				_ => "application/octet-stream"
+			};
+
+			return $"data:{mime};base64,{base64}";
+		}
+		catch
+		{
+			return string.Empty;
+		}
+	}
 	private async Task GetConversationMessagesAsync()
 	{
 		try
@@ -250,7 +282,12 @@ else
 			else
 			{
 				_conversationMessages = response.Data;
+				foreach (var message in _conversationMessages.Items.Where(m => !string.IsNullOrEmpty(m.PhotoUrl)))
+				{
+					await GetMessagePhotoAsync(message);
+				}
 				_isLoading = false;
+
 			}
 
 		}
@@ -258,6 +295,17 @@ else
 		{
 
 			throw;
+		}
+	}
+	private async Task GetMessagePhotoAsync(MessageDto message)
+	{
+		if (string.IsNullOrEmpty(message.PhotoUrl) || _photoCache.ContainsKey(message.PhotoUrl))
+			return;
+		var base64 = await GetMessagePhotoAsBase64Async(message.PhotoUrl);
+		if (!string.IsNullOrEmpty(base64))
+		{
+			_photoCache[message.PhotoUrl] = base64;
+			await InvokeAsync(StateHasChanged);
 		}
 	}
 	private async Task ReadAllMessageAsync()
@@ -292,7 +340,6 @@ else
 			_isApiBusy = false;
 		}
 	}
-
 	private async Task SendMessageAsync(CreateMessageDto messageDto)
 	{
 		if (string.IsNullOrWhiteSpace(messageDto.Content))
@@ -363,7 +410,6 @@ else
 		if (e.Key == "Enter")
 			await SendMessageAsync(_messageDto);
 	}
-
 	private async Task OnFileSelected(InputFileChangeEventArgs e)
 	{
 
@@ -391,14 +437,6 @@ else
 		}
 
 	}
-
-	private bool IsValidImageType(string contentType)
-	{
-		var validTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
-
-		return validTypes.Contains(contentType.ToLowerInvariant());
-	}
-
 	private async Task StartHubConnection()
 	{
 		_hubConnection = new HubConnectionBuilder()
@@ -428,13 +466,11 @@ else
 		await _hubConnection.StartAsync();
 		await _hubConnection.SendAsync("JoinMessageGroup", ConversationId);
 	}
-
 	private async Task SendPhotoAsync(MessageDto messageDto)
 	{
 		// Fotoğraf gönderme işlemi
 		await Task.Delay(1000);
 	}
-
 	private async Task CanUserReadMessageAsync(Guid conversationId, Guid userId)
 	{
 		var result = await MessageApi.CanUserReadMessageApiAsync(conversationId, userId);
@@ -457,12 +493,6 @@ else
 		}
 
 	}
-
-	private void NavigateToUserProfile()
-	{
-		NavigationManager.NavigateTo($"/profile/{_conversationDto.ResponderUser.UserId}");
-	}
-
 	private async Task GetConversationAsync()
 	{
 		_errorMessage = null;
@@ -495,43 +525,19 @@ else
 			_errorMessage = ex.Message;
 		}
 	}
-
-	private void GetCurrentUserId()
-	{
-		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
-	}
-
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (_conversationMessages?.Items?.Any() == true)
-		{
-			if (!_hasScrolled)
-			{
-				_hasScrolled = true;
-				await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottom", _messagesDiv);
-			}
-
-			_dotNetRef = DotNetObjectReference.Create(this);
-			await JSRuntime.InvokeVoidAsync("chatScrollHelper.setupInfiniteScroll", "messageDiv", _dotNetRef, 150);
-		}
-
-	}
-
-
 	private async Task AddMessageAsync(MessageDto newMessage)
 	{
 		if (_conversationMessages?.Items?.Count == 0 || _conversationMessages == null)
 			_conversationMessages = new InfiniteScrollState<MessageDto>();
 
 		_conversationMessages.Items.Insert(0, newMessage);
-
+		await GetMessagePhotoAsync(newMessage);
 		StateHasChanged();
 
 		await Task.Delay(100);
 		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
 
 	}
-
 	public async ValueTask DisposeAsync()
 	{
 		_dotNetRef?.Dispose();
@@ -544,7 +550,6 @@ else
 	}
 
 	[JSInvokable("OnScrollToTopAsync")]
-
 	public async Task OnScrollToTopAsync()
 	{
 		if (_conversationMessages.HasMore && !_isApiBusy && _conversationMessages?.Items?.Count >= 50 && _conversationMessages.NextBefore.HasValue)
@@ -555,6 +560,10 @@ else
 				var response = await MessageApi.GetConversationMessagesAsync(_conversationDto, _conversationMessages.NextBefore, 50);
 				if (response.IsSuccess)
 				{
+					foreach (var message in response.Data.Items.Where(m => !string.IsNullOrEmpty(m.PhotoUrl)))
+					{
+						await GetMessagePhotoAsync(message);
+					}
 					_conversationMessages.Items.AddRange(response.Data.Items);
 					_conversationMessages.NextBefore = response.Data.NextBefore;
 					_shouldPreserveScroll = true;
@@ -585,5 +594,20 @@ else
 
 		}
 
+	}
+
+	private bool IsValidImageType(string contentType)
+	{
+		var validTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+
+		return validTypes.Contains(contentType.ToLowerInvariant());
+	}
+	private void GetCurrentUserId()
+	{
+		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
+	}
+	private void NavigateToUserProfile()
+	{
+		NavigationManager.NavigateTo($"/profile/{_conversationDto.ResponderUser.UserId}");
 	}
 }

@@ -12,7 +12,7 @@ namespace ItirafEt.Shared.DTOs
     {
         public int Id { get; set; }
         public Guid ConversationId { get; set; }
-        public string Content { get; set; }
+        public string? Content { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ReadDate { get; set; }
         public Guid SenderId { get; set; }
@@ -21,8 +21,8 @@ namespace ItirafEt.Shared.DTOs
         public bool IsRead { get; set; }
         public bool IsDeletedBySender { get; set; }
         public bool IsDeletedByReceiver { get; set; }
-        public string SenderIpAddress { get; set; }
-        public string SenderDeviceInfo { get; set; }
+        public string? SenderIpAddress { get; set; }
+        public string? SenderDeviceInfo { get; set; }
         public string? PhotoUrl { get; set; }
         public IFormFile? Photo { get; set; }
 

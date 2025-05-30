@@ -4,46 +4,7 @@
 
 
 <div class="page bg-secondary-subtle container-fluid p-0">
-	@* 	<div class="sidebar">
-		<NavMenu />
-	</div> *@
 	<NavMenu />
-
-	@* <div class="top-row px-4 bg-primary-subtle d-flex flex-wrap justify-content-end align-items-center">
-			<AuthorizeView Context="LoggedInContext">
-				<Authorized>
-
-					<div class="nav-item px-3">
-						<NavLink class="nav-link" href="">
-							<span class="text-black" aria-hidden="true"><i class="bi bi-envelope"></i> Mesajlar</span>
-						</NavLink>
-					</div>
-					<div class="nav-item px-3">
-						<NavLink class="nav-link" href="">
-							<span class="text-black" aria-hidden="true">
-								<i class="bi bi-person-check"></i> @AuthStateProvider.User?.userName.ToUpper()
-							</span>
-						</NavLink>
-					</div>
-					<div class="nav-item px-3">
-						<NavLink class="nav-link" @onclick=LogOutAsync>
-							<span class="text-black" aria-hidden="true"><i class="bi bi-x-circle"></i> Çıkış Yap</span>
-						</NavLink>
-					</div>
-
-				</Authorized>
-				<NotAuthorized>
-					<div class="nav-item px-3">
-						<NavLink class="nav-link" href="/auth/login">
-							<span class="text-black" aria-hidden="true"><i class="bi bi-person-circle"></i> Giriş Yap</span>
-						</NavLink>
-					</div>
-				</NotAuthorized>
-			</AuthorizeView>
-		</div> *@
-@* 
-	@if (!_haveError)
-	{ *@
 		<div class="position-relative flex-grow-1" style="min-height: calc(100vh - 56px);">
 			@if (AuthStateProvider.IsInitializing)
 			{
@@ -53,125 +14,15 @@
 			{
 				@Body
 			}
-
 		</div>
-	@* }
-	else
-	{
-		<div class="col-lg-7 mx-auto py-5">
-			<div class="alert alert-danger" role="alert">
-				@_errorMessage
-			</div>
-		</div>
-	} *@
-
-
 </div>
-@* <Toasts class="p-3" Messages="_toastMessages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.BottomRight" /> *@
 
 
 @code {
-
-	private HubConnection? _hubConnection;
-	// private List<ToastMessage> _toastMessages = new List<ToastMessage>();
-	// private List<Guid> _userConversationsIds = new List<Guid>();
-	// private Guid _currentUserId;
-	private bool _haveError = false;
-	private string? _errorMessage;
-
-
 
 	protected override async Task OnInitializedAsync()
 	{
 		while (AuthStateProvider.IsInitializing)
 			await Task.Delay(500);
-
-		// if (AuthStateProvider.IsLoggedIn)
-		// {
-		// 	if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
-		// 		_currentUserId = parsedId;
-
-		// 	var response = await MessageApi.GetUserConversaionIdsAsync(_currentUserId);
-		// 	try
-		// 	{
-		// 		if (response.IsSuccess)
-		// 		{
-		// 			_userConversationsIds = response.Data;
-		// 			await StartHubConnection();
-		// 		}
-
-		// 	}
-		// 	catch (Exception ex)
-		// 	{
-		// 		_haveError = true;
-		// 		_errorMessage = ex.Message;
-		// 	}
-
-		// }
-
 	}
-
-
-	// private async Task StartHubConnection()
-	// {
-	// 	_hubConnection = new HubConnectionBuilder()
-	// 		.WithUrl("https://localhost:7292/messagehub")
-	// 		.WithAutomaticReconnect()
-	// 		.Build();
-
-	// 	_hubConnection.On<Guid, MessageDto>("SendMessageNotificationAsync", (conversationId, messageDto) =>
-	// 	{
-
-	// 		if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId!=messageDto.SenderId)
-	// 			ShowToastMessage(ToastType.Primary, messageDto);
-
-	// 		StateHasChanged();
-	// 	});
-
-
-	// 	await _hubConnection.StartAsync();
-	// 	foreach (var _conversationId in _userConversationsIds)
-	// 	{
-	// 		await _hubConnection.SendAsync("JoinMessageGroup", _conversationId);
-	// 	}
-	// }
-
-
-	// private void ShowToastMessage(ToastType toastType, MessageDto messageDto)
-	// {
-	// 	_toastMessages.Add(CreateToastMessage(toastType, messageDto));
-	// }
-
-
-	// private ToastMessage CreateToastMessage(ToastType toastType, MessageDto messageDto)
-	// {
-	// 	return new ToastMessage
-	// 			{
-	// 				Type = toastType,
-	// 				Title = $"{messageDto.SenderUserName} Size Mesaj Gönderdi",
-	// 				HelpText = $"{DateTime.Now.ToString("HH:mm")}",
-	// 				Message = messageDto.Content.Length > 50 ? $"{messageDto.Content.Substring(0, 50)}..."  : $"{messageDto.Content}",
-	// 				Content = @<div><button class="btn btn-sm blue mt-2 text-white" @onclick="()=>NavigateToConversation(messageDto.ConversationId)">Mesajı Göster</button></div>
-	// 	};
-	// }
-
-
-	// private bool CheckCurrentChatPage(string conversationId)
-	// {
-	// 	var uri = new Uri(NavigationManager.Uri);
-	// 	var segments = uri.Segments;
-
-	// 	// /conversations/{guid} formatını kontrol et
-	// 	if (segments.Length >= 3 && segments[1].Equals("conversations/", StringComparison.OrdinalIgnoreCase))
-	// 	{
-	// 		var currentConvId = segments[2].Trim('/');
-	// 		var result = currentConvId.Equals(conversationId, StringComparison.OrdinalIgnoreCase);
-	// 		return result;
-	// 	}
-	// 	return false;
-	// }
-
-	// private void NavigateToConversation(Guid conversationId){
-	// 	NavigationManager.NavigateTo($"/conversations/{conversationId}");
-	// }
 }

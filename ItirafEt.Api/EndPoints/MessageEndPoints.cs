@@ -96,11 +96,20 @@ namespace ItirafEt.Api.EndPoints
                     Directory.CreateDirectory(uploadsFolder);
 
                     var fileName = $"{Guid.NewGuid()}{ext}";
-                    var filePath = Path.Combine(uploadsFolder, fileName);
-                    using var fs = new FileStream(filePath, FileMode.Create);
+                    var safePath = Path.Combine("PrivateFiles", "messages",dto.ConversationId);
+                    var fullPath = Path.Combine(env.ContentRootPath, safePath, fileName);
+                    Directory.CreateDirectory(safePath);
+                    using var fs = new FileStream(fullPath, FileMode.Create);
                     await dto.Photo.CopyToAsync(fs);
+                    //dto.PhotoUrl = $"/{safePath}/{fileName}";
+                    dto.PhotoUrl = fileName;
 
-                    dto.PhotoUrl = $"/uploads/messages/{fileName}";
+
+                    //var filePath = Path.Combine(uploadsFolder, fileName);
+                    //using var fs = new FileStream(filePath, FileMode.Create);
+                    //await dto.Photo.CopyToAsync(fs);
+
+                    //dto.PhotoUrl = $"/uploads/messages/{fileName}";
                 }
 
                 var result = await messageService.SendMessageWithPhotoAsync(dto);
@@ -112,6 +121,12 @@ namespace ItirafEt.Api.EndPoints
             .Produces(StatusCodes.Status400BadRequest)
             .DisableAntiforgery();
 
+
+            app.MapGet("/api/message/photo", async (string filename, HttpContext http, MessageService messageService) =>
+            {
+                return await messageService.GetMessagePhotoAsync(filename, http.User);
+
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             app.MapGet("/api/message/CanUserReadConversation", async (Guid conversationId, Guid userId, MessageService messageService) =>
             {

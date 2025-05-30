@@ -14,7 +14,7 @@
 			<hr />
 
 			<EditForm Model="_registerModel"
-					  OnValidSubmit="RegisterAsync">
+			OnValidSubmit="RegisterAsync">
 				<DataAnnotationsValidator />
 
 				<div class="my-3">
@@ -49,8 +49,8 @@
 					<label class="form-label">Şifre:</label>
 					<div class="input-group">
 						<InputText @bind-Value="_registerModel.Password"
-								   class="form-control"
-								   type="@(_showPassword ? "text" : "password")" />
+						class="form-control"
+						type="@(_showPassword ? "text" : "password")" />
 						<button type="button" class="btn btn-outline-secondary" @onclick="TogglePasswordVisibility">
 							<i class="@(_showPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 						</button>
@@ -62,8 +62,8 @@
 					<label class="form-label">Şifre (Tekrar):</label>
 					<div class="input-group">
 						<InputText @bind-Value="_registerModel.PasswordConfirm"
-								   class="form-control"
-								   type="@(_showPasswordConfirm ? "text" : "password")" />
+						class="form-control"
+						type="@(_showPasswordConfirm ? "text" : "password")" />
 						<button type="button" class="btn btn-outline-secondary" @onclick="TogglePasswordConfirmVisibility">
 							<i class="@(_showPasswordConfirm ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 						</button>
@@ -158,9 +158,9 @@
 </ModalComponent>
 
 @code {
-	private RegisterDto _registerModel = new();
-	private ModalComponent? _privacyModal;
-	private ModalComponent? _termOfUserModal;
+	private RegisterDto? _registerModel = new();
+	private ModalComponent _privacyModal = new();
+	private ModalComponent _termOfUserModal = new();
 	private bool _showPassword = false;
 	private bool _isBusy;
 	private bool _showPasswordConfirm;
@@ -278,7 +278,7 @@
 
 	private void ToggleTermsOfUse()
 	{
-		if (_registerModel.isTermsAccepted == null)
+		if (_registerModel?.isTermsAccepted == null)
 			_registerModel.isTermsAccepted = true;
 		else
 			_registerModel.isTermsAccepted = !_registerModel.isTermsAccepted;

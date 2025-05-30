@@ -13,14 +13,14 @@ namespace ItirafEt.Shared.DTOs
         public string? ConversationId { get; set; }
         public string? Content { get; set; }
         public DateTime CreatedDate { get; set; }
-        public string SenderId { get; set; }
-        public string ReceiverId { get; set; }
+        public string? SenderId { get; set; }
+        public string? ReceiverId { get; set; }
 
         [JsonIgnore] // Bunları client göndermez, sunucu ekler
-        public string SenderIpAddress { get; set; }
+        public string? SenderIpAddress { get; set; }
 
         [JsonIgnore]
-        public string SenderDeviceInfo { get; set; }
+        public string? SenderDeviceInfo { get; set; }
 
         public string? PhotoUrl { get; set; }
 
