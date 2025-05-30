@@ -131,58 +131,21 @@ namespace ItirafEt.Api.Services
             }
         }
 
-        public async Task<ApiResponses<MessageDto>> SendMessageAsync(Guid conversationId, MessageDto messageDto)
+        public async Task<ApiResponses<MessageDto>> SendMessageAsync(CreateMessageDto messageDto)
         {
-            var senderUser = await _context.Users
-                .FirstOrDefaultAsync(x => x.Id == messageDto.SenderId);
+            Guid.TryParse(messageDto.SenderId, out Guid senderId);
+            Guid.TryParse(messageDto.ReceiverId, out Guid receiverId);
+            Guid.TryParse(messageDto.ConversationId, out Guid conversationId);
 
-            if (senderUser == null)
-                return ApiResponses<MessageDto>.Fail("Gönderici Kullanıcı Bulunamadı.");
-
-            var receiverUser = await _context.Users
-                .FirstOrDefaultAsync(x => x.Id == messageDto.ReceiverId);
-            if (receiverUser == null)
-                return ApiResponses<MessageDto>.Fail("Alıcı Kullanıcı Bulunamadı.");
-
-            var conversation = await _context.Conversations
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
-
-            if (conversation == null)
-                return ApiResponses<MessageDto>.Fail("Mesaj gönderilemedi.");
-
-            if (!((conversation.InitiatorId == messageDto.SenderId && conversation.ResponderId == messageDto.ReceiverId) || (conversation.InitiatorId == messageDto.ReceiverId && conversation.ResponderId == messageDto.SenderId)))
-                return ApiResponses<MessageDto>.Fail("Mesaj gönderilemedi.");
-
-
-            if (messageDto.Photo != null)
-            {
-                List<string> allowedExtendions = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
-
-                var extension = Path.GetExtension(messageDto.Photo.FileName).ToLowerInvariant();
-
-                if (!allowedExtendions.Contains(extension))
-                    return ApiResponses<MessageDto>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
-
-
-                if (messageDto.Photo.Length > 10 * 1024 * 1024) // 5 MB limit
-                    return ApiResponses<MessageDto>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
-
-
-                var fileName = $"{Guid.NewGuid()}_{messageDto.Photo.FileName}";
-                var filePath = Path.Combine("wwwroot", "uploads", "messages", fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await messageDto.Photo.CopyToAsync(stream);
-                }
-                messageDto.PhotoUrl = $"/uploads/messages/{fileName}";
-            }
+            var isMessageValid = await IsMessageValidAsync(messageDto, senderId, receiverId, conversationId);
+            if (!isMessageValid.Item1)
+                return ApiResponses<MessageDto>.Fail(isMessageValid.Item2);
 
             var message = new Message
             {
                 Content = messageDto.Content,
                 ConversationId = conversationId,
-                SenderId = senderUser.Id,
+                SenderId = senderId,
                 SentDate = DateTime.Now,
                 IsRead = false,
                 IsVisibleToInitiatorUser = true,
@@ -190,7 +153,6 @@ namespace ItirafEt.Api.Services
                 ReadDate = null,
                 IpAddress = messageDto.SenderIpAddress,
                 DeviceInfo = messageDto.SenderDeviceInfo,
-                PhotoUrl = messageDto.PhotoUrl
 
             };
             await _context.Messages.AddAsync(message);
@@ -203,9 +165,8 @@ namespace ItirafEt.Api.Services
                 Content = message.Content,
                 CreatedDate = message.SentDate,
                 SenderId = message.SenderId,
-                SenderUserName = senderUser.UserName,
+                SenderUserName = isMessageValid.Item2,
                 ConversationId = message.ConversationId,
-                PhotoUrl = message.PhotoUrl,
             };
 
             await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);
@@ -214,6 +175,92 @@ namespace ItirafEt.Api.Services
             return ApiResponses<MessageDto>.Success(returnMessageDto);
 
         }
+
+        public async Task<ApiResponses<MessageDto>> SendMessageWithPhotoAsync(CreateMessageDto messageDto)
+        {
+            Guid.TryParse(messageDto.SenderId, out Guid senderId);
+            Guid.TryParse(messageDto.ReceiverId, out Guid receiverId);
+            Guid.TryParse(messageDto.ConversationId, out Guid conversationId);
+
+            var isMessageValid = await IsMessageValidAsync(messageDto, senderId, receiverId, conversationId);
+            if (!isMessageValid.Item1)
+                return ApiResponses<MessageDto>.Fail(isMessageValid.Item2);
+
+            if (messageDto.Photo == null)
+                return ApiResponses<MessageDto>.Fail("Fotoğraf yüklenmedi.");
+
+
+            List<string> allowedExtendions = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
+
+            var extension = Path.GetExtension(messageDto.Photo.FileName).ToLowerInvariant();
+
+            if (!allowedExtendions.Contains(extension))
+                return ApiResponses<MessageDto>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
+
+
+            if (messageDto.Photo.Length > 10 * 1024 * 1024) // 5 MB limit
+                return ApiResponses<MessageDto>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
+
+
+            var message = new Message
+            {
+                ConversationId = conversationId,
+                SenderId = senderId,
+                Content = messageDto.Content,
+                PhotoUrl = messageDto.PhotoUrl,
+                SentDate = DateTime.Now,
+                IpAddress = messageDto.SenderIpAddress,
+                DeviceInfo = messageDto.SenderDeviceInfo,
+                IsRead = false
+            };
+
+
+            //var fileName = $"{Guid.NewGuid()}_{messageDto.Photo.FileName}";
+            //var filePath = Path.Combine("wwwroot", "uploads", "messages", fileName);
+            //using (var stream = new FileStream(filePath, FileMode.Create))
+            //{
+            //    await messageDto.Photo.CopyToAsync(stream);
+            //}
+            //messageDto.PhotoUrl = $"/uploads/messages/{fileName}";
+
+
+            //var message = new Message
+            //{
+            //    Content = messageDto.Content,
+            //    ConversationId = conversationId,
+            //    SenderId = senderId,
+            //    SentDate = DateTime.Now,
+            //    IsRead = false,
+            //    IsVisibleToInitiatorUser = true,
+            //    IsVisibleToResponderUser = true,
+            //    ReadDate = null,
+            //    IpAddress = messageDto.SenderIpAddress,
+            //    DeviceInfo = messageDto.SenderDeviceInfo,
+            //    PhotoUrl = messageDto.PhotoUrl
+
+            //};
+            await _context.Messages.AddAsync(message);
+            await _context.SaveChangesAsync();
+
+
+            var returnMessageDto = new MessageDto
+            {
+                Id = message.Id,
+                Content = message.Content,
+                CreatedDate = message.SentDate,
+                SenderId = message.SenderId,
+                SenderUserName = isMessageValid.Item2,
+                ConversationId = message.ConversationId,
+                PhotoUrl = message.PhotoUrl,
+            };
+
+            await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);
+            await _hubService.SendMessageNotificationAsync(message.ConversationId, returnMessageDto);
+
+            return ApiResponses<MessageDto>.Success(returnMessageDto);
+
+        }
+
 
         public async Task<ApiResponses> ReadMessageAsync(Guid conversationId, MessageDto messageDto)
         {
@@ -382,6 +429,35 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<InfiniteScrollState<MessageDto>>.Success(scrollStateMessageList);
 
+        }
+
+
+        public async Task<(bool, string)> IsMessageValidAsync(CreateMessageDto messageDto, Guid senderId, Guid receiverId, Guid conversationId)
+        {
+
+            var senderUser = await _context.Users
+                .FirstOrDefaultAsync(x => x.Id == senderId);
+
+            if (senderUser == null)
+                return (false, "Gönderici Kullanıcı Bulunamadı.");
+
+            var receiverUser = await _context.Users
+                .FirstOrDefaultAsync(x => x.Id == receiverId);
+            if (receiverUser == null)
+                return (false, "Alıcı Kullanıcı Bulunamadı.");
+
+            var conversation = await _context.Conversations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
+
+            if (conversation == null)
+                return (false, "Mesaj gönderilemedi.");
+
+            if (!((conversation.InitiatorId == senderId && conversation.ResponderId == receiverId) || (conversation.InitiatorId == receiverId && conversation.ResponderId == senderId)))
+                return (false, "Mesaj gönderilemedi.");
+
+
+            return (true, senderUser.UserName);
         }
 
     }

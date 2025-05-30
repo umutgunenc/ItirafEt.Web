@@ -9,7 +9,7 @@ using ItirafEt.Web.Pages.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Refit;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -22,7 +22,7 @@ builder.Services.AddBlazorBootstrap();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped(typeof(InfiniteScrollState<>));
 builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
-
+//builder.Services.AddSingleton<ApiBaseUrl>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthStateProvider>();
@@ -30,14 +30,18 @@ builder.Services.AddSingleton<ConversationService>();
 builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
 builder.Services.AddAuthorizationCore();
 
+// dinmaik olarak API adresini alabilmek için
+//builder.Services.Configure<ApiBaseUrl>(builder.Configuration.GetSection("ApiSettings"));
+
+
 ConfigureRefit(builder.Services);
 
 await builder.Build().RunAsync();
 
-
 static void ConfigureRefit(IServiceCollection services)
 {
-    const string baseUrl = "https://localhost:7292";
+    //const string baseUrl = "https://localhost:7292";
+    string baseUrl = ApiBaseUrl.BaseUrl;
 
     services.AddRefitClient<IAuthApi>()
      .ConfigureHttpClient(SetHttpClient);
@@ -63,7 +67,8 @@ static void ConfigureRefit(IServiceCollection services)
     services.AddRefitClient<IMessageApi>(GetRefitSettings)
     .ConfigureHttpClient(SetHttpClient);
 
-    static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
+    //static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
+    void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
 
     static RefitSettings GetRefitSettings(IServiceProvider sp)
     {

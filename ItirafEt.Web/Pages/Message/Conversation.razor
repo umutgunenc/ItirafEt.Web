@@ -1,4 +1,5 @@
 ﻿@page "/conversations/{ConversationId:guid}"
+@using ItirafEt.SharedComponents.Services
 
 @inject NavigationManager NavigationManager
 @inject IMessageApi MessageApi
@@ -54,6 +55,14 @@ else
 				var fullClass = $"{baseClass} chat-message d-flex flex-column";
 
 				<div id="message-@message.Id" class="d-flex flex-column @fullClass">
+					@if(!string.IsNullOrEmpty(message.PhotoUrl)){
+						<div class="message-photo mb-2">
+							<img src="@($"{ApiBaseUrl.BaseUrl}{message.PhotoUrl}")"
+								 class="rounded"
+								 style="max-width: 100%; object-fit: cover;">
+						</div>
+					}
+					
 					<div class="message-content">@message.Content</div>
 
 					<div class="message-meta d-flex justify-content-between align-items-end mt-1">
@@ -147,7 +156,7 @@ else
 
 }
 
-<ModalComponent @ref="_sendPhoto" Title="Fotoğraf Gönder" TitleClass="mx-auto" ChildClass="py-0 mx-auto h-100 d-inline-block mb-0">
+<ModalComponent @ref="_sendPhotoModal" Title="Fotoğraf Gönder" TitleClass="mx-auto" ChildClass="py-0 mx-auto h-100 d-inline-block mb-0">
 	<ChildContent>
 		<div class="bg-light-subtle">
 			<img src="@_previewImageUrl"
@@ -169,7 +178,7 @@ else
 					   @onkeydown="HandleKeyPress" />
 
 				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center"
-						@onclick="() => SendMessageAsync(_messageDto)">
+						@onclick="() => SendMessageWithPhotoAsync(_messageDto)">
 					<i class="bi bi-send-check text-white"></i>
 				</button>
 
@@ -177,7 +186,7 @@ else
 		</div>
 	</ChildContent>
 	<FooterContent>
-		<button class="btn blue col text-white fw-medium" @onclick="_sendPhoto.Close">Kapat</button>
+		<button class="btn blue col text-white fw-medium" @onclick="_sendPhotoModal.Close">Kapat</button>
 	</FooterContent>
 </ModalComponent>
 
@@ -191,11 +200,11 @@ else
 	private IBrowserFile? _selectedFile;  // InputFile için
 	private string? _previewImageUrl;
 
-	private ModalComponent _sendPhoto = new ModalComponent();
+	private ModalComponent _sendPhotoModal = new ModalComponent();
 
 	private ConversationDto _conversationDto;
 	private InfiniteScrollState<MessageDto> _conversationMessages = new();
-	private MessageDto _messageDto = new();
+	private CreateMessageDto _messageDto = new();
 	private HubConnection? _hubConnection;
 	private string? _errorMessage;
 	private string? _messageErrorMessage;
@@ -284,18 +293,19 @@ else
 		}
 	}
 
-	private async Task SendMessageAsync(MessageDto messageDto)
+	private async Task SendMessageAsync(CreateMessageDto messageDto)
 	{
 		if (string.IsNullOrWhiteSpace(messageDto.Content))
 			return;
-		messageDto.ReceiverId = _conversationDto.ResponderUser.UserId;
-		messageDto.SenderId = _currentUserId;
+		messageDto.ReceiverId = _conversationDto.ResponderUser.UserId.ToString();
+		messageDto.SenderId = _currentUserId.ToString();
+		messageDto.ConversationId = ConversationId.ToString();
 
-		var response = await MessageApi.SendMessageAsync(ConversationId, messageDto);
-		messageDto.Content = string.Empty;
 
 		try
 		{
+			var response = await MessageApi.SendMessageAsync(messageDto);
+
 			if (!response.IsSuccess)
 			{
 				_isError = true;
@@ -305,12 +315,49 @@ else
 		}
 		catch (Exception ex)
 		{
-
 			_isError = true;
 			_errorMessage = ex.Message;
 		}
+		finally
+		{
+			messageDto.Content = string.Empty;
+		}
 	}
+	private async Task SendMessageWithPhotoAsync(CreateMessageDto messageDto)
+	{
+		if (_selectedFile == null)
+		{
+			_sendPhotoModal.Close();
+			_messageErrorMessage = "Lütfen bir fotoğraf seçin.";
+			return;
+		}
 
+		try
+		{
+			var stream = _selectedFile.OpenReadStream(10 * 1024 * 1024); // max 10MB
+			var photoPart = new Refit.StreamPart(stream, _selectedFile.Name, _selectedFile.ContentType);
+
+			var response = await MessageApi.SendMessageWithPhotoAsync(ConversationId.ToString(), messageDto.Content, _currentUserId.ToString(), _conversationDto.ResponderUser.UserId.ToString(), photoPart);
+
+			if (!response.IsSuccess)
+			{
+				_isError = true;
+				_errorMessage = response.ErrorMessage;
+				return;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isError = true;
+			_errorMessage = ex.Message;
+		}
+		finally
+		{
+			messageDto.Content = string.Empty;
+			_sendPhotoModal.Close();
+		}
+
+	}
 	private async Task HandleKeyPress(KeyboardEventArgs e)
 	{
 		if (e.Key == "Enter")
@@ -337,7 +384,7 @@ else
 				await _selectedFile.OpenReadStream(10 * 1024 * 1024).CopyToAsync(ms);
 				var bytes = ms.ToArray();
 				_previewImageUrl = $"data:{_selectedFile.ContentType};base64,{Convert.ToBase64String(bytes)}";
-				_sendPhoto.Open();
+				_sendPhotoModal.Open();
 			}
 
 			StateHasChanged();
@@ -539,4 +586,4 @@ else
 		}
 
 	}
-	}
+}

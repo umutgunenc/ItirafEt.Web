@@ -9,7 +9,18 @@ namespace ItirafEt.SharedComponents.Apis
     {
         [Headers("Authorization: Bearer")]
         [Post("/api/message/SendMessage")]
-        Task<ApiResponses<MessageDto>> SendMessageAsync(Guid conversationId, MessageDto messageDto);
+        Task<ApiResponses<MessageDto>> SendMessageAsync(CreateMessageDto messageDto);
+
+        [Multipart]
+        [Headers("Authorization: Bearer")]
+        [Post("/api/message/SendMessageWithPhoto")]
+        Task<ApiResponses<MessageDto>> SendMessageWithPhotoAsync(
+            [AliasAs("ConversationId")] string conversationId,
+            [AliasAs("Content")] string content,
+            [AliasAs("SenderId")] string senderId,
+            [AliasAs("ReceiverId")] string receiverId,
+            [AliasAs("Photo")] StreamPart? photo
+        );
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/GetConversationDto/")]

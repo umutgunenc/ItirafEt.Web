@@ -28,6 +28,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 .AddJwtBearer(options =>
 {
     var secretKey = builder.Configuration.GetValue<string>("Jwt:Secret");
@@ -104,7 +105,6 @@ app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-
 //app.UseEndpoints(endpoints =>
 //{
 //    endpoints.MapHub<CategoryHub>("/categoryhub");

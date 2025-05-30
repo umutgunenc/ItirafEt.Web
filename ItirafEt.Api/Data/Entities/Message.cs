@@ -15,8 +15,7 @@ namespace ItirafEt.Api.Data.Entities
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        public string Content { get; set; }
+        public string? Content { get; set; }
 
         [Required]
         public Guid SenderId { get; set; }
