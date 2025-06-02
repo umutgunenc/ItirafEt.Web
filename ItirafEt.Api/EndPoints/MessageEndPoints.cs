@@ -12,12 +12,14 @@ namespace ItirafEt.Api.EndPoints
         public static IEndpointRouteBuilder MapMessageEndpoints(this IEndpointRouteBuilder app)
         {
             app.MapPost("/api/message/GetConversationDto", async (Guid senderUserId, Guid receiverUserId, MessageService messageService) =>
-                  Results.Ok(await messageService.GetConversationDtoAsync(senderUserId, receiverUserId)))
-                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+                  Results
+                  .Ok(await messageService.GetConversationDtoAsync(senderUserId, receiverUserId)))
+                  .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             app.MapPost("/api/message/GetConversation", async (Guid conversationId, Guid senderUserId, MessageService messageService) =>
-                Results.Ok(await messageService.GetConversationAsync(conversationId, senderUserId)))
-                  .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+                Results
+                .Ok(await messageService.GetConversationAsync(conversationId, senderUserId)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
 
             app.MapPost("/api/message/SendMessage", async (CreateMessageDto messageDto, HttpContext context, MessageService messageService) =>
@@ -96,7 +98,7 @@ namespace ItirafEt.Api.EndPoints
                     Directory.CreateDirectory(uploadsFolder);
 
                     var fileName = $"{Guid.NewGuid()}{ext}";
-                    var safePath = Path.Combine("PrivateFiles", "messages",dto.ConversationId);
+                    var safePath = Path.Combine("PrivateFiles", "messages", dto.ConversationId);
                     var fullPath = Path.Combine(env.ContentRootPath, safePath, fileName);
                     Directory.CreateDirectory(safePath);
                     using var fs = new FileStream(fullPath, FileMode.Create);
@@ -150,13 +152,16 @@ namespace ItirafEt.Api.EndPoints
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             app.MapPost("/api/message/getConversationMessages", async (ConversationDto conversation, DateTime? nextBefore, int take, MessageService messageService) =>
-                Results.Ok(await messageService.GetConversationMessagesAsync(conversation, nextBefore, take)))
+                Results
+                .Ok(await messageService.GetConversationMessagesAsync(conversation, nextBefore, take)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
-
+            app.MapGet("/api/message/GetUserMessages", async (Guid userId, MessageService messageService) =>
+                Results
+                .Ok(await messageService.GetUserMessagesAsync(userId)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             return app;
         }
-
     }
 }

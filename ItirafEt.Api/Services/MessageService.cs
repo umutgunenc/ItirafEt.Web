@@ -267,44 +267,6 @@ namespace ItirafEt.Api.Services
 
         }
 
-        //public async Task<ApiResponses> GetMessagePhotoAsync(MessageDto dto,string fileName)
-        //{
-        //    if (string.IsNullOrEmpty(dto.PhotoUrl))
-        //        return ApiResponses.Fail("Fotoğraf URL'si boş veya geçersiz.");
-
-        //    if (dto.ConversationId == Guid.Empty)
-        //        return ApiResponses.Fail("Geçersiz Mesajlaşma ID'si.");
-
-        //    var conversation = await _context.Conversations
-        //        .AsNoTracking()
-        //        .FirstOrDefaultAsync(c => c.ConversationId == dto.ConversationId);
-
-        //    if (conversation == null)
-        //        return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
-
-        //    if (conversation.InitiatorId != dto.SenderId && conversation.ResponderId != dto.ReceiverId)
-        //        return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
-
-        //    var message = await _context.Messages
-        //        .AsNoTracking()
-        //        .FirstOrDefaultAsync(m => m.PhotoUrl.Contains(fileName));
-
-        //    if (message == null)
-        //        return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
-
-        //    var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", filename);
-
-        //    if (!System.IO.File.Exists(path))
-        //        return NotFound();
-
-        //    var mime = "image/jpeg"; // MIME türünü uzantıya göre belirleyebilirsin
-        //    var bytes = await System.IO.File.ReadAllBytesAsync(path);
-        //    return File(bytes, mime);
-
-
-        //}
-
-
         public async Task<IResult> GetMessagePhotoAsync(string fileName, ClaimsPrincipal user)
         {
             var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -341,17 +303,6 @@ namespace ItirafEt.Api.Services
             return Results.File(bytes, mime);
         }
 
-        private static string GetMimeType(string fileName)
-        {
-            var ext = Path.GetExtension(fileName).ToLowerInvariant();
-            return ext switch
-            {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                _ => "application/octet-stream"
-            };
-        }
         public async Task<ApiResponses> ReadMessageAsync(Guid conversationId, MessageDto messageDto)
         {
             var conversation = await _context.Conversations
@@ -421,31 +372,6 @@ namespace ItirafEt.Api.Services
 
                 })
                 .FirstOrDefaultAsync();
-        }
-
-        private async Task<List<MessageDto>> GetConversationMessagesAsync(Conversation conversation)
-        {
-            var messages = await _context.Messages
-                .AsNoTracking()
-                .Where(m => m.ConversationId == conversation.ConversationId)
-                .Select(m => new MessageDto
-                {
-                    Id = m.Id,
-                    ConversationId = m.ConversationId,
-                    Content = m.Content,
-                    CreatedDate = m.SentDate,
-                    ReadDate = m.ReadDate,
-                    SenderId = m.SenderId,
-                    ReceiverId = conversation.ResponderId,
-                    IsRead = m.IsRead,
-                    IsDeletedBySender = m.IsVisibleToInitiatorUser,
-                    IsDeletedByReceiver = m.IsVisibleToResponderUser,
-                    SenderIpAddress = m.IpAddress,
-                    SenderDeviceInfo = m.DeviceInfo
-                })
-                .ToListAsync();
-
-            return messages;
         }
 
         private async Task<MessageDto?> GetConversationLastMessagesAsync(Conversation conversation)
@@ -521,7 +447,6 @@ namespace ItirafEt.Api.Services
 
         }
 
-
         public async Task<(bool, string)> IsMessageValidAsync(CreateMessageDto messageDto, Guid senderId, Guid receiverId, Guid conversationId)
         {
 
@@ -548,6 +473,69 @@ namespace ItirafEt.Api.Services
 
 
             return (true, senderUser.UserName);
+        }
+
+        public async Task<ApiResponses<List<InboxDto>>> GetUserMessagesAsync(Guid userId)
+        {
+            var currentUser = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (currentUser == null)
+                return ApiResponses<List<InboxDto>>.Fail("Kullanıcı bulunamadı.");
+
+            var conversations = await _context.Conversations
+                .AsNoTracking()
+                .Include(c => c.Initiator)
+                .Include(c => c.Responder)
+                .Where(c => c.InitiatorId == userId || c.ResponderId == userId)
+                .ToListAsync();
+
+            var conversationIds = conversations.Select(c => c.ConversationId).ToList();
+
+            var lastMessages = await _context.Messages
+                .AsNoTracking()
+                .Where(m => conversationIds.Contains(m.ConversationId))
+                .GroupBy(m => m.ConversationId)
+                .Select(g => g.OrderByDescending(m => m.SentDate).FirstOrDefault())
+                .ToListAsync();
+
+            var unreadCounts = await _context.Messages
+                .AsNoTracking()
+                .Where(m => conversationIds.Contains(m.ConversationId) && !m.IsRead && m.SenderId != userId)
+                .GroupBy(m => m.ConversationId)
+                .Select(g => new
+                {
+                    ConversationId = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            var inboxDtos = conversations
+                .Where(c => lastMessages.Any(m => m.ConversationId == c.ConversationId)) 
+                .Select(c =>
+                {
+                    var partnerUser = c.InitiatorId == userId ? c.Responder : c.Initiator;
+                    var lastMessage = lastMessages.FirstOrDefault(m => m.ConversationId == c.ConversationId);
+                    var unreadCount = unreadCounts.FirstOrDefault(u => u.ConversationId == c.ConversationId)?.Count ?? 0;
+
+                    return new InboxDto
+                    {
+                        ConversationId = c.ConversationId,
+                        SenderUserUserName = partnerUser.UserName,
+                        SenderUserProfileImageUrl = partnerUser.ProfilePictureUrl,
+                        LastMessagePrewiew = lastMessage?.Content ?? "",
+                        LastMessageDate = lastMessage?.SentDate ?? DateTime.MinValue,
+                        UnreadMessageCount = unreadCount
+                    };
+                })
+                .OrderByDescending(x => x.LastMessageDate)
+                .ToList();
+
+            if (!inboxDtos.Any())
+                return ApiResponses<List<InboxDto>>.Fail("Mesaj Kutunuz Boş");
+
+            return ApiResponses<List<InboxDto>>.Success(inboxDtos);
         }
 
     }

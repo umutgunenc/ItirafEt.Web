@@ -49,7 +49,11 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/getConversationMessages/")]
-        Task<ApiResponses<InfiniteScrollState<MessageDto>>> GetConversationMessagesAsync(ConversationDto conversation, DateTime? nextBefore, int take);
+        Task<ApiResponses<InfiniteScrollState<MessageDto>>> GetConversationMessagesAsync(ConversationDto conversation, DateTime? nextBefore, int take);        
+        
+        [Headers("Authorization: Bearer")]
+        [Get("/api/message/GetUserMessages/")]
+        Task<ApiResponses<List<InboxDto>>> GetUserMessagesAsync(Guid userId);
     }
 }
 
