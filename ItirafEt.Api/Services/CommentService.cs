@@ -42,6 +42,7 @@ namespace ItirafEt.Api.Services
                    CreatedDate = c.CreatedDate,
                    UpdatedDate = c.UpdatedDate,
                    UserName = c.User.UserName,
+                   CommentUserProfilPhotoUrl = c.User.ProfilePictureUrl,
                    CommentRections = c.CommentReactions.Select(cr => new ReactionDto
                    {
                        Id = cr.Id,
@@ -50,6 +51,7 @@ namespace ItirafEt.Api.Services
                        ReactingUserUserName = cr.ReactingUser.UserName,
                        CreatedDate = cr.CreatedDate,
                        CommentId = c.Id
+                       
                    }).ToList(),
                    CommentReplies = c.Replies
                         .Where(r => r.IsActive)
@@ -61,6 +63,7 @@ namespace ItirafEt.Api.Services
                             CreatedDate = r.CreatedDate,
                             UpdatedDate = r.UpdatedDate,
                             UserName = r.User.UserName,
+                            CommentUserProfilPhotoUrl = r.User.ProfilePictureUrl,
                             CommentRections = r.CommentReactions.Select(cr => new ReactionDto
                             {
                                 Id = cr.Id,

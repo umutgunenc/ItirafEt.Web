@@ -90,12 +90,14 @@ namespace ItirafEt.Api.Services
         public async Task<ApiResponses<ConversationDto>> GetConversationDtoAsync(Guid senderUserId, Guid receiverUserId)
         {
             var senderUser = await _context.Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == senderUserId);
 
             if (senderUser == null)
                 return ApiResponses<ConversationDto>.Fail("Gönderici Kullanıcı Bulunamadı.");
-            var receiverUser = await _context.Users
 
+            var receiverUser = await _context.Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == receiverUserId);
             if (receiverUser == null)
                 return ApiResponses<ConversationDto>.Fail("Alıcı Kullanıcı Bulunamadı.");

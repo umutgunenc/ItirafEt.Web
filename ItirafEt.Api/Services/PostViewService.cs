@@ -25,11 +25,13 @@ namespace ItirafEt.Api.Services
         public async Task<ApiResponses> ReadPostAsync(int postId, Guid? userId)
         {
             var user = await _context.Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == userId);
             if (user == null)
                 return ApiResponses.Success();
 
             var post = await _context.Posts
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == postId && x.IsActive);
             if (post == null)
                 return ApiResponses.Fail("Gönderi Bulunamadı.");
@@ -100,6 +102,7 @@ namespace ItirafEt.Api.Services
         {
             // Postları görüntüleyen kullanıcıların bilgilerini getirir
             var postViewers = await _context.UserReadPosts
+                .AsNoTracking()
                 .Include(urp => urp.User)
                 .Where(urp => urp.PostId == postId)
                 .Select(urp => new PostViewersDto
