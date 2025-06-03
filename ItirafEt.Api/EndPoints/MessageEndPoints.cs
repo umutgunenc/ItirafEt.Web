@@ -119,6 +119,12 @@ namespace ItirafEt.Api.EndPoints
                 .Ok(await messageService.GetUserMessagesAsync(userId)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
+            app.MapGet("/api/message/CheckUnreadMessages", async (Guid userId, MessageService messageService) =>
+            {
+                var result = await messageService.CheckUnreadMessagesAsync(userId);
+                return Results.Ok(result);
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
             return app;
         }
     }

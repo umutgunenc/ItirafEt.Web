@@ -20,7 +20,7 @@ namespace ItirafEt.Api.Services
     public class MessageService
     {
         private readonly dbContext _context;
-        private readonly MessageHubService _hubService; 
+        private readonly MessageHubService _hubService;
         private readonly IWebHostEnvironment _env;
 
         private readonly List<string> _allowedRoles = new()
@@ -267,7 +267,7 @@ namespace ItirafEt.Api.Services
             if (conversation.InitiatorId != userId && conversation.ResponderId != userId)
                 return Results.Forbid();
 
-            var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", conversation.ConversationId.ToString(),message.PhotoUrl);
+            var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", conversation.ConversationId.ToString(), message.PhotoUrl);
 
             if (!System.IO.File.Exists(path))
                 return Results.NotFound();
@@ -308,7 +308,11 @@ namespace ItirafEt.Api.Services
 
             model.ReadDate = message.ReadDate;
             model.IsRead = message.IsRead;
+
+            var readerUserId = conversation.InitiatorId == model.SenderId ? conversation.ResponderId : conversation.InitiatorId;
+
             await _hubService.ReadMessageAsync(conversationId, model);
+            await _hubService.MessageReadByCurrentUserAsync(readerUserId);
 
             return ApiResponses.Success();
 
@@ -454,11 +458,12 @@ namespace ItirafEt.Api.Services
 
         public async Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId)
         {
-            var currentUser = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == userId);
 
-            if (currentUser == null)
+            var userExists = await _context.Users
+                .AsNoTracking()
+                .AnyAsync(u => u.Id == userId);
+
+            if (!userExists)
                 return ApiResponses<List<InboxViewModel>>.Fail("Kullanıcı bulunamadı.");
 
             var conversations = await _context.Conversations
@@ -488,8 +493,8 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            var inboxDtos = conversations
-                .Where(c => lastMessages.Any(m => m.ConversationId == c.ConversationId)) 
+            var inboxModel = conversations
+                .Where(c => lastMessages.Any(m => m.ConversationId == c.ConversationId))
                 .Select(c =>
                 {
                     var partnerUser = c.InitiatorId == userId ? c.Responder : c.Initiator;
@@ -509,11 +514,33 @@ namespace ItirafEt.Api.Services
                 .OrderByDescending(x => x.LastMessageDate)
                 .ToList();
 
-            if (!inboxDtos.Any())
+            if (!inboxModel.Any())
                 return ApiResponses<List<InboxViewModel>>.Fail("Mesaj Kutunuz Boş");
 
-            return ApiResponses<List<InboxViewModel>>.Success(inboxDtos);
+            return ApiResponses<List<InboxViewModel>>.Success(inboxModel);
         }
 
+        public async Task<ApiResponses<bool>> CheckUnreadMessagesAsync(Guid userId)
+        {
+            var userExists = await _context.Users
+                .AsNoTracking()
+                .AnyAsync(u => u.Id == userId);
+
+            if (!userExists)
+                return ApiResponses<bool>.Fail("Kullanıcı Bulunamadı");
+
+            var hasUnreadMessages = await _context.Messages
+                .AsNoTracking()
+                .Where(m => !m.IsRead && m.SenderId != userId)
+                .Join(_context.Conversations
+                        .Where(c => c.InitiatorId == userId || c.ResponderId == userId),
+                      m => m.ConversationId,
+                      c => c.ConversationId,
+                      (m, c) => m)
+                .AnyAsync();
+
+            return ApiResponses<bool>.Success(hasUnreadMessages);
+
+        }
     }
 }

@@ -8,7 +8,9 @@ namespace ItirafEt.Api.Hubs
     public class MessageHub :Hub
     {
 
-        public Task JoinMessageGroup(Guid conversationId) => Groups.AddToGroupAsync(Context.ConnectionId, $"conversation-{conversationId}");
+        public Task JoinMessageGroup(Guid conversationId) => Groups.AddToGroupAsync(Context.ConnectionId, $"conversation-{conversationId}");       
+        
+        public Task JoinMessageReadGroup(Guid currentUserId) => Groups.AddToGroupAsync(Context.ConnectionId, $"user-{currentUserId}");
 
 
         //public Task JoinMessageGroup(Guid conversationId) =>

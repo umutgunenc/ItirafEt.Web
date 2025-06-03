@@ -31,6 +31,13 @@ namespace ItirafEt.Api.HubServices
                 .SendAsync("ReadMessageAsync", conversationId, messageDto);
         }
 
+        public async Task MessageReadByCurrentUserAsync(Guid currentUserId)
+        {
+            await _hubContext.Clients
+                .Group($"user-{currentUserId}")
+                .SendAsync("MessageReadByCurrentUserAsync", currentUserId);
+        }
+
     }
 }
 

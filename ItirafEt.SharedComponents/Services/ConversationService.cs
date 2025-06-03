@@ -6,7 +6,7 @@ namespace ItirafEt.SharedComponents.ClientServices
 {
     public class ConversationService
     {
-        private List<ConversationViewModel> _conversations = new();
+        private List<InboxViewModel> _conversations = new();
         private bool _isInitialized = false;
 
         private readonly IMessageApi MessageApi;
@@ -21,7 +21,7 @@ namespace ItirafEt.SharedComponents.ClientServices
             if (_isInitialized) return;
             try
             {
-                var response = await MessageApi.GetUserConversaionsAsync(userId);
+                var response = await MessageApi.GetUserMessagesAsync(userId);
 
                 if (response.IsSuccess)
                 {
@@ -33,11 +33,9 @@ namespace ItirafEt.SharedComponents.ClientServices
             {
                 _isInitialized = false;
             }
-
-            
         }
 
-        public List<ConversationViewModel> GetUserConversations()
+        public List<InboxViewModel> GetUserConversations()
         {
             return _conversations;
         }
