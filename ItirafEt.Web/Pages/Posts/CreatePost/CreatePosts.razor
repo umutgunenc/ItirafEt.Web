@@ -33,7 +33,7 @@
 			<EditForm Model="_postDto" OnValidSubmit="() => CreatePostAsync(_postDto)">
 				<DataAnnotationsValidator />
 				<div class="my-3">
-					<AutoCompleteComponent TItemType="CategoryDto"
+					<AutoCompleteComponent TItemType="CategoryViewModel"
 										   DisplayedItemsList="_categories"
 										   SelectedItem="_selectedCategory"
 										   SelectedItemChanged="CategorySelected"
@@ -101,9 +101,9 @@
 </div>
 
 @code {
-	private PostDto _postDto = new();
-	private CategoryDto? _selectedCategory = new();
-	private List<CategoryDto>? _categories = new();
+	private PostViewModel _postDto = new();
+	private CategoryViewModel? _selectedCategory = new();
+	private List<CategoryViewModel>? _categories = new();
 	private bool _isBusy = false;
 	private bool _isSuccess = false;
 	private bool _isCategoryLoaded = false;
@@ -144,7 +144,7 @@
 
 	}
 
-	private async Task CreatePostAsync(PostDto dto)
+	private async Task CreatePostAsync(PostViewModel dto)
 	{
 		if (_isBusy) return;
 
@@ -213,7 +213,7 @@
 		}
 	}
 
-	private void CategorySelected(CategoryDto dto)
+	private void CategorySelected(CategoryViewModel dto)
 	{
 		_selectedCategory = dto;
 	}

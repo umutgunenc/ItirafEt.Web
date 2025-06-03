@@ -1,4 +1,4 @@
-﻿using ItirafEt.Shared.DTOs;
+﻿using ItirafEt.Shared.ViewModels;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis
@@ -8,22 +8,14 @@ namespace ItirafEt.SharedComponents.Apis
     {
         [Headers("Authorization: Bearer")]
         [Post("/api/createPost")]
-        Task<ApiResponses> CreatePostAsync(PostDto dto,Guid UserId);
+        Task<ApiResponses> CreatePostAsync(PostViewModel dto,Guid UserId);
 
         [Headers("Authorization: Bearer")]
         [Get("/api/getCreatedPost/")]
         Task<ApiResponses<int>> GetCreatedPostIdAsync(Guid UserId);
 
         [Get("/api/getPostById/")]
-        Task<ApiResponses<PostDto>> GetPostByIdAsync(int postId);
-
-        //[Headers("Authorization: Bearer")]
-        //[Post("/api/likePost")]
-        //Task<ApiResponse> LikePostAsync(int postId, Guid UserId);
-
-        //[Headers("Authorization: Bearer")]
-        //[Post("/api/disliktePost")]
-        //Task<ApiResponse> DislikePostAsync(int postId, Guid UserId);
+        Task<ApiResponses<PostViewModel>> GetPostByIdAsync(int postId);
 
     }
 }

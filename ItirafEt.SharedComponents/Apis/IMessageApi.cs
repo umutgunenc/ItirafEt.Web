@@ -1,5 +1,5 @@
 ﻿using ItirafEt.Shared.ClientServices.State;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis
@@ -9,12 +9,12 @@ namespace ItirafEt.SharedComponents.Apis
     {
         [Headers("Authorization: Bearer")]
         [Post("/api/message/SendMessage")]
-        Task<ApiResponses<MessageDto>> SendMessageAsync(CreateMessageDto messageDto);
+        Task<ApiResponses<MessageViewModel>> SendMessageAsync(CreateMessageViewModel model);
 
         [Multipart]
         [Headers("Authorization: Bearer")]
         [Post("/api/message/SendMessageWithPhoto")]
-        Task<ApiResponses<MessageDto>> SendMessageWithPhotoAsync(
+        Task<ApiResponses<MessageViewModel>> SendMessageWithPhotoAsync(
             [AliasAs("ConversationId")] string conversationId,
             [AliasAs("Content")] string content,
             [AliasAs("SenderId")] string senderId,
@@ -24,11 +24,11 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/GetConversationDto/")]
-        Task<ApiResponses<ConversationDto>> GetConversationDtoAsync(Guid senderUserId, Guid receiverUserId);
+        Task<ApiResponses<ConversationViewModel>> GetConversationDtoAsync(Guid senderUserId, Guid receiverUserId);
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/GetConversation/")]
-        Task<ApiResponses<ConversationDto>> GetConversationAsync(Guid ConversationId,Guid senderUserId);        
+        Task<ApiResponses<ConversationViewModel>> GetConversationAsync(Guid ConversationId,Guid senderUserId);        
         
         [Headers("Authorization: Bearer")]
         [Get("/api/message/CanUserReadConversation/")]
@@ -36,7 +36,7 @@ namespace ItirafEt.SharedComponents.Apis
         
         [Headers("Authorization: Bearer")]
         [Get("/api/message/GetUserConversaions/")]
-        Task<ApiResponses<List<ConversationDto>>> GetUserConversaionsAsync(Guid userId);
+        Task<ApiResponses<List<ConversationViewModel>>> GetUserConversaionsAsync(Guid userId);
 
         [Headers("Authorization: Bearer")]
         [Get("/api/message/photo/")]
@@ -45,15 +45,15 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/readMessage/")]
-        Task<ApiResponses> ReadMessageAsync(Guid ConversationId, MessageDto messageDto);
+        Task<ApiResponses> ReadMessageAsync(Guid ConversationId, MessageViewModel model);
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/getConversationMessages/")]
-        Task<ApiResponses<InfiniteScrollState<MessageDto>>> GetConversationMessagesAsync(ConversationDto conversation, DateTime? nextBefore, int take);        
+        Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(ConversationViewModel conversation, DateTime? nextBefore, int take);        
         
         [Headers("Authorization: Bearer")]
         [Get("/api/message/GetUserMessages/")]
-        Task<ApiResponses<List<InboxDto>>> GetUserMessagesAsync(Guid userId);
+        Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId);
     }
 }
 

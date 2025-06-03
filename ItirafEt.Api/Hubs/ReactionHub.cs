@@ -1,5 +1,4 @@
-﻿using ItirafEt.Shared.DTOs;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Identity.Client;
 
 namespace ItirafEt.Api.Hubs

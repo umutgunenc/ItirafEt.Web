@@ -1,5 +1,5 @@
 ﻿using ItirafEt.Api.Hubs;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.HubServices
@@ -11,31 +11,26 @@ namespace ItirafEt.Api.HubServices
         {
             _hubContext = hubContext;
         }
-        public async Task SendMessageAsync(Guid conversationId, MessageDto messageDto)
+        public async Task SendMessageAsync(Guid conversationId, MessageViewModel model)
         {
             await _hubContext.Clients
                 .Group($"conversation-{conversationId}")
-                .SendAsync("SendMessageAsync", conversationId, messageDto);
+                .SendAsync("SendMessageAsync", conversationId, model);
         }
 
-        public async Task SendMessageNotificationAsync(Guid conversationId, MessageDto messageDto)
+        public async Task SendMessageNotificationAsync(Guid conversationId, MessageViewModel model)
         {
             await _hubContext.Clients
                 .Group($"conversation-{conversationId}")
-                .SendAsync("SendMessageNotificationAsync", conversationId, messageDto);
+                .SendAsync("SendMessageNotificationAsync", conversationId, model);
         }
-        public async Task ReadMessageAsync(Guid conversationId, MessageDto messageDto)
+        public async Task ReadMessageAsync(Guid conversationId, MessageViewModel messageDto)
         {
             await _hubContext.Clients
                 .Group($"conversation-{conversationId}")
                 .SendAsync("ReadMessageAsync", conversationId, messageDto);
         }
-        //public async Task SendMessageNotificationAsync(Guid conversationId,MessageDto messageDto,string connectionId) 
-        //{
-        //    await _hubContext.Clients
-        //        .GroupExcept($"conversation-{conversationId}", connectionId)
-        //        .SendAsync("SendMessageNotificationAsync", conversationId, messageDto);
-        //}
+
     }
 }
 

@@ -1,5 +1,4 @@
 ﻿using ItirafEt.Api.Services;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.Builder;
 

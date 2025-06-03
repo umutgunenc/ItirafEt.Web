@@ -1,4 +1,4 @@
-﻿using ItirafEt.Shared.DTOs;
+﻿using ItirafEt.Shared.ViewModels;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis
@@ -8,25 +8,25 @@ namespace ItirafEt.SharedComponents.Apis
     public interface ICategoryApi
     {
         [Post("/api/createcategory")]
-        Task<ApiResponses> CreateCategoryAsync(CategoryDto dto);
+        Task<ApiResponses> CreateCategoryAsync(CategoryViewModel model);
         [Post("/api/editcategory")]
-        Task<ApiResponses> EditCategoryAsync(CategoryDto dto);
+        Task<ApiResponses> EditCategoryAsync(CategoryViewModel model);
         [Get("/api/getAllCategories")]
-        Task<ApiResponses<List<CategoryDto>>> GetAllCategoriesAsync();
+        Task<ApiResponses<List<CategoryViewModel>>> GetAllCategoriesAsync();
 
         [Get("/api/getCategoryName")]
         Task<ApiResponses<string>> GetCategoryNameAsync(int categoryId);
 
         [Get("/api/getAllActiveCategories")]
-        Task<ApiResponses<List<CategoryDto>>> GetAllActiveCategoriesAsycn();
+        Task<ApiResponses<List<CategoryViewModel>>> GetAllActiveCategoriesAsycn();
 
         [Get("/api/getCategoryPostsOrderByDate")]
-        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByDateAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
+        Task<ApiResponses<List<PostInfoViewModel>>> GetCategoryPostsOrderByDateAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
 
         [Get("/api/getCategoryPostsOrderByViewCount")]
-        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByViewCountAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
+        Task<ApiResponses<List<PostInfoViewModel>>> GetCategoryPostsOrderByViewCountAsync([Query] int categoryId,[Query] int pageNo,[Query] int pageSize);
 
         [Get("/api/getCategoryPostsOrderByLikeCount")]
-        Task<ApiResponses<List<PostInfoDto>>> GetCategoryPostsOrderByLikeCountAsync([Query] int categoryId, [Query] int pageNo, [Query] int pageSize);
+        Task<ApiResponses<List<PostInfoViewModel>>> GetCategoryPostsOrderByLikeCountAsync([Query] int categoryId, [Query] int pageNo, [Query] int pageSize);
     }
 }

@@ -1,12 +1,12 @@
 ﻿
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using ItirafEt.SharedComponents.Apis;
 
 namespace ItirafEt.SharedComponents.ClientServices
 {
     public class ConversationService
     {
-        private List<ConversationDto> _conversations = new();
+        private List<ConversationViewModel> _conversations = new();
         private bool _isInitialized = false;
 
         private readonly IMessageApi MessageApi;
@@ -37,7 +37,7 @@ namespace ItirafEt.SharedComponents.ClientServices
             
         }
 
-        public List<ConversationDto> GetUserConversations()
+        public List<ConversationViewModel> GetUserConversations()
         {
             return _conversations;
         }

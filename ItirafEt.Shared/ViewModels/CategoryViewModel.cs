@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class CategoryDto
+    public class CategoryViewModel
     {
         public int Id { get; set; }
 

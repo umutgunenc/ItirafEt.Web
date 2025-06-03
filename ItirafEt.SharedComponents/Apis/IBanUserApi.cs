@@ -1,4 +1,4 @@
-﻿using ItirafEt.Shared.DTOs;
+﻿using ItirafEt.Shared.ViewModels;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis
@@ -8,10 +8,10 @@ namespace ItirafEt.SharedComponents.Apis
     public interface IBanUserApi
     {
         [Post("/api/banUser")]
-        Task<ApiResponses> BanUserAsync(BanUserDto bannedUser,Guid AdminId);
+        Task<ApiResponses> BanUserAsync(BanUserViewModel bannedUser,Guid AdminId);
 
 
         [Get("/api/getAllUsers")]
-        Task<ApiResponses<List<BanUserDto>>> GetAllUserDtosAsync();
+        Task<ApiResponses<List<BanUserViewModel>>> GetAllUserDtosAsync();
     }
 }

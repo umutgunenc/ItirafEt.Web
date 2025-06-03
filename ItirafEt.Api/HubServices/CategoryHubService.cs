@@ -1,5 +1,5 @@
 ﻿using ItirafEt.Api.Hubs;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.HubServices
@@ -13,11 +13,11 @@ namespace ItirafEt.Api.HubServices
             _categoryHub = categoryHub;
         }
 
-        public async Task CategoryInfoChangedAsync(CategoryDto categoryDto)
+        public async Task CategoryInfoChangedAsync(CategoryViewModel model)
         {
             await _categoryHub.Clients
                 .Group($"CategoryInfoChanged")
-                .SendAsync("CategoryInfoChangedAsync", categoryDto);
+                .SendAsync("CategoryInfoChangedAsync", model);
         }
 
         public async Task CategoryPostCountChangedAsync(int categoryId, bool isPostAdded)

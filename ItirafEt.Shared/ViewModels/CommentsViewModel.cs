@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class CommentsDto
+    public class CommentsViewModel
     {
         public int Id { get; set; }
         public string? UserName { get; set; }
@@ -29,8 +29,8 @@ namespace ItirafEt.Shared.DTOs
 
         [JsonIgnore]
         public string IpAddress { get; set; }
-        public List<CommentsDto>? CommentReplies { get; set; }
-        public List<ReactionDto>? CommentRections { get; set; }
+        public List<CommentsViewModel>? CommentReplies { get; set; }
+        public List<ReactionViewModel>? CommentRections { get; set; }
 
     }
 }

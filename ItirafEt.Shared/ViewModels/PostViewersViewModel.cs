@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public record PostViewersDto
+    public record PostViewersViewModel
     {
         public string PostViewerUserName { get; set; }
         public Guid PostViewerUserId { get; set; }

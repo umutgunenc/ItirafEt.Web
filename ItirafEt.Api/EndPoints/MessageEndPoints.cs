@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using ItirafEt.Api.Services;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Refit;
 
@@ -22,61 +22,19 @@ namespace ItirafEt.Api.EndPoints
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
 
-            app.MapPost("/api/message/SendMessage", async (CreateMessageDto messageDto, HttpContext context, MessageService messageService) =>
+            app.MapPost("/api/message/SendMessage", async (CreateMessageViewModel model, HttpContext context, MessageService messageService) =>
             {
                 var ipAddress = context.Connection.RemoteIpAddress?.ToString();
                 var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-                messageDto.SenderIpAddress = ipAddress;
-                messageDto.SenderDeviceInfo = userAgent;
+                model.SenderIpAddress = ipAddress;
+                model.SenderDeviceInfo = userAgent;
 
-                return Results.Ok(await messageService.SendMessageAsync(messageDto));
+                return Results.Ok(await messageService.SendMessageAsync(model));
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
-
-            //app.MapPost("/api/message/SendMessageWithPhoto", async (HttpContext context, IWebHostEnvironment env, [FromForm] string ConversationId, [FromForm] string Content, [FromForm] string SenderId, [FromForm] string ReceiverId, [FromForm] IFormFile? Photo, MessageService messageService) =>
-            //{
-            //    var messageDto = new CreateMessageDto
-            //    {
-            //        ConversationId = ConversationId,
-            //        Content = Content,
-            //        SenderId = SenderId,
-            //        ReceiverId = ReceiverId,
-            //        CreatedDate = DateTime.UtcNow,
-            //        SenderIpAddress = context.Connection.RemoteIpAddress?.ToString(),
-            //        SenderDeviceInfo = context.Request.Headers["User-Agent"].ToString(),
-            //        Photo = Photo
-            //    };
-
-            //    if (Photo != null)
-            //    {
-            //        var ext = Path.GetExtension(Photo.FileName).ToLowerInvariant();
-            //        if (!new[] { ".jpg", ".jpeg", ".png", ".gif" }.Contains(ext))
-            //            return Results.BadRequest("Geçersiz dosya uzantısı.");
-
-            //        if (Photo.Length > 10 * 1024 * 1024)
-            //            return Results.BadRequest("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
-
-            //        var uploads = Path.Combine(env.WebRootPath, "uploads", "messages");
-            //        Directory.CreateDirectory(uploads);
-
-            //        var fileName = $"{Guid.NewGuid()}{ext}";
-            //        var path = Path.Combine(uploads, fileName);
-            //        await using var fileStream = File.Create(path);
-            //        await Photo.CopyToAsync(fileStream);
-
-            //        messageDto.PhotoUrl = $"/uploads/messages/{fileName}";
-            //    }
-
-            //    return Results.Ok(await messageService.SendMessageWithPhotoAsync(messageDto));
-
-            //}).Accepts<MessageDto>("multipart/form-data")
-            //  .Produces<ApiResponses<MessageDto>>(StatusCodes.Status200OK)
-            //  .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
-            //  .DisableAntiforgery();
-
-            app.MapPost("/api/message/SendMessageWithPhoto", async ([FromServices] MessageService messageService, [FromForm] CreateMessageDto dto, [FromServices] IWebHostEnvironment env, HttpContext httpContext) =>
+            app.MapPost("/api/message/SendMessageWithPhoto", async ([FromServices] MessageService messageService, [FromForm] CreateMessageViewModel dto, [FromServices] IWebHostEnvironment env, HttpContext httpContext) =>
             {
 
                 dto.SenderIpAddress = httpContext.Connection.RemoteIpAddress?.ToString();
@@ -88,11 +46,11 @@ namespace ItirafEt.Api.EndPoints
                     var ext = Path.GetExtension(dto.Photo.FileName).ToLowerInvariant();
                     var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif" };
                     if (!allowed.Contains(ext))
-                        return Results.Ok(ApiResponses<MessageDto>.Fail("Geçersiz dosya uzantısı."));
+                        return Results.Ok(ApiResponses<MessageViewModel>.Fail("Geçersiz dosya uzantısı."));
 
 
                     if (dto.Photo.Length > 10 * 1024 * 1024)
-                        return Results.Ok(ApiResponses<MessageDto>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz."));
+                        return Results.Ok(ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz."));
 
                     var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "messages");
                     Directory.CreateDirectory(uploadsFolder);
@@ -118,8 +76,8 @@ namespace ItirafEt.Api.EndPoints
                 return Results.Ok(result);
 
             })
-            .Accepts<CreateMessageDto>("multipart/form-data")
-            .Produces<ApiResponses<MessageDto>>(StatusCodes.Status200OK)
+            .Accepts<CreateMessageViewModel>("multipart/form-data")
+            .Produces<ApiResponses<MessageViewModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .DisableAntiforgery();
 
@@ -145,13 +103,13 @@ namespace ItirafEt.Api.EndPoints
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
 
-            app.MapPost("/api/message/readMessage", async (Guid conversationId, MessageDto messageDto, MessageService messageService) =>
+            app.MapPost("/api/message/readMessage", async (Guid conversationId, MessageViewModel messageDto, MessageService messageService) =>
             {
                 return Results.Ok(await messageService.ReadMessageAsync(conversationId, messageDto));
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
-            app.MapPost("/api/message/getConversationMessages", async (ConversationDto conversation, DateTime? nextBefore, int take, MessageService messageService) =>
+            app.MapPost("/api/message/getConversationMessages", async (ConversationViewModel conversation, DateTime? nextBefore, int take, MessageService messageService) =>
                 Results
                 .Ok(await messageService.GetConversationMessagesAsync(conversation, nextBefore, take)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));

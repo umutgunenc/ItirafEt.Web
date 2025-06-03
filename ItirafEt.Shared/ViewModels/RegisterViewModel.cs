@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using ItirafEt.Shared.CustomValidationAttribute;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class RegisterDto
+    public class RegisterViewModel
     {
         [Required(ErrorMessage = "Kullanıcı Adını Giriniz.")]
         [MinLength(3, ErrorMessage = "Kullanıcı adı minumum 3 karakter uzunluğunda olmalıdır.")]

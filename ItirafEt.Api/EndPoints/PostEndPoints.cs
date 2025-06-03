@@ -1,6 +1,6 @@
 ﻿using ItirafEt.Api.Services;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.ViewModels;
 
 namespace ItirafEt.Api.EndPoints
 {
@@ -9,15 +9,15 @@ namespace ItirafEt.Api.EndPoints
         public static IEndpointRouteBuilder MapPostEndPoints(this IEndpointRouteBuilder app)
         {
 
-            app.MapPost("/api/createPost", async (PostDto dto, Guid userId, HttpContext context, PostService postService) =>
+            app.MapPost("/api/createPost", async (PostViewModel model, Guid userId, HttpContext context, PostService postService) =>
             {
                 var ipAddress = context.Connection.RemoteIpAddress?.ToString();
                 var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-                dto.IpAddress = ipAddress;
-                dto.DeviceInfo = userAgent;
+                model.IpAddress = ipAddress;
+                model.DeviceInfo = userAgent;
 
-                return Results.Ok(await postService.CreatePostAsync(dto, userId));
+                return Results.Ok(await postService.CreatePostAsync(model, userId));
             })
             .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
@@ -30,14 +30,6 @@ namespace ItirafEt.Api.EndPoints
             {
                 return Results.Ok(await postService.GetPostByIdAsync(postId));
             });
-
-            //app.MapPost("/api/increaseViewCount", async (HttpContext httpContext,int postId,PostService postService) =>
-            //{
-            //    var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
-            //    var response = await postService.IncreaseViewCountAsync(postId, ipAddress);
-
-            //    return Results.Ok(response);
-            //});
 
             return app;
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
     public record ApiResponses(bool IsSuccess, string? ErrorMessage)
     {

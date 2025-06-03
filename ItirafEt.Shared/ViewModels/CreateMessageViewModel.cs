@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class CreateMessageDto
+    public class CreateMessageViewModel
     {
         public string? ConversationId { get; set; }
         public string? Content { get; set; }

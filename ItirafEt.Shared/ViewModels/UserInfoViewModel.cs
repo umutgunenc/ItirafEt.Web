@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class UserInfoDto
+    public class UserInfoViewModel
     {
         public Guid UserId { get; set; }
         public string UserName { get; set; } = string.Empty;

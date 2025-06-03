@@ -8,8 +8,8 @@ using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.ClientServices.State;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
@@ -37,7 +37,7 @@ namespace ItirafEt.Api.Services
             _env = env;
         }
 
-        public async Task<ApiResponses<List<ConversationDto>>> GetUserConversaionsAsync(Guid userId)
+        public async Task<ApiResponses<List<ConversationViewModel>>> GetUserConversaionsAsync(Guid userId)
         {
             var conversations = await _context.Conversations
                 .AsNoTracking()
@@ -45,18 +45,18 @@ namespace ItirafEt.Api.Services
                 .ToListAsync();
 
             if (conversations.Count == 0)
-                return ApiResponses<List<ConversationDto>>.Fail("Mesajlaşma Bulunamadı.");
+                return ApiResponses<List<ConversationViewModel>>.Fail("Mesajlaşma Bulunamadı.");
 
-            var returnConversationsDto = new List<ConversationDto>();
+            var returnConversationsDto = new List<ConversationViewModel>();
             foreach (var conversation in conversations)
             {
                 var responderUserId = conversation.InitiatorId == userId ? conversation.ResponderId : conversation.InitiatorId;
-                var conversationDto = await ConversationToConversationDtoWithLastMessageAsync(conversation, responderUserId, userId);
+                var conversationDto = await ConversationToConversationModelWithLastMessageAsync(conversation, responderUserId, userId);
                 returnConversationsDto.Add(conversationDto);
             }
 
 
-            return ApiResponses<List<ConversationDto>>.Success(returnConversationsDto);
+            return ApiResponses<List<ConversationViewModel>>.Success(returnConversationsDto);
         }
         public async Task<ApiResponses<bool>> CanUserReadConversationAsync(Guid conversationId, Guid userId)
         {
@@ -72,38 +72,38 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<bool>.Success(true);
         }
-        public async Task<ApiResponses<ConversationDto>> GetConversationAsync(Guid conversationId, Guid senderUserId)
+        public async Task<ApiResponses<ConversationViewModel>> GetConversationAsync(Guid conversationId, Guid senderUserId)
         {
             var conversation = await _context.Conversations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
 
             if (conversation == null)
-                return ApiResponses<ConversationDto>.Fail("Mesajlaşma Bulunamadı");
+                return ApiResponses<ConversationViewModel>.Fail("Mesajlaşma Bulunamadı");
             var receiverUserId = conversation.InitiatorId == senderUserId ? conversation.ResponderId : conversation.InitiatorId;
-            var conversationDto = await ConversationToConversationDtoAsync(conversation, receiverUserId, senderUserId);
+            var conversationDto = await ConversationToConversationModelAsync(conversation, receiverUserId, senderUserId);
 
-            return ApiResponses<ConversationDto>.Success(conversationDto);
+            return ApiResponses<ConversationViewModel>.Success(conversationDto);
 
         }
 
-        public async Task<ApiResponses<ConversationDto>> GetConversationDtoAsync(Guid senderUserId, Guid receiverUserId)
+        public async Task<ApiResponses<ConversationViewModel>> GetConversationDtoAsync(Guid senderUserId, Guid receiverUserId)
         {
             var senderUser = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == senderUserId);
 
             if (senderUser == null)
-                return ApiResponses<ConversationDto>.Fail("Gönderici Kullanıcı Bulunamadı.");
+                return ApiResponses<ConversationViewModel>.Fail("Gönderici Kullanıcı Bulunamadı.");
 
             var receiverUser = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == receiverUserId);
             if (receiverUser == null)
-                return ApiResponses<ConversationDto>.Fail("Alıcı Kullanıcı Bulunamadı.");
+                return ApiResponses<ConversationViewModel>.Fail("Alıcı Kullanıcı Bulunamadı.");
 
             if (senderUserId == receiverUserId)
-                return ApiResponses<ConversationDto>.Fail("Kendinize mesaj gönderemezsiniz.");
+                return ApiResponses<ConversationViewModel>.Fail("Kendinize mesaj gönderemezsiniz.");
 
             var conversation = await _context.Conversations
                 .AsNoTracking()
@@ -115,8 +115,8 @@ namespace ItirafEt.Api.Services
 
             if (conversation != null)
             {
-                var conversationDto = await ConversationToConversationDtoAsync(conversation, receiverUserId, senderUserId);
-                return ApiResponses<ConversationDto>.Success(conversationDto);
+                var conversationDto = await ConversationToConversationModelAsync(conversation, receiverUserId, senderUserId);
+                return ApiResponses<ConversationViewModel>.Success(conversationDto);
             }
             else
             {
@@ -131,27 +131,27 @@ namespace ItirafEt.Api.Services
                     await _context.Conversations.AddAsync(newConversation);
                     _context.SaveChanges();
 
-                    var conversationDto = await ConversationToConversationDtoAsync(newConversation, receiverUserId, senderUserId);
-                    return ApiResponses<ConversationDto>.Success(conversationDto);
+                    var conversationDto = await ConversationToConversationModelAsync(newConversation, receiverUserId, senderUserId);
+                    return ApiResponses<ConversationViewModel>.Success(conversationDto);
                 }
                 else
-                    return ApiResponses<ConversationDto>.Fail("Mesaj gönderebilmek için super kullanıcı olmalısınız.");
+                    return ApiResponses<ConversationViewModel>.Fail("Mesaj gönderebilmek için super kullanıcı olmalısınız.");
             }
         }
 
-        public async Task<ApiResponses<MessageDto>> SendMessageAsync(CreateMessageDto messageDto)
+        public async Task<ApiResponses<MessageViewModel>> SendMessageAsync(CreateMessageViewModel model)
         {
-            Guid.TryParse(messageDto.SenderId, out Guid senderId);
-            Guid.TryParse(messageDto.ReceiverId, out Guid receiverId);
-            Guid.TryParse(messageDto.ConversationId, out Guid conversationId);
+            Guid.TryParse(model.SenderId, out Guid senderId);
+            Guid.TryParse(model.ReceiverId, out Guid receiverId);
+            Guid.TryParse(model.ConversationId, out Guid conversationId);
 
-            var isMessageValid = await IsMessageValidAsync(messageDto, senderId, receiverId, conversationId);
+            var isMessageValid = await IsMessageValidAsync(model, senderId, receiverId, conversationId);
             if (!isMessageValid.Item1)
-                return ApiResponses<MessageDto>.Fail(isMessageValid.Item2);
+                return ApiResponses<MessageViewModel>.Fail(isMessageValid.Item2);
 
             var message = new Message
             {
-                Content = messageDto.Content,
+                Content = model.Content,
                 ConversationId = conversationId,
                 SenderId = senderId,
                 SentDate = DateTime.Now,
@@ -159,15 +159,15 @@ namespace ItirafEt.Api.Services
                 IsVisibleToInitiatorUser = true,
                 IsVisibleToResponderUser = true,
                 ReadDate = null,
-                IpAddress = messageDto.SenderIpAddress,
-                DeviceInfo = messageDto.SenderDeviceInfo,
+                IpAddress = model.SenderIpAddress,
+                DeviceInfo = model.SenderDeviceInfo,
 
             };
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
 
 
-            var returnMessageDto = new MessageDto
+            var returnModel = new MessageViewModel
             {
                 Id = message.Id,
                 Content = message.Content,
@@ -177,81 +177,56 @@ namespace ItirafEt.Api.Services
                 ConversationId = message.ConversationId,
             };
 
-            await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);
-            await _hubService.SendMessageNotificationAsync(conversationId, returnMessageDto);
+            await _hubService.SendMessageAsync(message.ConversationId, returnModel);
+            await _hubService.SendMessageNotificationAsync(conversationId, returnModel);
 
-            return ApiResponses<MessageDto>.Success(returnMessageDto);
+            return ApiResponses<MessageViewModel>.Success(returnModel);
 
         }
 
-        public async Task<ApiResponses<MessageDto>> SendMessageWithPhotoAsync(CreateMessageDto messageDto)
+        public async Task<ApiResponses<MessageViewModel>> SendMessageWithPhotoAsync(CreateMessageViewModel model)
         {
-            Guid.TryParse(messageDto.SenderId, out Guid senderId);
-            Guid.TryParse(messageDto.ReceiverId, out Guid receiverId);
-            Guid.TryParse(messageDto.ConversationId, out Guid conversationId);
+            Guid.TryParse(model.SenderId, out Guid senderId);
+            Guid.TryParse(model.ReceiverId, out Guid receiverId);
+            Guid.TryParse(model.ConversationId, out Guid conversationId);
 
-            var isMessageValid = await IsMessageValidAsync(messageDto, senderId, receiverId, conversationId);
+            var isMessageValid = await IsMessageValidAsync(model, senderId, receiverId, conversationId);
             if (!isMessageValid.Item1)
-                return ApiResponses<MessageDto>.Fail(isMessageValid.Item2);
+                return ApiResponses<MessageViewModel>.Fail(isMessageValid.Item2);
 
-            if (messageDto.Photo == null)
-                return ApiResponses<MessageDto>.Fail("Fotoğraf yüklenmedi.");
+            if (model.Photo == null)
+                return ApiResponses<MessageViewModel>.Fail("Fotoğraf yüklenmedi.");
 
 
             List<string> allowedExtendions = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
 
-            var extension = Path.GetExtension(messageDto.Photo.FileName).ToLowerInvariant();
+            var extension = Path.GetExtension(model.Photo.FileName).ToLowerInvariant();
 
             if (!allowedExtendions.Contains(extension))
-                return ApiResponses<MessageDto>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
+                return ApiResponses<MessageViewModel>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
 
 
-            if (messageDto.Photo.Length > 10 * 1024 * 1024) // 5 MB limit
-                return ApiResponses<MessageDto>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
+            if (model.Photo.Length > 10 * 1024 * 1024) // 5 MB limit
+                return ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
 
 
             var message = new Message
             {
                 ConversationId = conversationId,
                 SenderId = senderId,
-                Content = messageDto.Content,
-                PhotoUrl = messageDto.PhotoUrl,
+                Content = model.Content,
+                PhotoUrl = model.PhotoUrl,
                 SentDate = DateTime.Now,
-                IpAddress = messageDto.SenderIpAddress,
-                DeviceInfo = messageDto.SenderDeviceInfo,
+                IpAddress = model.SenderIpAddress,
+                DeviceInfo = model.SenderDeviceInfo,
                 IsRead = false
             };
 
-
-            //var fileName = $"{Guid.NewGuid()}_{messageDto.Photo.FileName}";
-            //var filePath = Path.Combine("wwwroot", "uploads", "messages", fileName);
-            //using (var stream = new FileStream(filePath, FileMode.Create))
-            //{
-            //    await messageDto.Photo.CopyToAsync(stream);
-            //}
-            //messageDto.PhotoUrl = $"/uploads/messages/{fileName}";
-
-
-            //var message = new Message
-            //{
-            //    Content = messageDto.Content,
-            //    ConversationId = conversationId,
-            //    SenderId = senderId,
-            //    SentDate = DateTime.Now,
-            //    IsRead = false,
-            //    IsVisibleToInitiatorUser = true,
-            //    IsVisibleToResponderUser = true,
-            //    ReadDate = null,
-            //    IpAddress = messageDto.SenderIpAddress,
-            //    DeviceInfo = messageDto.SenderDeviceInfo,
-            //    PhotoUrl = messageDto.PhotoUrl
-
-            //};
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
 
 
-            var returnMessageDto = new MessageDto
+            var returnModel = new MessageViewModel
             {
                 Id = message.Id,
                 Content = message.Content,
@@ -262,10 +237,10 @@ namespace ItirafEt.Api.Services
                 PhotoUrl = message.PhotoUrl,
             };
 
-            await _hubService.SendMessageAsync(message.ConversationId, returnMessageDto);
-            await _hubService.SendMessageNotificationAsync(message.ConversationId, returnMessageDto);
+            await _hubService.SendMessageAsync(message.ConversationId, returnModel);
+            await _hubService.SendMessageNotificationAsync(message.ConversationId, returnModel);
 
-            return ApiResponses<MessageDto>.Success(returnMessageDto);
+            return ApiResponses<MessageViewModel>.Success(returnModel);
 
         }
 
@@ -305,18 +280,18 @@ namespace ItirafEt.Api.Services
             return Results.File(bytes, mime);
         }
 
-        public async Task<ApiResponses> ReadMessageAsync(Guid conversationId, MessageDto messageDto)
+        public async Task<ApiResponses> ReadMessageAsync(Guid conversationId, MessageViewModel model)
         {
             var conversation = await _context.Conversations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
             if (conversation == null)
                 return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
-            if (conversation.InitiatorId != messageDto.SenderId && conversation.ResponderId != messageDto.SenderId)
+            if (conversation.InitiatorId != model.SenderId && conversation.ResponderId != model.SenderId)
                 return ApiResponses.Fail("Mesajlaşma Bulunamadı.");
 
             var message = await _context.Messages
-                .Where(m => m.Id == messageDto.Id)
+                .Where(m => m.Id == model.Id)
                 .FirstOrDefaultAsync();
 
             if (message == null)
@@ -331,17 +306,17 @@ namespace ItirafEt.Api.Services
             _context.Update(message);
             await _context.SaveChangesAsync();
 
-            messageDto.ReadDate = message.ReadDate;
-            messageDto.IsRead = message.IsRead;
-            await _hubService.ReadMessageAsync(conversationId, messageDto);
+            model.ReadDate = message.ReadDate;
+            model.IsRead = message.IsRead;
+            await _hubService.ReadMessageAsync(conversationId, model);
 
             return ApiResponses.Success();
 
         }
 
-        private async Task<ConversationDto> ConversationToConversationDtoAsync(Conversation conversation, Guid responderId, Guid senderUserId)
+        private async Task<ConversationViewModel> ConversationToConversationModelAsync(Conversation conversation, Guid responderId, Guid senderUserId)
         {
-            return new ConversationDto
+            return new ConversationViewModel
             {
                 ConversationId = conversation.ConversationId,
                 SenderUserId = senderUserId,
@@ -349,9 +324,9 @@ namespace ItirafEt.Api.Services
             };
         }
 
-        private async Task<ConversationDto> ConversationToConversationDtoWithLastMessageAsync(Conversation conversation, Guid responderId, Guid senderUserId)
+        private async Task<ConversationViewModel> ConversationToConversationModelWithLastMessageAsync(Conversation conversation, Guid responderId, Guid senderUserId)
         {
-            return new ConversationDto
+            return new ConversationViewModel
             {
                 ConversationId = conversation.ConversationId,
                 SenderUserId = senderUserId,
@@ -360,11 +335,11 @@ namespace ItirafEt.Api.Services
             };
         }
 
-        private async Task<UserInfoDto> GetResponderUserAsync(Guid RespondoerId)
+        private async Task<UserInfoViewModel> GetResponderUserAsync(Guid RespondoerId)
         {
             return await _context.Users.Where(x => x.Id == RespondoerId)
                 .AsNoTracking()
-                .Select(x => new UserInfoDto
+                .Select(x => new UserInfoViewModel
                 {
                     Age = DateTime.Now.Year - x.BirthDate.Year,
                     GenderId = x.GenderId,
@@ -376,13 +351,13 @@ namespace ItirafEt.Api.Services
                 .FirstOrDefaultAsync();
         }
 
-        private async Task<MessageDto?> GetConversationLastMessagesAsync(Conversation conversation)
+        private async Task<MessageViewModel?> GetConversationLastMessagesAsync(Conversation conversation)
         {
             return await _context.Messages
                 .AsNoTracking()
                 .Where(m => m.ConversationId == conversation.ConversationId)
                 .OrderByDescending(m => m.SentDate)
-                .Select(m => new MessageDto
+                .Select(m => new MessageViewModel
                 {
                     Id = m.Id,
                     ConversationId = m.ConversationId,
@@ -401,7 +376,7 @@ namespace ItirafEt.Api.Services
 
         }
 
-        public async Task<ApiResponses<InfiniteScrollState<MessageDto>>> GetConversationMessagesAsync(ConversationDto conversation, DateTime? nextBefore, int take)
+        public async Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(ConversationViewModel conversation, DateTime? nextBefore, int take)
         {
             var isThereConversation = await _context.Conversations
                 .AsNoTracking()
@@ -409,14 +384,14 @@ namespace ItirafEt.Api.Services
 
 
             if (!isThereConversation)
-                return ApiResponses<InfiniteScrollState<MessageDto>>.Fail("Mesajlaşma Bulunamadı.");
+                return ApiResponses<InfiniteScrollState<MessageViewModel>>.Fail("Mesajlaşma Bulunamadı.");
 
             var messages = await _context.Messages
                 .AsNoTracking()
                 .Where(m => m.ConversationId == conversation.ConversationId && m.SentDate < nextBefore.Value)
                 .OrderByDescending(m => m.SentDate)
                 .Take(take)
-                .Select(m => new MessageDto
+                .Select(m => new MessageViewModel
                 {
                     Id = m.Id,
                     ConversationId = m.ConversationId,
@@ -438,18 +413,18 @@ namespace ItirafEt.Api.Services
 
             var hasMore = messages.Count == take;
             var nextBeforeDateTime = hasMore ? messages.Last().CreatedDate : (DateTime?)null;
-            var scrollStateMessageList = new InfiniteScrollState<MessageDto>
+            var scrollStateMessageList = new InfiniteScrollState<MessageViewModel>
             {
                 Items = messages,
                 HasMore = hasMore,
                 NextBefore = nextBeforeDateTime
             };
 
-            return ApiResponses<InfiniteScrollState<MessageDto>>.Success(scrollStateMessageList);
+            return ApiResponses<InfiniteScrollState<MessageViewModel>>.Success(scrollStateMessageList);
 
         }
 
-        public async Task<(bool, string)> IsMessageValidAsync(CreateMessageDto messageDto, Guid senderId, Guid receiverId, Guid conversationId)
+        public async Task<(bool, string)> IsMessageValidAsync(CreateMessageViewModel messageDto, Guid senderId, Guid receiverId, Guid conversationId)
         {
 
             var senderUser = await _context.Users
@@ -477,14 +452,14 @@ namespace ItirafEt.Api.Services
             return (true, senderUser.UserName);
         }
 
-        public async Task<ApiResponses<List<InboxDto>>> GetUserMessagesAsync(Guid userId)
+        public async Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId)
         {
             var currentUser = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (currentUser == null)
-                return ApiResponses<List<InboxDto>>.Fail("Kullanıcı bulunamadı.");
+                return ApiResponses<List<InboxViewModel>>.Fail("Kullanıcı bulunamadı.");
 
             var conversations = await _context.Conversations
                 .AsNoTracking()
@@ -521,7 +496,7 @@ namespace ItirafEt.Api.Services
                     var lastMessage = lastMessages.FirstOrDefault(m => m.ConversationId == c.ConversationId);
                     var unreadCount = unreadCounts.FirstOrDefault(u => u.ConversationId == c.ConversationId)?.Count ?? 0;
 
-                    return new InboxDto
+                    return new InboxViewModel
                     {
                         ConversationId = c.ConversationId,
                         SenderUserUserName = partnerUser.UserName,
@@ -535,9 +510,9 @@ namespace ItirafEt.Api.Services
                 .ToList();
 
             if (!inboxDtos.Any())
-                return ApiResponses<List<InboxDto>>.Fail("Mesaj Kutunuz Boş");
+                return ApiResponses<List<InboxViewModel>>.Fail("Mesaj Kutunuz Boş");
 
-            return ApiResponses<List<InboxDto>>.Success(inboxDtos);
+            return ApiResponses<List<InboxViewModel>>.Success(inboxDtos);
         }
 
     }

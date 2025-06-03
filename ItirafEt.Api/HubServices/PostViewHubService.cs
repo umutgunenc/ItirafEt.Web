@@ -1,5 +1,5 @@
 ﻿using ItirafEt.Api.Hubs;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.HubServices
@@ -11,11 +11,11 @@ namespace ItirafEt.Api.HubServices
         {
             _hubContext = hubContext;
         }
-        public async Task PostViewedAsync(int postId, PostViewersDto dto)
+        public async Task PostViewedAsync(int postId, PostViewersViewModel model)
         {
             await _hubContext.Clients
                 .Group($"postPostViewed-{postId}")
-                .SendAsync("PostViewedAsync", postId, dto);
+                .SendAsync("PostViewedAsync", postId, model);
         }
         public async Task PostViewedAnonymousAsync(int postId)
         {

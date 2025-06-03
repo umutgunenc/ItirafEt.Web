@@ -1,5 +1,4 @@
 ﻿using ItirafEt.Api.Services;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
 
 namespace ItirafEt.Api.EndPoints
@@ -19,17 +18,6 @@ namespace ItirafEt.Api.EndPoints
 
             app.MapGet("/api/getPostViewCount", async (int postId, PostViewService postReadService) =>
                 Results.Ok(await postReadService.GetPostViewCountAsync(postId)));
-            //app.MapGet("/api/getUserViewedPostInfo", async (Guid userId, PostViewService postReadService) =>
-            //    Results.Ok(await postReadService.GetUserViewedPostInfoAsync(userId)))
-            //        .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser)));
-
-            //app.MapGet("/api/getPostReadCount", async (PostViewService postReadService, int postId) =>
-            //    Results.Ok(await postReadService.GetPostReadCountAsync(postId)));
-
-            //app.MapGet("/api/didUserReadPost", async (int postId, Guid userId, PostViewService postReadService) =>
-            //    Results.Ok(await postReadService.DidUserReadPostAsync(postId, userId)))
-            //        .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-
 
             return app;
         }

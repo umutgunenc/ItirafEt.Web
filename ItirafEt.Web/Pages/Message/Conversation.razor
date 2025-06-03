@@ -195,9 +195,9 @@ else
 	private string? _previewImageUrl;
 	private Dictionary<string, string> _photoCache = new();
 	private ModalComponent _sendPhotoModal = new ModalComponent();
-	private ConversationDto? _conversationDto;
-	private InfiniteScrollState<MessageDto>? _conversationMessages = new();
-	private CreateMessageDto _messageDto = new();
+	private ConversationViewModel? _conversationDto;
+	private InfiniteScrollState<MessageViewModel>? _conversationMessages = new();
+	private CreateMessageViewModel _messageDto = new();
 	private HubConnection? _hubConnection;
 	private string? _errorMessage;
 	private string? _messageErrorMessage;
@@ -297,7 +297,7 @@ else
 			throw;
 		}
 	}
-	private async Task GetMessagePhotoAsync(MessageDto message)
+	private async Task GetMessagePhotoAsync(MessageViewModel message)
 	{
 		if (string.IsNullOrEmpty(message.PhotoUrl) || _photoCache.ContainsKey(message.PhotoUrl))
 			return;
@@ -315,7 +315,7 @@ else
 			await ReadMessageAsync(message);
 		}
 	}
-	private async Task ReadMessageAsync(MessageDto message)
+	private async Task ReadMessageAsync(MessageViewModel message)
 	{
 
 		if (message.IsRead)
@@ -340,7 +340,7 @@ else
 			_isApiBusy = false;
 		}
 	}
-	private async Task SendMessageAsync(CreateMessageDto messageDto)
+	private async Task SendMessageAsync(CreateMessageViewModel messageDto)
 	{
 		if (string.IsNullOrWhiteSpace(messageDto.Content))
 			return;
@@ -370,7 +370,7 @@ else
 			messageDto.Content = string.Empty;
 		}
 	}
-	private async Task SendMessageWithPhotoAsync(CreateMessageDto messageDto)
+	private async Task SendMessageWithPhotoAsync(CreateMessageViewModel messageDto)
 	{
 		if (_selectedFile == null)
 		{
@@ -444,13 +444,13 @@ else
 		.WithAutomaticReconnect()
 		.Build();
 
-		_hubConnection.On<Guid, MessageDto>("SendMessageAsync", async (conversationId, messageDto) =>
+		_hubConnection.On<Guid, MessageViewModel>("SendMessageAsync", async (conversationId, messageDto) =>
 		{
 			await AddMessageAsync(messageDto);
 			await ReadMessageAsync(messageDto);
 		});
 
-		_hubConnection.On<Guid, MessageDto>("ReadMessageAsync", async (conversationId, messageDto) =>
+		_hubConnection.On<Guid, MessageViewModel>("ReadMessageAsync", async (conversationId, messageDto) =>
 		{
 
 			var message = _conversationMessages.Items.FirstOrDefault(m => m.Id == messageDto.Id);
@@ -466,7 +466,7 @@ else
 		await _hubConnection.StartAsync();
 		await _hubConnection.SendAsync("JoinMessageGroup", ConversationId);
 	}
-	private async Task SendPhotoAsync(MessageDto messageDto)
+	private async Task SendPhotoAsync(MessageViewModel messageDto)
 	{
 		// Fotoğraf gönderme işlemi
 		await Task.Delay(1000);
@@ -525,10 +525,10 @@ else
 			_errorMessage = ex.Message;
 		}
 	}
-	private async Task AddMessageAsync(MessageDto newMessage)
+	private async Task AddMessageAsync(MessageViewModel newMessage)
 	{
 		if (_conversationMessages?.Items?.Count == 0 || _conversationMessages == null)
-			_conversationMessages = new InfiniteScrollState<MessageDto>();
+			_conversationMessages = new InfiniteScrollState<MessageViewModel>();
 
 		_conversationMessages.Items.Insert(0, newMessage);
 		await GetMessagePhotoAsync(newMessage);

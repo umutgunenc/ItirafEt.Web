@@ -1,4 +1,4 @@
-﻿using ItirafEt.Shared.DTOs;
+﻿using ItirafEt.Shared.ViewModels;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis
@@ -7,7 +7,7 @@ namespace ItirafEt.SharedComponents.Apis
     {
         [Headers("Authorization: Bearer")]
         [Get("/api/getPostReaction/")]
-        Task<ApiResponses<List<ReactionDto>>> GetPostReactionsAsync(int postId);
+        Task<ApiResponses<List<ReactionViewModel>>> GetPostReactionsAsync(int postId);
 
         [Headers("Authorization: Bearer")]
         [Post("/api/likePost/")]

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class InboxDto
+    public class InboxViewModel
     {
         public Guid ConversationId { get; set; }
         public string? SenderUserUserName { get; set; }

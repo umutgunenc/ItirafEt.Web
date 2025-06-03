@@ -1,5 +1,5 @@
 ﻿using ItirafEt.Api.Services;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 
 namespace ItirafEt.Api.EndPoints
 {
@@ -7,11 +7,11 @@ namespace ItirafEt.Api.EndPoints
     {
         public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
         {
-            app.MapPost("/api/auth/login", async (LoginDto dto, AuthService authService) =>
-                Results.Ok(await authService.LoggingAsync(dto)));
+            app.MapPost("/api/auth/login", async (LoginViewModel model, AuthService authService) =>
+                Results.Ok(await authService.LoggingAsync(model)));
 
-            app.MapPost("/api/auth/register", async (RegisterDto dto, AuthService authService) =>
-                Results.Ok(await authService.RegisterAsync(dto)));
+            app.MapPost("/api/auth/register", async (RegisterViewModel model, AuthService authService) =>
+                Results.Ok(await authService.RegisterAsync(model)));
 
             return app;
         }

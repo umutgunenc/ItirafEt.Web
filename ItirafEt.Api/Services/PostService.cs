@@ -3,8 +3,8 @@ using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,37 +21,37 @@ namespace ItirafEt.Api.Services
             _categoryHubService = categoryHubService;
         }
 
-        public async Task<ApiResponses> CreatePostAsync(PostDto dto, Guid UserId)
+        public async Task<ApiResponses> CreatePostAsync(PostViewModel model, Guid userId)
         {
-            if (await _context.Posts.AsNoTracking().AnyAsync(c => c.Title == dto.Title))
+            if (await _context.Posts.AsNoTracking().AnyAsync(c => c.Title == model.Title))
                 return ApiResponses.Fail("Aynı başlık ile mevcut bir gönderi bulunmaktadır.\nLütfen başlığınızı değiştirin.");
 
             var category = await _context.Categories
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == dto.CategoryId && c.isActive);
+                .FirstOrDefaultAsync(c => c.Id == model.CategoryId && c.isActive);
             if (category == null)
                 return ApiResponses.Fail("Seçilen kategori bulunamadı.");
 
-            if (dto.Content.Trim().Length < 100)
+            if (model.Content.Trim().Length < 100)
                 return ApiResponses.Fail("İçerik en az 100 karakter olmalıdır.");
-            if (dto.Content.Trim().Length > 4096)
+            if (model.Content.Trim().Length > 4096)
                 return ApiResponses.Fail("İçerik en fazla 4096 karakter olmalıdır.");
-            if (dto.Title.Trim().Length < 10)
+            if (model.Title.Trim().Length < 10)
                 return ApiResponses.Fail("Başlık en az 10 karakter olmalıdır.");
-            if (dto.Title.Trim().Length > 256)
+            if (model.Title.Trim().Length > 256)
                 return ApiResponses.Fail("Başlık en fazla 256 karakter olmalıdır.");
 
 
             var post = new Post
             {
                 CreatedDate = DateTime.Now,
-                Content = dto.Content,
-                Title = dto.Title.ToUpper(),
-                UserId = UserId,
+                Content = model.Content,
+                Title = model.Title.ToUpper(),
+                UserId = userId,
                 IsActive = true,
-                IpAddress = dto.IpAddress,
-                DeviceInfo = dto.DeviceInfo,
-                CategoryId = dto.CategoryId,
+                IpAddress = model.IpAddress,
+                DeviceInfo = model.DeviceInfo,
+                CategoryId = model.CategoryId,
             };
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
@@ -61,11 +61,11 @@ namespace ItirafEt.Api.Services
 
         }
 
-        public async Task<ApiResponses<int>> GetCreatedPostIdAsync(Guid UserId)
+        public async Task<ApiResponses<int>> GetCreatedPostIdAsync(Guid userId)
         {
             var createdPostId = await _context.Posts
                 .AsNoTracking()
-                .Where(c => c.UserId == UserId)
+                .Where(c => c.UserId == userId)
                 .OrderByDescending(c => c.CreatedDate) // En son oluşturulan post en üstte gelecek
                 .Select(c => c.Id)                      // Sadece ID'yi seçiyoruz
                 .FirstOrDefaultAsync();                 // En üstteki değeri getiriyoruz 
@@ -73,7 +73,7 @@ namespace ItirafEt.Api.Services
             return ApiResponses<int>.Success(createdPostId);
         }
 
-        public async Task<ApiResponses<PostDto>> GetPostByIdAsync(int postId)
+        public async Task<ApiResponses<PostViewModel>> GetPostByIdAsync(int postId)
         {
             //TODO category aktif değilse hata versin postu getirmesin
             var post = await _context.Posts
@@ -81,7 +81,7 @@ namespace ItirafEt.Api.Services
                 .Include(p => p.Category)
                 .AsNoTracking()
                 .Where(p => p.Id == postId && p.IsActive && p.Category.isActive)
-                .Select(p => new PostDto
+                .Select(p => new PostViewModel
                 {
                     Id = p.Id,
                     Title = p.Title,
@@ -97,8 +97,8 @@ namespace ItirafEt.Api.Services
                 })
                 .FirstOrDefaultAsync();
             if(post == null)
-                return ApiResponses<PostDto>.Fail("Gönderi bulunamadı.");
-            return ApiResponses<PostDto>.Success(post);
+                return ApiResponses<PostViewModel>.Fail("Gönderi bulunamadı.");
+            return ApiResponses<PostViewModel>.Success(post);
 
         }
 

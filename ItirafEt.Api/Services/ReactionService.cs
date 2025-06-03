@@ -2,9 +2,8 @@
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.HubServices;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
-using Microsoft.AspNetCore.SignalR;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Services
@@ -21,7 +20,7 @@ namespace ItirafEt.Api.Services
             _reactionHubService = reactionHubService;
         }
 
-        public async Task<ApiResponses<List<ReactionDto>>> GetPostReactionsAsync(int postId)
+        public async Task<ApiResponses<List<ReactionViewModel>>> GetPostReactionsAsync(int postId)
         {
             var postReactions = await _context.PostReaction
                 .AsNoTracking()
@@ -29,7 +28,7 @@ namespace ItirafEt.Api.Services
                 .Include(pr => pr.ReactingUser)
                 .AsNoTracking()
                 .Where(pr => pr.PostId == postId)
-                .Select(pr => new ReactionDto
+                .Select(pr => new ReactionViewModel
                 {
                     Id = pr.Id,
                     PostId = pr.PostId,
@@ -43,7 +42,7 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            return ApiResponses<List<ReactionDto>>.Success(postReactions);
+            return ApiResponses<List<ReactionViewModel>>.Success(postReactions);
 
         }
         public async Task<ApiResponses<int>> GetPostLikeCountAsync(int podtId)
@@ -96,9 +95,9 @@ namespace ItirafEt.Api.Services
                 _context.PostReaction.Update(reaction);
                 await _context.SaveChangesAsync();
 
-                var reactionDto = ReactionToReactionDto(reaction);
+                var reactionModel = ReactionToReactionModel(reaction);
 
-                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
+                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionModel, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
                 await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId, UserId);
 
@@ -120,7 +119,7 @@ namespace ItirafEt.Api.Services
                 await _context.SaveChangesAsync();
                 reaction.ReactingUser = await GetReactingUser(UserId);
 
-                var reactionDto = ReactionToReactionDto(reaction);
+                var reactionDto = ReactionToReactionModel(reaction);
 
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
@@ -162,7 +161,7 @@ namespace ItirafEt.Api.Services
 
                 _context.PostReaction.Update(reaction);
                 await _context.SaveChangesAsync();
-                var reactionDto = ReactionToReactionDto(reaction);
+                var reactionDto = ReactionToReactionModel(reaction);
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
                 await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId, UserId);
@@ -184,7 +183,7 @@ namespace ItirafEt.Api.Services
                 await _context.SaveChangesAsync();
 
                 reaction.ReactingUser = await GetReactingUser(UserId);
-                var reactionDto = ReactionToReactionDto(reaction);
+                var reactionDto = ReactionToReactionModel(reaction);
                 await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
                 await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, null, reaction.ReactionTypeId, UserId);
@@ -224,9 +223,9 @@ namespace ItirafEt.Api.Services
                 .FirstOrDefaultAsync(c => c.Id == UserId);
 
         }
-        private ReactionDto ReactionToReactionDto(PostReaction reaction)
+        private ReactionViewModel ReactionToReactionModel(PostReaction reaction)
         {
-            return new ReactionDto
+            return new ReactionViewModel
             {
                 PostId = reaction.PostId,
                 ReactingUserId = reaction.ReactingUserId,

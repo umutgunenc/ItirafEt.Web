@@ -2,7 +2,7 @@
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +18,7 @@ namespace ItirafEt.Api.Services
             _commentHubServices = commentHubServices;
         }
 
-        public async Task<ApiResponses<List<CommentsDto>>> GetPostCommentsAsync(int postId)
+        public async Task<ApiResponses<List<CommentsViewModel>>> GetPostCommentsAsync(int postId)
         {
 
             var comments = await _context.Comments
@@ -35,7 +35,7 @@ namespace ItirafEt.Api.Services
                    .ThenInclude(r => r.CommentReactions)
                    .ThenInclude(cr => cr.ReactingUser)
                .Where(c => c.PostId == postId && c.IsActive && c.ParentCommentId == null)
-               .Select(c => new CommentsDto
+               .Select(c => new CommentsViewModel
                {
                    Id = c.Id,
                    Content = c.Content,
@@ -43,7 +43,7 @@ namespace ItirafEt.Api.Services
                    UpdatedDate = c.UpdatedDate,
                    UserName = c.User.UserName,
                    CommentUserProfilPhotoUrl = c.User.ProfilePictureUrl,
-                   CommentRections = c.CommentReactions.Select(cr => new ReactionDto
+                   CommentRections = c.CommentReactions.Select(cr => new ReactionViewModel
                    {
                        Id = cr.Id,
                        ReactionTypeId = cr.ReactionId,
@@ -55,7 +55,7 @@ namespace ItirafEt.Api.Services
                    }).ToList(),
                    CommentReplies = c.Replies
                         .Where(r => r.IsActive)
-                        .Select(r => new CommentsDto
+                        .Select(r => new CommentsViewModel
                         {
                             Id = r.Id,
                             ParentCommentId = r.ParentCommentId,
@@ -64,7 +64,7 @@ namespace ItirafEt.Api.Services
                             UpdatedDate = r.UpdatedDate,
                             UserName = r.User.UserName,
                             CommentUserProfilPhotoUrl = r.User.ProfilePictureUrl,
-                            CommentRections = r.CommentReactions.Select(cr => new ReactionDto
+                            CommentRections = r.CommentReactions.Select(cr => new ReactionViewModel
                             {
                                 Id = cr.Id,
                                 ReactionTypeId = cr.ReactionId,
@@ -80,49 +80,49 @@ namespace ItirafEt.Api.Services
 
 
             if (comments == null || comments.Count == 0)
-                return ApiResponses<List<CommentsDto>>.Fail("Henüz Yorum Yok. İlk yorumu siz yapın!");
-            return ApiResponses<List<CommentsDto>>.Success(comments);
+                return ApiResponses<List<CommentsViewModel>>.Fail("Henüz Yorum Yok. İlk yorumu siz yapın!");
+            return ApiResponses<List<CommentsViewModel>>.Success(comments);
         }
 
-        public async Task<ApiResponses> AddCommentAsync(int postId, Guid UserId, CommentsDto dto)
+        public async Task<ApiResponses> AddCommentAsync(int postId, Guid UserId, CommentsViewModel model)
         {
-            if (string.IsNullOrEmpty(dto.Content))
+            if (string.IsNullOrEmpty(model.Content))
                 return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
 
-            dto.Content = dto.Content.Trim();
+            model.Content = model.Content.Trim();
 
-            if (string.IsNullOrEmpty(dto.Content))
+            if (string.IsNullOrEmpty(model.Content))
                 return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
 
             var comment = new Comment
             {
-                Content = dto.Content,
+                Content = model.Content,
                 CreatedDate = DateTime.Now,
                 UserId = UserId,
                 PostId = postId,
                 ParentCommentId = null,
                 IsActive = true,
-                DeviceInfo = dto.DeviceInfo,
-                IpAddress = dto.IpAddress
+                DeviceInfo = model.DeviceInfo,
+                IpAddress = model.IpAddress
             };
 
             _context.Comments.Add(comment);
 
             await _context.SaveChangesAsync();
 
-            dto.CreatedDate = comment.CreatedDate;
-            dto.Id = comment.Id;
+            model.CreatedDate = comment.CreatedDate;
+            model.Id = comment.Id;
 
-            dto.UserName = await GetUserNameAsync(UserId);
+            model.UserName = await GetUserNameAsync(UserId);
 
 
-            await _commentHubServices.CommentAddedOrDeletedAsync(postId, dto, true);
+            await _commentHubServices.CommentAddedOrDeletedAsync(postId, model, true);
 
             return ApiResponses.Success();
 
         }
 
-        public async Task<ApiResponses> AddCommentReplyAsync(int postId, int commentId, Guid UserId, CommentsDto replyDto)
+        public async Task<ApiResponses> AddCommentReplyAsync(int postId, int commentId, Guid UserId, CommentsViewModel replyDto)
         {
             if (string.IsNullOrEmpty(replyDto.Content))
                 return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");

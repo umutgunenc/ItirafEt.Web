@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
-using ItirafEt.Shared.DTOs;
 
 namespace ItirafEt.Api.Data.Entities
 {

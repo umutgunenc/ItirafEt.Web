@@ -412,7 +412,6 @@
 													<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 												</a>
 											}
-
 										</div>
 									</div>
 								</div>
@@ -447,7 +446,6 @@
 		{
 			@foreach (var viewer in _viewers.OrderByDescending(x => x.ReadDate))
 			{
-
 				<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
 					<div class="d-flex flex-column gap-2 my-3 mx-2">
 						<!-- Üst Bilgi Satırı -->
@@ -489,8 +487,6 @@
 												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
 											</a>
 										}
-
-
 									</div>
 								</div>
 							</div>
@@ -521,13 +517,13 @@
 	[Parameter]
 	public int postId { get; set; }
 
-	private PostDto? _postDto = new();
-	private CommentsDto _commentModel = new();
-	private CommentsDto _replyModel = new();
-	private List<CommentsDto>? _comments = new();
-	private List<ReactionDto> _reactions = new();
-	private List<PostViewersDto>? _viewers = new();
-	private ConversationDto? _conversationDto = new();
+	private PostViewModel? _postDto = new();
+	private CommentsViewModel _commentModel = new();
+	private CommentsViewModel _replyModel = new();
+	private List<CommentsViewModel>? _comments = new();
+	private List<ReactionViewModel> _reactions = new();
+	private List<PostViewersViewModel>? _viewers = new();
+	private ConversationViewModel? _conversationDto = new();
 	private HubConnection? _reactionHubConnection;
 	private HubConnection? _commentHubConnection;
 	private HubConnection? _postViewHubConnection;
@@ -584,7 +580,6 @@
 
 		await ReadPostAsync();
 
-
 		_isBusy = false;
 
 	}
@@ -605,8 +600,6 @@
 					.WithAutomaticReconnect()
 					.Build();
 
-
-
 		if (!allowedRoles.Contains(_userRoleId))
 		{
 			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", (oldReactionId, newReactionId, userId) =>
@@ -617,7 +610,7 @@
 		}
 		else
 		{
-			_reactionHubConnection.On<ReactionDto, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
+			_reactionHubConnection.On<ReactionViewModel, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
 			{
 				UpdateReactions(reaction, isReactionUpdated);
 				StateHasChanged();
@@ -638,10 +631,10 @@
 
 		if (allowedRoles.Contains(_userRoleId))
 		{
-			_postViewHubConnection.On<int, PostViewersDto>("PostViewedAsync", (postId, postViewerDto) =>
+			_postViewHubConnection.On<int, PostViewersViewModel>("PostViewedAsync", (postId, postViewerDto) =>
 			{
 				if (_viewers == null)
-					_viewers = new List<PostViewersDto>();
+					_viewers = new List<PostViewersViewModel>();
 
 				_viewers.Add(postViewerDto);
 				_postViewCount = _viewers.Count;
@@ -655,7 +648,6 @@
 			{
 				_postViewCount++;
 				StateHasChanged();
-
 			});
 		}
 
@@ -670,13 +662,13 @@
 		.WithAutomaticReconnect()
 		.Build();
 
-		_commentHubConnection.On<CommentsDto, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
+		_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
 		{
 
 			if (isAdded)
 			{
 				if (_comments == null)
-					_comments = new List<CommentsDto>
+					_comments = new List<CommentsViewModel>
 				();
 				_comments.Insert(0, commentDto);
 			}
@@ -686,13 +678,13 @@
 			StateHasChanged();
 		});
 
-		_commentHubConnection.On<CommentsDto, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
+		_commentHubConnection.On<CommentsViewModel, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
 		{
 			var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
 			if (comment != null)
 			{
 				if (comment.CommentReplies == null)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsDto>
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsViewModel>
 						();
 
 				if (isAdded)
@@ -900,39 +892,6 @@
 			_sendMessageErrorModel.Open();
 			_sendMessageError = ex.Message;
 		}
-
-
-
-
-
-
-
-		// if (allowedRoles.Contains(userRole))
-		// {
-		// 	var response = await MessageApi.GetConversationDtoAsync(_currentUserId.Value, receiverUserId);
-		// 	_sendMessageErrorModel.Close();
-		// 	_sendMessageError = null;
-		// 	try
-		// 	{
-		// 		if (response.IsSuccess)
-		// 		{
-		// 			_conversationDto = response.Data;
-		// 			NavigateToSendConversation(_conversationDto.ConversationId);
-		// 		}
-		// 		else
-		// 		{
-		// 			_sendMessageErrorModel.Open();
-		// 			_sendMessageError = response.ErrorMessage;
-		// 		}
-		// 	}
-		// 	catch (Exception ex)
-		// 	{
-		// 		_sendMessageErrorModel.Open();
-		// 		_sendMessageError = ex.Message;
-		// 	}
-		// }
-		// else
-		// 	NavigateToPricing();
 	}
 	private void ShowLikes()
 	{
@@ -979,7 +938,6 @@
 			NavigateToPricing();
 			return;
 		}
-
 		_viewerModel.Open();
 	}
 	private async Task ReadPostAsync()
@@ -1012,7 +970,7 @@
 		_isAlreadyLiked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
 		_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 	}
-	private void UpdateReactions(ReactionDto reaction, bool? isReactionUpdated)
+	private void UpdateReactions(ReactionViewModel reaction, bool? isReactionUpdated)
 	{
 		if (isReactionUpdated == true)
 		{
@@ -1129,7 +1087,7 @@
 			_errorMessage = ex.Message;
 		}
 	}
-	private void GetPost(ApiResponses<PostDto> response)
+	private void GetPost(ApiResponses<PostViewModel> response)
 	{
 		try
 		{
@@ -1153,7 +1111,7 @@
 			_errorMessage = ex.Message;
 		}
 	}
-	private void GetReactions(ApiResponses<List<ReactionDto>> response)
+	private void GetReactions(ApiResponses<List<ReactionViewModel>> response)
 	{
 		if (_isPostHaveError)
 			return;
@@ -1256,7 +1214,7 @@
 			_errorMessage = ex.Message;
 		}
 	}
-	private void GetComments(ApiResponses<List<CommentsDto>> response)
+	private void GetComments(ApiResponses<List<CommentsViewModel>> response)
 	{
 		if (_isPostHaveError)
 			return;
@@ -1282,7 +1240,7 @@
 			_commentErrorMessage = ex.Message;
 		}
 	}
-	private void GetPostViewers(ApiResponses<List<PostViewersDto>> response)
+	private void GetPostViewers(ApiResponses<List<PostViewersViewModel>> response)
 	{
 		if (_isPostHaveError)
 			return;

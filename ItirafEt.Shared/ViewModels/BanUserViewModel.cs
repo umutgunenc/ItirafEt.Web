@@ -6,9 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class BanUserDto
+    public class BanUserViewModel
     {
         public Guid UserId { get; set; }
         public string UserName { get; set; }

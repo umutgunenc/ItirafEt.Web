@@ -3,7 +3,7 @@ using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +12,6 @@ namespace ItirafEt.Api.Services
     public class PostViewService
     {
         private readonly dbContext _context;
-        //private readonly IHubContext<PostViewHub> _postViewHub;
         private readonly PostViewHubService _postViewHubService;
 
 
@@ -55,9 +54,7 @@ namespace ItirafEt.Api.Services
             await _context.UserReadPosts.AddAsync(userReadPost);
             await _context.SaveChangesAsync();
 
-            ////
-            ///
-            var postViewerDto = new PostViewersDto
+            var postViewerDto = new PostViewersViewModel
             {
                 PostViewerAge = DateTime.Now.Year - user.BirthDate.Year,
                 PostViewerGenderId = user.GenderId,
@@ -73,39 +70,15 @@ namespace ItirafEt.Api.Services
                 
 
             return ApiResponses.Success();
-
-            //var postCategoryIdAndViewCount = await _context.Posts
-            //    .Include(p => p.Readers)
-            //    .Where(p => p.Id == postId)
-            //    .Select(p => new
-            //    {
-            //        CategoryId = p.CategoryId,
-            //        ViewCount = p.Readers.Count
-            //    })
-            //    .FirstOrDefaultAsync();
-
-            //int postCategoryId = postCategoryIdAndViewCount.CategoryId;
-            //int postViewCount = postCategoryIdAndViewCount.ViewCount;
-            
-            //await _postViewHub.Clients
-            //    .Group($"post-{postId}")
-            //    .SendAsync("PostRead", postCategoryId, postId, postViewCount);
-
-            //await _postViewHub.Clients
-            //    .Group($"category-{postCategoryId}")
-            //    .SendAsync("PostRead", postCategoryId, postId, postViewCount);
-
-            //return ApiResponses<(int?, int?)>.Success((postViewCount, postId));
         }
 
-        public async Task<ApiResponses<List<PostViewersDto>>> GetPostsViewersAsync(int postId)
+        public async Task<ApiResponses<List<PostViewersViewModel>>> GetPostsViewersAsync(int postId)
         {
-            // Postları görüntüleyen kullanıcıların bilgilerini getirir
             var postViewers = await _context.UserReadPosts
                 .AsNoTracking()
                 .Include(urp => urp.User)
                 .Where(urp => urp.PostId == postId)
-                .Select(urp => new PostViewersDto
+                .Select(urp => new PostViewersViewModel
                 {
                     PostViewerAge = DateTime.Now.Year - urp.User.BirthDate.Year,
                     PostViewerGenderId = urp.User.GenderId,
@@ -117,7 +90,7 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            return ApiResponses<List<PostViewersDto>>.Success(postViewers);
+            return ApiResponses<List<PostViewersViewModel>>.Success(postViewers);
         }
 
         public async Task<ApiResponses<int>> GetPostViewCountAsync(int postId)
@@ -129,50 +102,5 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<int>.Success(postViewCount);
         }
-
-        //public async Task<ApiResponses<int>> GetPostReadCountAsync(int postId)
-        //{
-        //    var readCount = await _context.UserReadPosts
-        //        .CountAsync(p => p.PostId == postId);
-
-        //    return ApiResponses<int>.Success(readCount);
-        //}
-
-        ////TODO : kullanıcının okumuş olduğu gönderileri işaretlemek için
-        //public async Task<ApiResponses<List<UserViewedPostsDto>>> GetUserViewedPostInfoAsync(Guid userId)
-        //{
-        //    // Kullanıcının görüntülediği postları getirir
-        //    var readPosts = await _context.UserReadPosts
-        //        .Include(urp => urp.Post)
-        //        .ThenInclude(p => p.User)
-        //        .Where(urp => urp.UserId == userId && urp.Post.IsActive)
-        //        .Select(urp => new UserViewedPostsDto
-        //        {
-        //            PostId = urp.PostId,
-        //            PostTitle = urp.Post.Title,
-        //            PostCreatorUserName = urp.Post.User.UserName,
-        //            PostCreatorUserId = urp.Post.UserId,
-        //            PostCreatorUserProfileImageUrl = urp.Post.User.ProfilePictureUrl,
-        //            PostCreatorUserAge = urp.Post.User.BirthDate.Year - DateTime.Now.Year,
-        //            PostCreatorUserGenderId = urp.Post.User.GenderId,
-        //            ReadDate = urp.ReadDate
-        //        })
-        //        .ToListAsync();
-
-        //    if (readPosts == null || readPosts.Count == 0)
-        //        return ApiResponses<List<UserViewedPostsDto>>.Fail("Okunan gönderi bulunamadı");
-        //    return ApiResponses<List<UserViewedPostsDto>>.Success(readPosts);
-        //}
-
-        ////TODO : gönderiyi okuyan kullanıcıları işaretlemek için
-
-
-        //public async Task<ApiResponses<bool>> DidUserReadPostAsync(int postId, Guid userId)
-        //{
-        //    var reponse = await _context.UserReadPosts
-        //        .AnyAsync(x => x.PostId == postId && x.UserId == userId);
-
-        //    return ApiResponses<bool>.Success(reponse);
-        //}
     }
 }

@@ -4,8 +4,8 @@ using System.Text;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Shared;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,11 +24,11 @@ namespace ItirafEt.Api.Services
             _passwordHasher = passwordHasher;
             _configuration = configuration;
         }
-        public async Task<AuthResponseDto> LoggingAsync(LoginDto dto)
+        public async Task<AuthResponse> LoggingAsync(LoginViewModel model)
         {
             var user = await _context.Users
                 .AsNoTracking()
-                .Where(u => u.UserName == dto.UserName)
+                .Where(u => u.UserName == model.UserName)
                 .Select(u => new User
                 {
                     Id = u.Id,
@@ -43,51 +43,51 @@ namespace ItirafEt.Api.Services
                 .FirstOrDefaultAsync();
 
             if (user == null)
-                return new AuthResponseDto(default,"Kullanıcı Adı veya Şifre Hatalı");
+                return new AuthResponse(default,"Kullanıcı Adı veya Şifre Hatalı");
 
             if (user.IsDeleted)
-                return new AuthResponseDto(default, "Hesabınız silinmiş durumda.");
+                return new AuthResponse(default, "Hesabınız silinmiş durumda.");
 
             if (user.IsBanned)
-                return new AuthResponseDto(default, $"Hesabınız {user.BannedDateUntil?.ToString("dd/MM/yyyy")} tarihine kadar banlanmıştır.");
+                return new AuthResponse(default, $"Hesabınız {user.BannedDateUntil?.ToString("dd/MM/yyyy")} tarihine kadar banlanmıştır.");
 
-            var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
+            var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
 
             if (passwordResult == PasswordVerificationResult.Failed)
-                return new AuthResponseDto(default, "Kullanıcı Adı veya Şifre Hatalı");
+                return new AuthResponse(default, "Kullanıcı Adı veya Şifre Hatalı");
 
             var jwtToken = GenearteJwtToken(user);
             var loggedInUser = new LoggedInUser(user.Id.ToString(),user.UserName,user.RoleName.ToString(), jwtToken);
-            return new AuthResponseDto(loggedInUser);
+            return new AuthResponse(loggedInUser);
 
         }
 
-        public async Task<ApiResponses> RegisterAsync(RegisterDto dto)
+        public async Task<ApiResponses> RegisterAsync(RegisterViewModel model)
         {
-            var isUserNameNotValid = await _context.Users.AnyAsync(u => u.UserName.ToUpper() == dto.UserName.ToUpper());
+            var isUserNameNotValid = await _context.Users.AnyAsync(u => u.UserName.ToUpper() == model.UserName.ToUpper());
             if(isUserNameNotValid)
                 return ApiResponses.Fail("Bu kullanıcı adı zaten kullanılıyor.");
-            var isEmailNotValid = await _context.Users.AnyAsync(u => u.Email.ToUpper() == dto.Email.ToUpper());
+            var isEmailNotValid = await _context.Users.AnyAsync(u => u.Email.ToUpper() == model.Email.ToUpper());
             if (isEmailNotValid)
                 return ApiResponses.Fail("Bu e-posta adresi zaten kullanılıyor.");
 
-           var isModelValid = CheckRegisterModel(dto);
+           var isModelValid = CheckRegisterModel(model);
             if (!isModelValid.IsSuccess)
                 return isModelValid;
 
             var user = new User
             {
-                UserName = dto.UserName,
-                Email = dto.Email,
-                PasswordHash = _passwordHasher.HashPassword(null, dto.Password),
+                UserName = model.UserName,
+                Email = model.Email,
+                PasswordHash = _passwordHasher.HashPassword(null, model.Password),
                 CreatedDate = DateTime.Now,
-                BirthDate = (DateTime)dto.BirthDate,
+                BirthDate = (DateTime)model.BirthDate,
                 IsDeleted = false,
                 IsBanned = false,
                 IsPremium = false,
                 IsTermOfUse = true,
                 RoleName = nameof(UserRoleEnum.User),
-                GenderId = (int)dto.GenderId,
+                GenderId = (int)model.GenderId,
 
             };
             await _context.Users.AddAsync(user);
@@ -123,7 +123,7 @@ namespace ItirafEt.Api.Services
             return token;
         }
 
-        private ApiResponses CheckRegisterModel(RegisterDto dto)
+        private ApiResponses CheckRegisterModel(RegisterViewModel dto)
         {
             if (string.IsNullOrWhiteSpace(dto.UserName))
                 return ApiResponses.Fail("Kullanıcı adı boş olamaz.");

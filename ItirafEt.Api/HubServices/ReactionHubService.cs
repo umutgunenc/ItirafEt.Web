@@ -1,7 +1,7 @@
 ﻿using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.HubServices
@@ -14,11 +14,11 @@ namespace ItirafEt.Api.HubServices
         {
             _hubContext = hubContext;
         }
-        public async Task PostLikedOrDislikedAsync(int postId, ReactionDto reactionDto, bool isUpdated)
+        public async Task PostLikedOrDislikedAsync(int postId, ReactionViewModel reactionModel, bool isUpdated)
         {
             await _hubContext.Clients
                 .Group($"post-{postId}")
-                .SendAsync("PostLikedOrDislikedAsync", reactionDto, isUpdated);
+                .SendAsync("PostLikedOrDislikedAsync", reactionModel, isUpdated);
         }
 
         public async Task UpdatePostLikeCountAsync(int categoryId, int postId, int likeCount)

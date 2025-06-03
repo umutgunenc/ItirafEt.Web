@@ -75,7 +75,7 @@
 </div>
 
 @code {
-	private CategoryDto _model = new();
+	private CategoryViewModel _model = new();
 	private bool _isBusy = false;
 	private bool _isSuccess = false;
 	private string? _errorMessage = null;
@@ -116,7 +116,7 @@
 	}
 
 
-	private void ToggleActiveStatus(CategoryDto category)
+	private void ToggleActiveStatus(CategoryViewModel category)
 	{
 		category.isActive = !category.isActive;		
 	}

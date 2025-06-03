@@ -1,4 +1,4 @@
-﻿using ItirafEt.Shared.DTOs;
+﻿using ItirafEt.Shared.ViewModels;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis 
@@ -7,10 +7,10 @@ namespace ItirafEt.SharedComponents.Apis
     public interface IAuthApi
     {
         [Post("/api/auth/login")]
-        Task<AuthResponseDto> LoginAsync(LoginDto dto);
+        Task<AuthResponse> LoginAsync(LoginViewModel model);
 
 
         [Post("/api/auth/register")]
-        Task<ApiResponses> RegisterAsync(RegisterDto dto);
+        Task<ApiResponses> RegisterAsync(RegisterViewModel model);
     }
 }

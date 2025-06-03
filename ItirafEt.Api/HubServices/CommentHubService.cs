@@ -1,5 +1,5 @@
 ﻿using ItirafEt.Api.Hubs;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.HubServices
@@ -12,14 +12,14 @@ namespace ItirafEt.Api.HubServices
         {
             _hubContext = hubContext;
         }
-        public async Task CommentAddedOrDeletedAsync(int postId, CommentsDto dto, bool isAdded)
+        public async Task CommentAddedOrDeletedAsync(int postId, CommentsViewModel model, bool isAdded)
         {
             await _hubContext.Clients
                 .Group($"post-{postId}")
-                .SendAsync("CommentAddedOrDeletedAsync", dto, isAdded);
+                .SendAsync("CommentAddedOrDeletedAsync", model, isAdded);
         }
 
-        public async Task ReplyAddedOrDeletedAsync(int postId, CommentsDto replyDto, bool isAdded)
+        public async Task ReplyAddedOrDeletedAsync(int postId, CommentsViewModel replyDto, bool isAdded)
         {
             await _hubContext.Clients
                 .Group($"post-{postId}")

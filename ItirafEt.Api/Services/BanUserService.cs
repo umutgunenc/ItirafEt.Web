@@ -1,5 +1,5 @@
 ﻿using ItirafEt.Api.Data;
-using ItirafEt.Shared.DTOs;
+using ItirafEt.Shared.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Services
@@ -12,10 +12,10 @@ namespace ItirafEt.Api.Services
             _context = context;
         }
 
-        public async Task<ApiResponses<List<BanUserDto>>> GetAllUsers()
+        public async Task<ApiResponses<List<BanUserViewModel>>> GetAllUsers()
         {
             var userQuery = _context.Users
-                .Select(u => new BanUserDto
+                .Select(u => new BanUserViewModel
                 {
                     UserId = u.Id,
                     UserName = u.UserName,
@@ -26,33 +26,33 @@ namespace ItirafEt.Api.Services
             var users = await userQuery.AsNoTracking().ToListAsync();
 
             if (users == null)
-                return ApiResponses<List<BanUserDto>>.Fail("Kullanıcı bulunamadı.");
-            return ApiResponses<List<BanUserDto>>.Success(users);
+                return ApiResponses<List<BanUserViewModel>>.Fail("Kullanıcı bulunamadı.");
+            return ApiResponses<List<BanUserViewModel>>.Success(users);
 
         }
 
-        public async Task<ApiResponses> BanUser(BanUserDto dto, Guid AdminastorUserId)
+        public async Task<ApiResponses> BanUser(BanUserViewModel model, Guid AdminastorUserId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == model.UserId);
             if (user == null)
                 return ApiResponses.Fail("Kullanıcı bulunamadı.");
 
             if(user.Id == AdminastorUserId)
                 return ApiResponses.Fail("Kendinizi banlayamazsınız.");
 
-            if(user.UserName.ToUpper() != dto.UserName.ToUpper())
+            if(user.UserName.ToUpper() != model.UserName.ToUpper())
                 return ApiResponses.Fail("Kullanıcı adını değiştirmezsiniz.");
 
-            if(dto.BannedDateUntil != null && dto.BannedDateUntil <= DateTime.Now && dto.IsBanned)
+            if(model.BannedDateUntil != null && model.BannedDateUntil <= DateTime.Now && model.IsBanned)
                 return ApiResponses.Fail("Ban bitiş tarihi geçmiş bir tarih olamaz.");
 
-            if (dto.BannedDateUntil == null && dto.IsBanned)
+            if (model.BannedDateUntil == null && model.IsBanned)
                 return ApiResponses.Fail("Ban bitiş tarihi boş olamaz.");
 
             user.AdminastorUserId = AdminastorUserId;
-            user.IsBanned = dto.IsBanned;
-            if(dto.IsBanned)
-                user.BannedDateUntil = dto.BannedDateUntil;
+            user.IsBanned = model.IsBanned;
+            if(model.IsBanned)
+                user.BannedDateUntil = model.BannedDateUntil;
             else
                 user.BannedDateUntil = null;
 

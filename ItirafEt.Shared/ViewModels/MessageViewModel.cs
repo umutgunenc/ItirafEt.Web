@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Refit;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class MessageDto
+    public class MessageViewModel
     {
         public int Id { get; set; }
         public Guid ConversationId { get; set; }

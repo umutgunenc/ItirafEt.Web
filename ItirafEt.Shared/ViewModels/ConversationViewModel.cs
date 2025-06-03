@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.Shared.DTOs
+namespace ItirafEt.Shared.ViewModels
 {
-    public class ConversationDto
+    public class ConversationViewModel
     {
         public Guid ConversationId { get; set; }
         public Guid SenderUserId { get; set; }
-        public UserInfoDto ResponderUser { get; set; }
-        public MessageDto? LastMessage { get; set; }
+        public UserInfoViewModel ResponderUser { get; set; }
+        public MessageViewModel? LastMessage { get; set; }
 
     }
 }

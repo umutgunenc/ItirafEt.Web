@@ -121,7 +121,7 @@
 </div>
 
 @code {
-	private List<CategoryDto>? _categories = new List<CategoryDto>();
+	private List<CategoryViewModel>? _categories = new List<CategoryViewModel>();
 	private ModalComponent? Modal;
 	private string? _errorMessage;
 	private bool _isAnyCategory = false;
@@ -159,7 +159,7 @@
 
 	}
 
-	private async Task SaveChangesCategoryAsync(CategoryDto dto)
+	private async Task SaveChangesCategoryAsync(CategoryViewModel dto)
 	{
 		try
 		{
@@ -183,7 +183,7 @@
 		}
 	}
 
-	private void ToggleActiveStatus(CategoryDto category)
+	private void ToggleActiveStatus(CategoryViewModel category)
 	{
 		category.isActive = !category.isActive;
 	}

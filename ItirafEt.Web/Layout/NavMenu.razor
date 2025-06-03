@@ -111,235 +111,12 @@
 	</div>
 </nav>
 
-<Toasts class="p-3 custom-toast" Messages="_toastMessages" Placement="ToastsPlacement.BottomRight" StackLength="3" AutoHide="true" Delay="3000"/>
-
-<div>
-	@* @code {
-
-
-	private List<CategoryDto>? _categories = new List<CategoryDto>();
-	private List<ConversationDto> _conversationDtos = new List<ConversationDto>();
-	private List<ToastMessage> _toastMessages = new List<ToastMessage>();
-
-	private HubConnection _categoryHubConnection;
-	private HubConnection _conversationHubConnection;
-	private string? _errorMessage = null;
-	private Guid _currentUserId = Guid.Empty;
-	private string allowedRoles = string.Join(",",
-	nameof(UserRoleEnum.SuperAdmin),
-	nameof(UserRoleEnum.Admin),
-	nameof(UserRoleEnum.Moderator));
-
-	protected override async Task OnInitializedAsync()
-	{
-
-
-		while (AuthStateProvider.IsInitializing)
-			await Task.Delay(500);
-		await StartCategoryInfoHubAsync();
-		await GelAllActiveCategoryAsync();
-
-		if (AuthStateProvider.IsLoggedIn)
-		{
-			await GetUserConversationsAsync();
-			await StartConversationHubConnection();
-			StateHasChanged();
-		}
-		else
-			AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
-
-
-
-	}
-
-	private async void OnAuthStateChanged(Task<AuthenticationState> task)
-	{
-		var authState = await task;
-
-		if (AuthStateProvider.IsLoggedIn)
-		{
-			await GetUserConversationsAsync();
-			await StartConversationHubConnection();
-			StateHasChanged();
-		}
-	}
-	private async Task LogOutAsync()
-	{
-		await AuthStateProvider.SetLogoutAsync();
-		NavigationManager.NavigateTo("/", replace: true);
-		await CollapseMenuAsync();
-	}
-
-	private async Task GelAllActiveCategoryAsync()
-	{
-		try
-		{
-			var response = await CategoryApi.GetAllActiveCategoriesAsycn();
-			if (response.IsSuccess)
-				_categories = response.Data?
-				.OrderBy(c => c.CategoryOrder)
-				.ToList();
-			else
-				_categories = null;
-		}
-		catch (Exception ex)
-		{
-			_errorMessage = ex.Message;
-		}
-	}
-
-	private async Task StartCategoryInfoHubAsync()
-	{
-		_categoryHubConnection = new HubConnectionBuilder()
-		.WithUrl("https://localhost:7292/categoryhub")
-		.WithAutomaticReconnect()
-		.Build();
-
-		_categoryHubConnection.On<CategoryDto>("CategoryInfoChangedAsync", (category) =>
-	{
-		UpdateCategories(category);
-		StateHasChanged();
-	});
-
-		_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync", (categoryId, isPostAdded) =>
-	{
-		UpdateCategories(categoryId, isPostAdded);
-		StateHasChanged();
-	});
-
-		await _categoryHubConnection.StartAsync();
-
-		await _categoryHubConnection.SendAsync("JoinCategoryInfoChangedGroup");
-		await _categoryHubConnection.SendAsync("JoinCategoryPostCountChangedGroup");
-	}
-
-	private void UpdateCategories(CategoryDto category)
-	{
-		var existingCategory = _categories.FirstOrDefault(c => c.Id == category.Id);
-
-		if (existingCategory != null)
-		{
-			if (!category.isActive)
-				_categories.Remove(existingCategory);
-			else
-			{
-				existingCategory.CategoryName = category.CategoryName;
-				existingCategory.CategoryIconUrl = category.CategoryIconUrl;
-				existingCategory.CategoryOrder = category.CategoryOrder;
-				existingCategory.PostCount = category.PostCount;
-			}
-		}
-		else
-		{
-			if (category.isActive)
-				_categories.Add(category);
-		}
-
-
-		_categories = _categories
-		.OrderBy(c => c.CategoryOrder)
-		.ToList();
-	}
-
-	private void UpdateCategories(int categoryId, bool isPostAdded)
-	{
-		if (isPostAdded)
-			_categories.First(c => c.Id == categoryId).PostCount++;
-		else
-			_categories.First(c => c.Id == categoryId).PostCount--;
-	}
-
-	private async Task CollapseMenuAsync()
-	{
-		await JSRuntime.InvokeVoidAsync("collapseNavbar");
-	}
-
-	private async Task GetUserConversationsAsync()
-	{
-		GetUserId();
-		await ConversationService.InitializeAsync(_currentUserId);
-		_conversationDtos = ConversationService.GetUserConversations();
-	}
-
-	private void GetUserId()
-	{
-		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
-			_currentUserId = parsedId;
-
-	}
-
-
-	private void ShowToastMessage(ToastType toastType, MessageDto messageDto)
-	{
-		_toastMessages.Add(CreateToastMessage(toastType, messageDto));
-	}
-
-
-	private ToastMessage CreateToastMessage(ToastType toastType, MessageDto messageDto)
-	{
-		return new ToastMessage
-				{
-					Type = toastType,
-					Title = $"{messageDto.SenderUserName} Size Mesaj Gönderdi",
-					HelpText = $"{DateTime.Now.ToString("HH:mm")}",
-					Message = messageDto.Content.Length > 50 ? $"{messageDto.Content.Substring(0, 50)}..." : $"{messageDto.Content}",
-					Content = @<div><button class="btn btn-sm blue mt-2 text-white" @onclick="()=>NavigateToConversation(messageDto.ConversationId)">Mesajı Göster</button></div>
-		};
-	}
-
-
-	private bool CheckCurrentChatPage(string conversationId)
-	{
-		var uri = new Uri(NavigationManager.Uri);
-		var segments = uri.Segments;
-
-		// /conversations/{guid} formatını kontrol et
-		if (segments.Length >= 3 && segments[1].Equals("conversations/", StringComparison.OrdinalIgnoreCase))
-		{
-			var currentConvId = segments[2].Trim('/');
-			var result = currentConvId.Equals(conversationId, StringComparison.OrdinalIgnoreCase);
-			return result;
-		}
-		return false;
-	}
-
-	private void NavigateToConversation(Guid conversationId)
-	{
-		NavigationManager.NavigateTo($"/conversations/{conversationId}");
-	}
-
-	private async Task StartConversationHubConnection()
-	{
-		_conversationHubConnection = new HubConnectionBuilder()
-			.WithUrl("https://localhost:7292/messagehub")
-			.WithAutomaticReconnect()
-			.Build();
-
-		_conversationHubConnection.On<Guid, MessageDto>("SendMessageNotificationAsync", (conversationId, messageDto) =>
-		{
-
-			if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId != messageDto.SenderId)
-				ShowToastMessage(ToastType.Primary, messageDto);
-
-			StateHasChanged();
-		});
-
-
-		await _conversationHubConnection.StartAsync();
-		foreach (var converasation in _conversationDtos)
-		{
-			await _conversationHubConnection.SendAsync("JoinMessageGroup", converasation.ConversationId);
-		}
-	}
-
-
-} *@
-</div>
+<Toasts class="p-3 custom-toast" Messages="_toastMessages" Placement="ToastsPlacement.BottomRight" StackLength="3" AutoHide="true" Delay="3000" />
 
 
 @code {
-	private List<CategoryDto>? _categories = new();
-	private List<ConversationDto> _conversationDtos = new();
+	private List<CategoryViewModel>? _categories = new();
+	private List<ConversationViewModel> _conversationDtos = new();
 	private List<ToastMessage> _toastMessages = new();
 
 	private HubConnection _categoryHubConnection;
@@ -348,9 +125,9 @@
 	private Guid _currentUserId = Guid.Empty;
 
 	private string allowedRoles = string.Join(",",
-	nameof(UserRoleEnum.SuperAdmin),
-	nameof(UserRoleEnum.Admin),
-	nameof(UserRoleEnum.Moderator));
+		nameof(UserRoleEnum.SuperAdmin),
+		nameof(UserRoleEnum.Admin),
+		nameof(UserRoleEnum.Moderator));
 	private bool _isHaveMessages = false;
 
 	protected override async Task OnInitializedAsync()
@@ -405,8 +182,8 @@
 			if (response.IsSuccess)
 			{
 				_categories = response.Data?
-					.OrderBy(c => c.CategoryOrder)
-					.ToList();
+				.OrderBy(c => c.CategoryOrder)
+				.ToList();
 			}
 			else
 				_categories = null;
@@ -420,20 +197,20 @@
 	private async Task StartCategoryInfoHubAsync()
 	{
 		_categoryHubConnection = new HubConnectionBuilder()
-		.WithUrl("https://localhost:7292/categoryhub")
-		.WithAutomaticReconnect()
-		.Build();
+			.WithUrl("https://localhost:7292/categoryhub")
+			.WithAutomaticReconnect()
+			.Build();
 
-		_categoryHubConnection.On<CategoryDto>("CategoryInfoChangedAsync", (category) =>
+		_categoryHubConnection.On<CategoryViewModel>("CategoryInfoChangedAsync", (category) =>
 		{
-	UpdateCategories(category);
-	StateHasChanged();
+			UpdateCategories(category);
+			StateHasChanged();
 		});
 
 		_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync", (categoryId, isPostAdded) =>
 		{
-	UpdateCategories(categoryId, isPostAdded);
-	StateHasChanged();
+			UpdateCategories(categoryId, isPostAdded);
+			StateHasChanged();
 		});
 
 		await _categoryHubConnection.StartAsync();
@@ -441,7 +218,7 @@
 		await _categoryHubConnection.SendAsync("JoinCategoryPostCountChangedGroup");
 	}
 
-	private void UpdateCategories(CategoryDto category)
+	private void UpdateCategories(CategoryViewModel category)
 	{
 		var existing = _categories?.FirstOrDefault(c => c.Id == category.Id);
 		if (existing != null)
@@ -486,13 +263,13 @@
 			_currentUserId = parsedId;
 	}
 
-	private void ShowToastMessage(ToastType toastType, MessageDto messageDto)
+	private void ShowToastMessage(ToastType toastType, MessageViewModel messageDto)
 	{
 		_toastMessages.Add(CreateToastMessage(toastType, messageDto));
 		StateHasChanged();
 	}
 
-	private ToastMessage CreateToastMessage(ToastType toastType, MessageDto messageDto)
+	private ToastMessage CreateToastMessage(ToastType toastType, MessageViewModel messageDto)
 	{
 		var tosatMessage = new ToastMessage
 				{
@@ -530,7 +307,7 @@
 			.WithAutomaticReconnect()
 			.Build();
 
-		_conversationHubConnection.On<Guid, MessageDto>("SendMessageNotificationAsync", (conversationId, messageDto) =>
+		_conversationHubConnection.On<Guid, MessageViewModel>("SendMessageNotificationAsync", (conversationId, messageDto) =>
 		{
 			if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId != messageDto.SenderId)
 			{
@@ -548,8 +325,4 @@
 		}
 	}
 
-	private void UpdateMessageButton()
-	{
-
-	}
 }

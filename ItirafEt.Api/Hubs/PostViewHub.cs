@@ -1,6 +1,4 @@
-﻿using ItirafEt.Api.Data.Entities;
-using ItirafEt.Shared.DTOs;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace ItirafEt.Api.Hubs
 {

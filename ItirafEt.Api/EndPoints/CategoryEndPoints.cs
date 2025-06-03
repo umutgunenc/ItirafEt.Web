@@ -1,6 +1,6 @@
 ﻿using ItirafEt.Api.Services;
-using ItirafEt.Shared.DTOs;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.ViewModels;
 
 namespace ItirafEt.Api.EndPoints
 {
@@ -19,12 +19,12 @@ namespace ItirafEt.Api.EndPoints
             app.MapGet("/api/getCategoryName", async (CategoryService categoryServices,int  categoryId) =>
                 Results.Ok(await categoryServices.GetCategoryNameAsync(categoryId)));
 
-            app.MapPost("/api/createcategory", async (CategoryDto dto, CategoryService categoryServices) =>
-                Results.Ok(await categoryServices.CreateCategoryAsync(dto)))
+            app.MapPost("/api/createcategory", async (CategoryViewModel model, CategoryService categoryServices) =>
+                Results.Ok(await categoryServices.CreateCategoryAsync(model)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin)));
 
-            app.MapPost("/api/editcategory", async (CategoryDto dto, CategoryService categoryServices) =>
-                Results.Ok(await categoryServices.EditCategoryAsync(dto)))
+            app.MapPost("/api/editcategory", async (CategoryViewModel model, CategoryService categoryServices) =>
+                Results.Ok(await categoryServices.EditCategoryAsync(model)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin)));
 
             app.MapGet("/api/getCategoryPostsOrderByDate", async (CategoryService categoryServices, int categoryId,int pageNo,int pageSize) =>
