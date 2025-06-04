@@ -12,6 +12,8 @@ namespace ItirafEt.Api.Hubs
         
         public Task JoinMessageReadGroup(Guid currentUserId) => Groups.AddToGroupAsync(Context.ConnectionId, $"user-{currentUserId}");
 
+        public Task JoinInboxGroup(Guid currentUserId) => Groups.AddToGroupAsync(Context.ConnectionId, $"userInbox-{currentUserId}");
+
 
         //public Task JoinMessageGroup(Guid conversationId) =>
         //    Groups.AddToGroupAsync(Context.ConnectionId, $"conversation-{conversationId}");

@@ -26,7 +26,7 @@ builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthStateProvider>();
-builder.Services.AddSingleton<ConversationService>();
+builder.Services.AddSingleton<InboxService>();
 builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
 builder.Services.AddAuthorizationCore();
 

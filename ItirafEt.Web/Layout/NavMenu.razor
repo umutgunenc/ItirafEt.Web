@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject ICategoryApi CategoryApi
 @inject IJSRuntime JSRuntime
-@inject ConversationService ConversationService
+@inject InboxService InboxService
 @inject IMessageApi MessageApi
 
 
@@ -163,7 +163,7 @@
 		{
 			_currentUserId = Guid.Empty;
 			_inboxViewModel.Clear();
-			ConversationService.Clear();
+			InboxService.Clear();
 			StateHasChanged();
 		}
 	}
@@ -192,8 +192,8 @@
 			if (response.IsSuccess)
 			{
 				_categories = response.Data?
-					.OrderBy(c => c.CategoryOrder)
-					.ToList();
+			.OrderBy(c => c.CategoryOrder)
+			.ToList();
 			}
 			else
 				_categories = null;
@@ -263,8 +263,8 @@
 
 	private async Task GetUserConversationsAsync()
 	{
-		await ConversationService.InitializeAsync(_currentUserId);
-		_inboxViewModel = ConversationService.GetUserConversations();
+		await InboxService.InitializeAsync(_currentUserId);
+		_inboxViewModel = InboxService.GetUserConversations();
 	}
 
 	private void GetUserId()
@@ -327,17 +327,16 @@
 
 		});
 
-		_conversationHubConnection.On<Guid>("MessageReadByCurrentUserAsync", async (messageReadUserId) =>
+		_conversationHubConnection.On<Guid, Guid>("MessageReadByCurrentUserAsync", async (messageReadUserId, conversationId) =>
 		{
 			if (_currentUserId == messageReadUserId)
 				await CheckForUnreadMessagesAsync(messageReadUserId);
 		});
 
+
 		await _conversationHubConnection.StartAsync();
 
 		await _conversationHubConnection.SendAsync("JoinMessageReadGroup", _currentUserId);
-
-
 
 		foreach (var conversation in _inboxViewModel)
 		{

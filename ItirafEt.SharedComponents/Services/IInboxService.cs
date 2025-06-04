@@ -7,10 +7,10 @@ using ItirafEt.Shared.ViewModels;
 
 namespace ItirafEt.SharedComponents.ClientServices
 {
-    public interface IConversationService
+    public interface IInboxService
     {
         Task InitializeAsync(Guid userId);
-        List<ConversationViewModel> GetUserConversations();
+        ref List<InboxViewModel> GetUserConversations();
         void Clear();
     }
 }

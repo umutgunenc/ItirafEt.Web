@@ -34,9 +34,9 @@ namespace ItirafEt.SharedComponents.Apis
         [Get("/api/message/CanUserReadConversation/")]
         Task<ApiResponses<bool>> CanUserReadMessageApiAsync(Guid conversationId, Guid userId);
         
-        [Headers("Authorization: Bearer")]
-        [Get("/api/message/GetUserConversaions/")]
-        Task<ApiResponses<List<ConversationViewModel>>> GetUserConversaionsAsync(Guid userId);
+        //[Headers("Authorization: Bearer")]
+        //[Get("/api/message/GetUserConversaions/")]
+        //Task<ApiResponses<List<ConversationViewModel>>> GetUserConversaionsAsync(Guid userId);
 
         [Headers("Authorization: Bearer")]
         [Get("/api/message/photo/")]

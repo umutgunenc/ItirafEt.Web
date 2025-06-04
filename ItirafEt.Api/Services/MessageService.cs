@@ -37,27 +37,6 @@ namespace ItirafEt.Api.Services
             _env = env;
         }
 
-        public async Task<ApiResponses<List<ConversationViewModel>>> GetUserConversaionsAsync(Guid userId)
-        {
-            var conversations = await _context.Conversations
-                .AsNoTracking()
-                .Where(c => c.InitiatorId == userId || c.ResponderId == userId)
-                .ToListAsync();
-
-            if (conversations.Count == 0)
-                return ApiResponses<List<ConversationViewModel>>.Fail("Mesajlaşma Bulunamadı.");
-
-            var returnConversationsDto = new List<ConversationViewModel>();
-            foreach (var conversation in conversations)
-            {
-                var responderUserId = conversation.InitiatorId == userId ? conversation.ResponderId : conversation.InitiatorId;
-                var conversationDto = await ConversationToConversationModelWithLastMessageAsync(conversation, responderUserId, userId);
-                returnConversationsDto.Add(conversationDto);
-            }
-
-
-            return ApiResponses<List<ConversationViewModel>>.Success(returnConversationsDto);
-        }
         public async Task<ApiResponses<bool>> CanUserReadConversationAsync(Guid conversationId, Guid userId)
         {
             var conversation = await _context.Conversations
@@ -166,19 +145,29 @@ namespace ItirafEt.Api.Services
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
 
-
             var returnModel = new MessageViewModel
             {
                 Id = message.Id,
                 Content = message.Content,
                 CreatedDate = message.SentDate,
                 SenderId = message.SenderId,
-                SenderUserName = isMessageValid.Item2,
+                SenderUserName = isMessageValid.Item3.UserName,
                 ConversationId = message.ConversationId,
             };
 
             await _hubService.SendMessageAsync(message.ConversationId, returnModel);
             await _hubService.SendMessageNotificationAsync(conversationId, returnModel);
+
+            var inboxViewModel = new InboxViewModel {
+                ConversationId = conversationId,
+                LastMessageDate = message.SentDate,
+                LastMessagePrewiew = message.Content,
+                SenderUserUserName = isMessageValid.Item3.UserName,
+                SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
+
+            };
+
+            await _hubService.NewMessageForInboxAsync(receiverId, inboxViewModel);
 
             return ApiResponses<MessageViewModel>.Success(returnModel);
 
@@ -232,13 +221,24 @@ namespace ItirafEt.Api.Services
                 Content = message.Content,
                 CreatedDate = message.SentDate,
                 SenderId = message.SenderId,
-                SenderUserName = isMessageValid.Item2,
+                SenderUserName = isMessageValid.Item3.UserName,
                 ConversationId = message.ConversationId,
                 PhotoUrl = message.PhotoUrl,
             };
 
             await _hubService.SendMessageAsync(message.ConversationId, returnModel);
             await _hubService.SendMessageNotificationAsync(message.ConversationId, returnModel);
+
+            var inboxViewModel = new InboxViewModel
+            {
+                ConversationId = conversationId,
+                LastMessageDate = message.SentDate,
+                LastMessagePrewiew = message.Content,
+                SenderUserUserName = isMessageValid.Item3.UserName,
+                SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
+            };
+
+            await _hubService.NewMessageForInboxAsync(receiverId, inboxViewModel);
 
             return ApiResponses<MessageViewModel>.Success(returnModel);
 
@@ -312,7 +312,7 @@ namespace ItirafEt.Api.Services
             var readerUserId = conversation.InitiatorId == model.SenderId ? conversation.ResponderId : conversation.InitiatorId;
 
             await _hubService.ReadMessageAsync(conversationId, model);
-            await _hubService.MessageReadByCurrentUserAsync(readerUserId);
+            await _hubService.MessageReadByCurrentUserAsync(readerUserId, conversationId);
 
             return ApiResponses.Success();
 
@@ -325,17 +325,6 @@ namespace ItirafEt.Api.Services
                 ConversationId = conversation.ConversationId,
                 SenderUserId = senderUserId,
                 ResponderUser = await GetResponderUserAsync(responderId)
-            };
-        }
-
-        private async Task<ConversationViewModel> ConversationToConversationModelWithLastMessageAsync(Conversation conversation, Guid responderId, Guid senderUserId)
-        {
-            return new ConversationViewModel
-            {
-                ConversationId = conversation.ConversationId,
-                SenderUserId = senderUserId,
-                ResponderUser = await GetResponderUserAsync(responderId),
-                LastMessage = await GetConversationLastMessagesAsync(conversation)
             };
         }
 
@@ -353,31 +342,6 @@ namespace ItirafEt.Api.Services
 
                 })
                 .FirstOrDefaultAsync();
-        }
-
-        private async Task<MessageViewModel?> GetConversationLastMessagesAsync(Conversation conversation)
-        {
-            return await _context.Messages
-                .AsNoTracking()
-                .Where(m => m.ConversationId == conversation.ConversationId)
-                .OrderByDescending(m => m.SentDate)
-                .Select(m => new MessageViewModel
-                {
-                    Id = m.Id,
-                    ConversationId = m.ConversationId,
-                    Content = m.Content,
-                    CreatedDate = m.SentDate,
-                    ReadDate = m.ReadDate,
-                    SenderId = m.SenderId,
-                    ReceiverId = conversation.ResponderId,
-                    IsRead = m.IsRead,
-                    IsDeletedBySender = m.IsVisibleToInitiatorUser,
-                    IsDeletedByReceiver = m.IsVisibleToResponderUser,
-                    SenderIpAddress = m.IpAddress,
-                    SenderDeviceInfo = m.DeviceInfo
-                })
-                .FirstOrDefaultAsync();
-
         }
 
         public async Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(ConversationViewModel conversation, DateTime? nextBefore, int take)
@@ -428,32 +392,32 @@ namespace ItirafEt.Api.Services
 
         }
 
-        public async Task<(bool, string)> IsMessageValidAsync(CreateMessageViewModel messageDto, Guid senderId, Guid receiverId, Guid conversationId)
+        public async Task<(bool, string?, User?)> IsMessageValidAsync(CreateMessageViewModel messageDto, Guid senderId, Guid receiverId, Guid conversationId)
         {
 
             var senderUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == senderId);
 
             if (senderUser == null)
-                return (false, "Gönderici Kullanıcı Bulunamadı.");
+                return (false, "Gönderici Kullanıcı Bulunamadı.",null);
 
             var receiverUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == receiverId);
             if (receiverUser == null)
-                return (false, "Alıcı Kullanıcı Bulunamadı.");
+                return (false, "Alıcı Kullanıcı Bulunamadı.",null);
 
             var conversation = await _context.Conversations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
 
             if (conversation == null)
-                return (false, "Mesaj gönderilemedi.");
+                return (false, "Mesaj gönderilemedi.",null);
 
             if (!((conversation.InitiatorId == senderId && conversation.ResponderId == receiverId) || (conversation.InitiatorId == receiverId && conversation.ResponderId == senderId)))
-                return (false, "Mesaj gönderilemedi.");
+                return (false, "Mesaj gönderilemedi.",null);
 
 
-            return (true, senderUser.UserName);
+            return (true, null,senderUser);
         }
 
         public async Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId)

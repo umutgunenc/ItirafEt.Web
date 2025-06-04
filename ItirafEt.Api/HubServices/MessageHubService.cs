@@ -24,18 +24,25 @@ namespace ItirafEt.Api.HubServices
                 .Group($"conversation-{conversationId}")
                 .SendAsync("SendMessageNotificationAsync", conversationId, model);
         }
-        public async Task ReadMessageAsync(Guid conversationId, MessageViewModel messageDto)
+        public async Task ReadMessageAsync(Guid conversationId, MessageViewModel model)
         {
             await _hubContext.Clients
                 .Group($"conversation-{conversationId}")
-                .SendAsync("ReadMessageAsync", conversationId, messageDto);
+                .SendAsync("ReadMessageAsync", conversationId, model);
         }
 
-        public async Task MessageReadByCurrentUserAsync(Guid currentUserId)
+        public async Task MessageReadByCurrentUserAsync(Guid currentUserId,Guid conversationId)
         {
             await _hubContext.Clients
                 .Group($"user-{currentUserId}")
-                .SendAsync("MessageReadByCurrentUserAsync", currentUserId);
+                .SendAsync("MessageReadByCurrentUserAsync", currentUserId, conversationId);
+        }
+
+        public async Task NewMessageForInboxAsync(Guid currentUserId, InboxViewModel model)
+        {
+            await _hubContext.Clients
+                .Group($"userInbox-{currentUserId}")
+                .SendAsync("NewMessageForInboxAsync", currentUserId, model);
         }
 
     }

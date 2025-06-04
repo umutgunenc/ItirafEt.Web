@@ -2,6 +2,8 @@
 @inject IMessageApi MessageApi
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
+@inject InboxService InboxService
+
 
 <div class="col-lg-8 col mx-auto py-5">
 
@@ -15,9 +17,8 @@
 	{
 		<div class="list-group">
 
-			@foreach (var inboxItem in _inboxDtos)
+			@foreach (var inboxItem in _inboxItems)
 			{
-
 				var now = DateTime.Now;
 				var diff = now - inboxItem.LastMessageDate;
 				string timeText;
@@ -39,10 +40,8 @@
 					timeText = inboxItem.LastMessageDate.ToString("dd MMMM yyyy");
 				}
 
-
 				<a @onclick="()=>NavigateToConversation(inboxItem.ConversationId)" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" style="cursor:pointer">
 					<img src="@(string.IsNullOrEmpty(inboxItem.SenderUserProfileImageUrl) ? "/anonymousIcon.png" : inboxItem.SenderUserProfileImageUrl)" alt="" width="56" height="56" class="rounded-circle flex-shrink-0 profile-photo" @onclick:stopPropagation="true" style="cursor:auto">
-
 
 					<div class="d-flex gap-2 w-100 justify-content-between">
 						<div>
@@ -56,7 +55,6 @@
 							<p class="mb-0 opacity-75">
 								@if (string.IsNullOrWhiteSpace(inboxItem.LastMessagePrewiew))
 								{
-									
 									<span style="position: relative; top: -2px;">📷</span>
 									<span>Fotoğraf</span>
 								}
@@ -80,47 +78,102 @@
 @code {
 
 	private Guid _currentUserId;
-	private List<InboxViewModel> _inboxDtos = new ();
+	private List<InboxViewModel> _inboxItems = new();
 	private bool _isError = false;
 	private string? _errorMessage;
+	private HubConnection? _hubConnection;
 
 
 	protected override async Task OnInitializedAsync()
 	{
 		GetUserId();
-		await GetUserMessages();
+		await GetUserMessagesAsync();
+		await StartHubConnection();
+		await InvokeAsync(StateHasChanged);
 	}
-
-
 	private void GetUserId()
 	{
 		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
 			_currentUserId = parsedId;
 	}
-
-	private async Task GetUserMessages()
+	private async Task GetUserMessagesAsync()
 	{
 
-		try
-		{
-			var response = await MessageApi.GetUserMessagesAsync(_currentUserId);
-			if (!response.IsSuccess)
-			{
-				_isError = true;
-				_errorMessage = response.ErrorMessage;
-			}
-			else
-				_inboxDtos = response.Data;
-		}
-		catch (Exception ex)
+		await InboxService.InitializeAsync(_currentUserId);
+
+		if (InboxService._haveError)
 		{
 			_isError = true;
-			_errorMessage = ex.Message;
+			_errorMessage = InboxService._errorMessage;
 		}
-	}
+		else
+		{
+			_isError = false;
+			_inboxItems = InboxService.GetUserConversations();
+			_inboxItems.Sort((a, b) => b.LastMessageDate.CompareTo(a.LastMessageDate));
 
-	private void NavigateToConversation(Guid conversationId) {
+		}
+
+	}
+	private async Task StartHubConnection()
+	{
+
+
+		_hubConnection = new HubConnectionBuilder()
+		.WithUrl("https://localhost:7292/messagehub")
+		.WithAutomaticReconnect()
+		.Build();
+
+		_hubConnection.On<Guid, InboxViewModel>("NewMessageForInboxAsync", async (currentUserId, model) =>
+		{
+			if (_inboxItems.Count == 0)
+				_inboxItems = new();
+
+			var existingIndex = _inboxItems.FindIndex(i => i.ConversationId == model.ConversationId);
+
+			if (existingIndex != -1)
+			{
+				var existingItem = _inboxItems[existingIndex];
+				model.UnreadMessageCount = existingItem.UnreadMessageCount + 1;
+				_inboxItems.RemoveAt(existingIndex);
+			}
+
+			_inboxItems.Insert(0, model);
+
+			await InvokeAsync(StateHasChanged);
+		});
+
+
+		_hubConnection.On<Guid, Guid>("MessageReadByCurrentUserAsync", async (currentUserId, conversationId) =>
+		{
+			if (_currentUserId == currentUserId)
+			{
+				var item = _inboxItems.FirstOrDefault(i => i.ConversationId == conversationId);
+				if (item != null && item.UnreadMessageCount > 0)
+				{
+					item.UnreadMessageCount -= 1;
+					await InvokeAsync(StateHasChanged);
+				}
+			}
+		});
+
+
+		await _hubConnection.StartAsync();
+		await _hubConnection.SendAsync("JoinInboxGroup", _currentUserId);
+		await _hubConnection.SendAsync("JoinMessageReadGroup", _currentUserId);
+
+	}
+	private void NavigateToConversation(Guid conversationId)
+	{
 		NavigationManager.NavigateTo($"/conversations/{conversationId}");
 	}
 
+	public async ValueTask DisposeAsync()
+	{
+		if (_hubConnection != null)
+		{
+			await _hubConnection.StopAsync();
+			await _hubConnection.DisposeAsync();
+		}
+	}
 }
