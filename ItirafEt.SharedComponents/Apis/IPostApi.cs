@@ -8,7 +8,7 @@ namespace ItirafEt.SharedComponents.Apis
     {
         [Headers("Authorization: Bearer")]
         [Post("/api/createPost")]
-        Task<ApiResponses> CreatePostAsync(PostViewModel dto,Guid UserId);
+        Task<ApiResponses> CreatePostAsync(PostViewModel model,Guid UserId);
 
         [Headers("Authorization: Bearer")]
         [Get("/api/getCreatedPost/")]

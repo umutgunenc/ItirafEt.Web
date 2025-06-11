@@ -76,6 +76,7 @@ builder.Services.AddTransient<CommentService>();
 builder.Services.AddTransient<ReactionService>();
 builder.Services.AddTransient<PostViewService>();
 builder.Services.AddTransient<MessageService>();
+builder.Services.AddTransient<UserSettingService>();
 
 
 builder.Services.AddTransient<ReactionHubService>();
@@ -123,6 +124,7 @@ app.MapCommentEndpoints();
 app.MapReactionEndpoints();
 app.MapPostViewEndpoints();
 app.MapMessageEndpoints();
+app.MapUserSettingsEndpoints();
 
 app.Run();
 
