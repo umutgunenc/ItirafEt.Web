@@ -3,6 +3,8 @@
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject InboxService InboxService
+@inject SignalRInboxService SignalRInboxService
+@implements IAsyncDisposable
 
 
 <div class="col-lg-8 col mx-auto py-5">
@@ -81,14 +83,25 @@
 	private List<InboxViewModel> _inboxItems = new();
 	private bool _isError = false;
 	private string? _errorMessage;
-	private HubConnection? _hubConnection;
-
+	private Func<InboxViewModel, Task>? _onNewMessageHandler;
+	private Func<Guid, Guid, Task>? _onMessageReadHandler;
 
 	protected override async Task OnInitializedAsync()
 	{
 		GetUserId();
+		await SignalRInboxService.StartAsync(_currentUserId);
+		await SignalRInboxService.StartReadMessageAsync(_currentUserId);
 		await GetUserMessagesAsync();
-		await StartHubConnection();
+
+		_onNewMessageHandler = async model =>
+			await UpdateInboxItemUnreadMessageCountAsync(model);
+
+		_onMessageReadHandler = async (uid, convId) =>
+			await UpdateInboxItemAfterReadUnreadMessageAsync(uid, convId);
+
+		SignalRInboxService.NewInboxMessage += _onNewMessageHandler;
+		SignalRInboxService.MessageRead += _onMessageReadHandler;
+
 		await InvokeAsync(StateHasChanged);
 	}
 	private void GetUserId()
@@ -113,67 +126,48 @@
 			_inboxItems.Sort((a, b) => b.LastMessageDate.CompareTo(a.LastMessageDate));
 
 		}
-
 	}
-	private async Task StartHubConnection()
+
+	private async Task UpdateInboxItemUnreadMessageCountAsync(InboxViewModel model)
 	{
+		if (_inboxItems.Count == 0)
+			_inboxItems = new();
 
+		var existingIndex = _inboxItems.FindIndex(i => i.ConversationId == model.ConversationId);
 
-		_hubConnection = new HubConnectionBuilder()
-		.WithUrl("https://localhost:7292/messagehub")
-		.WithAutomaticReconnect()
-		.Build();
-
-		_hubConnection.On<Guid, InboxViewModel>("NewMessageForInboxAsync", async (currentUserId, model) =>
+		if (existingIndex != -1)
 		{
-			if (_inboxItems.Count == 0)
-				_inboxItems = new();
+			var existingItem = _inboxItems[existingIndex];
+			model.UnreadMessageCount = existingItem.UnreadMessageCount + 1;
+			_inboxItems.RemoveAt(existingIndex);
+		}
 
-			var existingIndex = _inboxItems.FindIndex(i => i.ConversationId == model.ConversationId);
+		_inboxItems.Insert(0, model);
 
-			if (existingIndex != -1)
-			{
-				var existingItem = _inboxItems[existingIndex];
-				model.UnreadMessageCount = existingItem.UnreadMessageCount + 1;
-				_inboxItems.RemoveAt(existingIndex);
-			}
+		await InvokeAsync(StateHasChanged);
+	}
 
-			_inboxItems.Insert(0, model);
-
-			await InvokeAsync(StateHasChanged);
-		});
-
-
-		_hubConnection.On<Guid, Guid>("MessageReadByCurrentUserAsync", async (currentUserId, conversationId) =>
+	private async Task UpdateInboxItemAfterReadUnreadMessageAsync(Guid currentUserId, Guid conversationId)
+	{
+		if (_currentUserId == currentUserId)
 		{
-			if (_currentUserId == currentUserId)
+			var item = _inboxItems.FirstOrDefault(i => i.ConversationId == conversationId);
+			if (item != null && item.UnreadMessageCount > 0)
 			{
-				var item = _inboxItems.FirstOrDefault(i => i.ConversationId == conversationId);
-				if (item != null && item.UnreadMessageCount > 0)
-				{
-					item.UnreadMessageCount -= 1;
-					await InvokeAsync(StateHasChanged);
-				}
+				item.UnreadMessageCount -= 1;
+				await InvokeAsync(StateHasChanged);
 			}
-		});
-
-
-		await _hubConnection.StartAsync();
-		await _hubConnection.SendAsync("JoinInboxGroup", _currentUserId);
-		await _hubConnection.SendAsync("JoinMessageReadGroup", _currentUserId);
-
+		}
 	}
 	private void NavigateToConversation(Guid conversationId)
 	{
-		NavigationManager.NavigateTo($"/conversations/{conversationId}");
+		NavigationManager.NavigateTo($"/conversations/{conversationId}", forceLoad: true);
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-		if (_hubConnection != null)
-		{
-			await _hubConnection.StopAsync();
-			await _hubConnection.DisposeAsync();
-		}
+		SignalRInboxService.NewInboxMessage -= _onNewMessageHandler;
+		SignalRInboxService.MessageRead -= _onMessageReadHandler;
+		await SignalRInboxService.DisposeAsync();
 	}
 }

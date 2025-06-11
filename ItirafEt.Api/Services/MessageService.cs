@@ -158,12 +158,14 @@ namespace ItirafEt.Api.Services
             await _hubService.SendMessageAsync(message.ConversationId, returnModel);
             await _hubService.SendMessageNotificationAsync(conversationId, returnModel);
 
-            var inboxViewModel = new InboxViewModel {
+            var inboxViewModel = new InboxViewModel
+            {
                 ConversationId = conversationId,
                 LastMessageDate = message.SentDate,
                 LastMessagePrewiew = message.Content,
                 SenderUserUserName = isMessageValid.Item3.UserName,
                 SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
+                UnreadMessageCount = 1
 
             };
 
@@ -236,6 +238,7 @@ namespace ItirafEt.Api.Services
                 LastMessagePrewiew = message.Content,
                 SenderUserUserName = isMessageValid.Item3.UserName,
                 SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
+                UnreadMessageCount = 1
             };
 
             await _hubService.NewMessageForInboxAsync(receiverId, inboxViewModel);

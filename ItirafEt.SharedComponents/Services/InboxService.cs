@@ -33,30 +33,6 @@ namespace ItirafEt.SharedComponents.ClientServices
             _initializationTask = InitializeInternalAsync(userId);
             await _initializationTask;
         }
-        //private async Task InitializeInternalAsync(Guid userId)
-        //{
-        //    try
-        //    {
-        //        var response = await MessageApi.GetUserMessagesAsync(userId);
-        //        if (response.IsSuccess)
-        //        {
-        //            _conversations = response.Data;
-        //            _haveError = false;
-        //            _isInitialized = true;
-        //        }
-        //        else
-        //        {
-        //            _errorMessage = response.ErrorMessage;
-        //            _haveError = true;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _errorMessage = ex.Message;
-        //        _haveError = true;
-        //    }
-        //}
-
         private async Task InitializeInternalAsync(Guid userId)
         {
             try
@@ -64,8 +40,8 @@ namespace ItirafEt.SharedComponents.ClientServices
                 var response = await MessageApi.GetUserMessagesAsync(userId);
                 if (response.IsSuccess)
                 {
-                    _conversations.Clear();                        // ✅ referansı koruyor
-                    _conversations.AddRange(response.Data);        // yeni verileri ekle
+                    _conversations.Clear();
+                    _conversations.AddRange(response.Data);
                     _haveError = false;
                     _isInitialized = true;
                 }
