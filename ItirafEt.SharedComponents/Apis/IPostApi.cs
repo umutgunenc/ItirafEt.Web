@@ -17,5 +17,8 @@ namespace ItirafEt.SharedComponents.Apis
         [Get("/api/getPostById/")]
         Task<ApiResponses<PostViewModel>> GetPostByIdAsync(int postId);
 
+        [Headers("Authorization: Bearer")]
+        [Get("/api/getUserPost/")]
+        Task<ApiResponses<UserPostsViewModel>> GetUserPostsAsync(Guid UserId,int size, int PageNo);
     }
 }

@@ -15,7 +15,7 @@ namespace ItirafEt.Api.Services
     {
         private readonly dbContext _context;
         private readonly CategoryHubService _categoryHubService;
-        public PostService(dbContext context,  CategoryHubService categoryHubService)
+        public PostService(dbContext context, CategoryHubService categoryHubService)
         {
             _context = context;
             _categoryHubService = categoryHubService;
@@ -96,9 +96,57 @@ namespace ItirafEt.Api.Services
                     UserProfileImageUrl = p.User.ProfilePictureUrl
                 })
                 .FirstOrDefaultAsync();
-            if(post == null)
+            if (post == null)
                 return ApiResponses<PostViewModel>.Fail("Gönderi bulunamadı.");
             return ApiResponses<PostViewModel>.Success(post);
+
+        }
+
+        public async Task<ApiResponses<UserPostsViewModel>> GetUserPostsAsync(Guid userId, int size, int page)
+        {
+            var user = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted && !u.IsBanned);
+
+            if (user == null)
+                return ApiResponses<UserPostsViewModel>.Fail("Kullanıcı Bulunamadı.");
+
+            var totalPosts = await _context.Posts
+                .AsNoTracking()
+                .CountAsync(p => p.UserId == userId);
+
+            if (totalPosts == 0)
+                return ApiResponses<UserPostsViewModel>.Fail("Henüz Bir Gönderi Paylaşmadınız.");
+
+            var posts = await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedDate)
+                .Skip(size * (page - 1))
+                .Take(size)
+                .Select(p => new ListOfUserPost
+                {
+                    PostContentReview = p.Content.Length > 100 ? p.Content.Substring(0, 100) + "..." : p.Content ,
+                    PostId = p.Id,
+                    PostTitle = p.Title.Length > 50 ? p.Title.Substring(0, 30) + "..." : p.Title,
+                    PostCreatedDate = p.CreatedDate,
+                    PostLikeCount = _context.PostReaction.Count(pr => pr.PostId == p.Id && pr.ReactionTypeId == (int)ReactionTypeEnum.Like),
+                    PostViewCount = _context.UserReadPosts.Count(ur => ur.PostId == p.Id),
+                })
+                .ToListAsync();
+
+            var hasMore = totalPosts > size * page;
+
+            var userPostsViewModel = new UserPostsViewModel
+            {
+                HasNextPage = hasMore,
+                TotalCount = totalPosts,
+                UserName = user.UserName,
+                UserProfilePicture = user.ProfilePictureUrl,
+                UserPosts = posts
+            };
+
+            return ApiResponses<UserPostsViewModel>.Success(userPostsViewModel);
 
         }
 

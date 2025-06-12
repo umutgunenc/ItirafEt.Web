@@ -34,7 +34,5 @@ namespace ItirafEt.Shared.ViewModels
         public string DeviceInfo { get; set; }
         public string IpAddress { get; set; }
 
-
-
     }
 }
