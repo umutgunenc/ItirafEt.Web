@@ -10,7 +10,6 @@ namespace ItirafEt.Shared.ViewModels
     public class UserSettingsInfoViewModel
     {
 
-        public Guid UserId { get; set; }
 
         [Required(ErrorMessage = "Kullanıcı Adını Giriniz.")]
         [MinLength(3, ErrorMessage = "Kullanıcı adı minumum 3 karakter uzunluğunda olmalıdır.")]
@@ -30,7 +29,7 @@ namespace ItirafEt.Shared.ViewModels
 
         [Required(ErrorMessage = "Lütfen Cinsiyet Seçiniz.")]
         [Range(2, 3, ErrorMessage = "Lütfen Cinsiyet Seçiniz.")]
-        public int? GenderId { get; set; }
+        public int GenderId { get; set; }
         public string? ProfileImageUrl { get; set; }
 
 

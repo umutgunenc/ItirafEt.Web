@@ -97,7 +97,7 @@ namespace ItirafEt.Api.Services
 
         }
 
-        private string GenearteJwtToken(User user)
+        public string GenearteJwtToken(User user)
         {
             Claim[] claims = [
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),

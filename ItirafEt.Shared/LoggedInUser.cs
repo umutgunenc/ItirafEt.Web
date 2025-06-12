@@ -12,12 +12,13 @@ namespace ItirafEt.Shared
     {
         public string ToJson() => JsonSerializer.Serialize(this);
 
-        public List<Claim> ToClaims() => new List<Claim>{
-                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-                new Claim(ClaimTypes.Name, userName),
-                new Claim(ClaimTypes.Role, roleId.ToString()),
-                new Claim(nameof(Token),Token)
-            };
+        public List<Claim> ToClaims() => new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+            new Claim(ClaimTypes.Name, userName),
+            new Claim(ClaimTypes.Role, roleId.ToString()),
+            new Claim(nameof(Token),Token)
+        };
 
         public static LoggedInUser? FromJson(string json) => string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<LoggedInUser>(json);
 

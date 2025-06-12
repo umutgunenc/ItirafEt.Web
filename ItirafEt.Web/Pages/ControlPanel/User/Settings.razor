@@ -3,7 +3,6 @@
 @inject IUserSettingApi UserSettingApi
 @inject AuthStateProvider AuthStateProvider
 
-
 <div class="col-lg-8 col mx-auto py-lg-5">
 	@if (_haveError)
 	{
@@ -21,9 +20,9 @@
 							<div class="d-flex flex-column align-items-center text-center">
 								<div class="py-2">
 									<img src="@(string.IsNullOrEmpty(_userSettingInfoViewModel.ProfileImageUrl) ? "/anonymousIcon.png" : _userSettingInfoViewModel.ProfileImageUrl)"
-										 alt="Profil Resmi"
-										 class="profile-photo rounded-circle"
-										 width="200">
+									alt="Profil Resmi"
+									class="profile-photo rounded-circle"
+									width="200">
 								</div>
 								<div class="mt-3">
 									<h4 class="pb-1">@_userSettingInfoViewModel.UserName</h4>
@@ -56,7 +55,6 @@
 									<i class="bi bi-upload me-2"></i>
 									Profil Resmi Seç
 								</button>
-
 								<button type="button" class="btn-custom-reverse w-100">
 									<i class="bi bi-save me-2"></i>
 									Kaydet
@@ -92,7 +90,7 @@
 					<div class="card mb-2">
 						<div class="card-body">
 							<EditForm Model="_userSettingInfoViewModel"
-									  OnValidSubmit="ChangeUserInfo">
+							OnValidSubmit="ChangeUserInfoAsync">
 								<DataAnnotationsValidator />
 								<div class="row mb-3">
 									<label class="col-form-label col-sm-3">
@@ -101,8 +99,8 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingInfoViewModel.UserName"
-													   class="form-control"
-													   type="text" />
+											class="form-control"
+											type="text" />
 										</div>
 										<ValidationMessage For="()=> _userSettingInfoViewModel.UserName" />
 									</div>
@@ -114,12 +112,12 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingInfoViewModel.Email"
-													   class="form-control"
-													   type="email"
-													   disabled="@_changeEmail" />
+											class="form-control"
+											type="email"
+											disabled="@_changeEmail" />
 											<button type="button"
-													class="btn btn-outline-secondary"
-													@onclick="ToggleEmailChange">
+											class="btn btn-outline-secondary"
+											@onclick="ToggleEmailChange">
 												<i class="@(_changeEmail ? "bi bi-arrow-clockwise" : "bi bi-x")"></i>
 											</button>
 										</div>
@@ -127,18 +125,15 @@
 									</div>
 								</div>
 								<div class="row mb-3">
-									<label class="col-form-label col-sm-3">Doğum Tarihi:</label>
+									<label class="col-form-label col-sm-3">Doğum Tarihi</label>
 									<div class="col-sm-9">
-
 										<InputDate @bind-Value="_userSettingInfoViewModel.BirthDate" max="@MaxBirthDate" class="form-control" />
 										<ValidationMessage For="()=> _userSettingInfoViewModel.BirthDate" />
 									</div>
 								</div>
-
 								<div class="row mb-3">
-									<label for="gender" class="col-form-label col-sm-3">Cinsiyet:</label>
+									<label for="gender" class="col-form-label col-sm-3">Cinsiyet</label>
 									<div class="col-sm-9">
-
 										<InputSelect id="gender" @bind-Value="_userSettingInfoViewModel.GenderId" class="form-select">
 											<option value="" disabled selected>Cinsiyet seçiniz</option>
 											<option value="@( (int)GenderEnum.Male )">Erkek</option>
@@ -148,9 +143,49 @@
 									</div>
 								</div>
 								<div class="row">
-									<div class="col-sm-3"></div>
+									@if (!_isInfoBusy)
+									{
+										<div class="">
+											<input type="submit" class="btn btn-custom px-4 text-white col-12" value="Bilgilerimi Kaydet">
+										</div>
+									}
+									else
+									{
+										<div>
+											<button class="btn btn-custom px-4 text-white col-12" type="button" disabled>
+												<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+												Kaydediliyor...
+											</button>
+										</div>
+									}
 									<div class="">
-										<input type="submit" class="btn btn-custom px-4 text-white col-12" value="Bilgilerimi Yenile">
+										@if (_haveInfoError)
+										{
+
+											<div class="position-relative mt-2">
+												<div class="alert alert-danger px-4 py-3 mb-0">
+													@_infoErrorMessage
+												</div>
+												<button type="button"
+												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+												aria-label="Kapat"
+												@onclick="CloseInfoMessage">
+												</button>
+											</div>
+										}
+										@if (_isInfoSucces)
+										{
+											<div class="position-relative mt-2">
+												<div class="alert alert-success px-4 py-3 mb-0">
+													<a href="#" class="alert-link">Bilgileriniz başarıyla kaydedildi.</a>
+												</div>
+												<button type="button"
+												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+												aria-label="Kapat"
+												@onclick="CloseInfoMessage">
+												</button>
+											</div>
+										}
 									</div>
 								</div>
 							</EditForm>
@@ -159,7 +194,7 @@
 					<div class="card mb-2">
 						<div class="card-body">
 							<EditForm Model="_userSettingChangePaswordViewModel"
-									  OnValidSubmit="ChangePasword">
+							OnValidSubmit="ChangePaswordAsync">
 								<DataAnnotationsValidator />
 								<div class="row mb-3">
 									<label class="col-form-label col-sm-3">
@@ -168,11 +203,11 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingChangePaswordViewModel.OldPassword"
-													   class="form-control"
-													   type="@(_showOldPassword ? "text" : "password")" />
+											class="form-control"
+											type="@(_showOldPassword ? "text" : "password")" />
 											<button type="button"
-													class="btn btn-outline-secondary"
-													@onclick="ToggleOldPasswordVisibility">
+											class="btn btn-outline-secondary"
+											@onclick="ToggleOldPasswordVisibility">
 												<i class="@(_showOldPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 											</button>
 										</div>
@@ -186,11 +221,11 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingChangePaswordViewModel.Password"
-													   class="form-control"
-													   type="@(_showNewPassword ? "text" : "password")" />
+											class="form-control"
+											type="@(_showNewPassword ? "text" : "password")" />
 											<button type="button"
-													class="btn btn-outline-secondary"
-													@onclick="ToggleNewPasswordVisibility">
+											class="btn btn-outline-secondary"
+											@onclick="ToggleNewPasswordVisibility">
 												<i class="@(_showNewPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 											</button>
 										</div>
@@ -204,23 +239,66 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingChangePaswordViewModel.PasswordConfirm"
-													   class="form-control"
-													   type="@(_showNewPasswordConfirm ? "text" : "password")" />
+											class="form-control"
+											type="@(_showNewPasswordConfirm ? "text" : "password")" />
 											<button type="button"
-													class="btn btn-outline-secondary"
-													@onclick="ToggleNewPasswordConfirmVisibility">
+											class="btn btn-outline-secondary"
+											@onclick="ToggleNewPasswordConfirmVisibility">
 												<i class="@(_showNewPasswordConfirm ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 											</button>
 										</div>
 										<ValidationMessage For="()=> _userSettingChangePaswordViewModel.PasswordConfirm" />
 									</div>
 								</div>
-
-
-								<div class="row">
+								@* 								<div class="row">
 									<div class="col-sm-3"></div>
 									<div class="">
 										<input type="submit" class="btn btn-custom px-4 text-white col-12" value="Şifremi Değiştir">
+									</div>
+								</div> *@
+								<div class="row">
+									@if (!_isPasswordBusy)
+									{
+										<div class="">
+											<input type="submit" class="btn btn-custom px-4 text-white col-12" value="Şifremi Değiştir">
+										</div>
+									}
+									else
+									{
+										<div>
+											<button class="btn btn-custom px-4 text-white col-12" type="button" disabled>
+												<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+												Şifreniz Değiştiriliyor.
+											</button>
+										</div>
+									}
+									<div class="">
+										@if (_havePasswordError)
+										{
+											<div class="position-relative mt-2">
+												<div class="alert alert-danger px-4 py-3 mb-0">
+													@_passwordErrorMessage
+												</div>
+												<button type="button"
+												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+												aria-label="Kapat"
+												@onclick="ClosePasswordMessage">
+												</button>
+											</div>
+										}
+										@if (_isPasswordSucces)
+										{
+											<div class="position-relative mt-2">
+												<div class="alert alert-success px-4 py-3 mb-0">
+													<a href="#" class="alert-link">Şifeniz başarıyla değiştirildi.</a>
+												</div>
+												<button type="button"
+												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+												aria-label="Kapat"
+												@onclick="ClosePasswordMessage">
+												</button>
+											</div>
+										}
 									</div>
 								</div>
 							</EditForm>
@@ -269,13 +347,18 @@
 	private bool _showNewPasswordConfirm = false;
 	private bool _changeEmail = true;
 	private bool _haveError = false;
+	private bool _haveInfoError = false;
+	private bool _havePasswordError = false;
+	private bool _isInfoBusy = false;
+	private bool _isPasswordBusy = false;
+	private bool _isInfoSucces = false;
+	private bool _isPasswordSucces = false;
 	private string? _errorMessage = null;
-
+	private string? _infoErrorMessage = null;
+	private string? _passwordErrorMessage = null;
 	private string MaxBirthDate => DateTime.Now.AddYears(-18).ToString("yyyy-MM-dd");
-	private string test;
 	private Guid _currentUserId;
-
-	private UserSettingChangePaswordViewModel _userSettingChangePaswordViewModel = new();
+	private UserSettingsChangePaswordViewModel _userSettingChangePaswordViewModel = new();
 	private UserSettingsInfoViewModel _userSettingInfoViewModel = new();
 
 
@@ -289,7 +372,6 @@
 	{
 		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
 	}
-
 	private void ToggleOldPasswordVisibility()
 	{
 		_showOldPassword = !_showOldPassword;
@@ -302,19 +384,21 @@
 	{
 		_showNewPasswordConfirm = !_showNewPasswordConfirm;
 	}
-
 	private void ToggleEmailChange()
 	{
 		_changeEmail = !_changeEmail;
 	}
-
-	private void ChangePasword()
+	private void CloseInfoMessage()
 	{
-		test = "test basarili 2";
+		_haveInfoError = false;
+		_isInfoSucces = false;
+		_infoErrorMessage = string.Empty;
 	}
-	private void ChangeUserInfo()
+	private void ClosePasswordMessage()
 	{
-		test = "test basarili 1";
+		_havePasswordError = false;
+		_isPasswordSucces = false;
+		_passwordErrorMessage = string.Empty;
 	}
 	private int GetAge(DateTime birthDate)
 	{
@@ -324,6 +408,77 @@
 		if (birthDate.Date > today.AddYears(-age))
 			age--;
 		return age;
+	}
+	private async Task ChangePaswordAsync()
+	{
+		if (_isPasswordBusy)
+			return;
+		_isPasswordBusy = true;
+		_isPasswordSucces = false;
+		_havePasswordError = false;
+
+		try
+		{
+			var response = await UserSettingApi.ChangeUserPasswordAsync(_currentUserId, _userSettingChangePaswordViewModel);
+			if (!response.IsSuccess)
+			{
+				_havePasswordError = true;
+				_passwordErrorMessage = response.ErrorMessage;
+			}
+			else
+			{
+				var token = response.Data;
+				var loggedInUser = new LoggedInUser(_currentUserId.ToString(), _userSettingInfoViewModel.UserName, AuthStateProvider.User?.roleId.ToString(), token);
+				await AuthStateProvider.SetLoginAsync(loggedInUser);
+
+				_userSettingChangePaswordViewModel.OldPassword= string.Empty;
+				_userSettingChangePaswordViewModel.Password = string.Empty;
+				_userSettingChangePaswordViewModel.PasswordConfirm = string.Empty;
+				_isPasswordSucces = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			_havePasswordError = true;
+			_passwordErrorMessage = ex.Message;
+		}
+		finally
+		{
+			_isPasswordBusy = false;
+		}
+	}
+	private async Task ChangeUserInfoAsync()
+	{
+		if (_isInfoBusy)
+			return;
+		_isInfoBusy = true;
+		_isInfoSucces = false;
+		_haveInfoError = false;
+		try
+		{
+			var response = await UserSettingApi.ChangeUserSettingsInfoAsync(_currentUserId, _userSettingInfoViewModel);
+
+			if (!response.IsSuccess)
+			{
+				_haveInfoError = true;
+				_infoErrorMessage = response.ErrorMessage;
+			}
+			else
+			{
+				_isInfoSucces = true;
+				await AuthStateProvider.UpdateUserNameAsync(_userSettingInfoViewModel.UserName);
+			}
+
+		}
+		catch (Exception ex)
+		{
+			_haveInfoError = true;
+			_infoErrorMessage = ex.Message;
+		}
+		finally
+		{
+			_isInfoBusy = false;
+		}
 	}
 	private async Task GetUserSettingsInfo()
 	{
@@ -344,4 +499,5 @@
 			_errorMessage = ex.Message;
 		}
 	}
+
 }

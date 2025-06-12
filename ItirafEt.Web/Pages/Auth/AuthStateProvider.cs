@@ -40,7 +40,6 @@ namespace ItirafEt.Web.Pages.Auth
             await _jSRuntime.InvokeVoidAsync("localStorage.setItem", UserDataKey, user.ToJson());
 
         }
-
         public async Task SetLogoutAsync()
         {
             User = null;
@@ -144,5 +143,23 @@ namespace ItirafEt.Web.Pages.Auth
         //    if (User != null && !IsTokenValid(User.Token))
         //        await SetLogoutAsync();
         //}
+
+
+        public async Task UpdateUserNameAsync(string newUserName)
+        {
+            if (User is null)
+                return;
+
+            var updatedUser = User with { userName = newUserName };
+
+            User = updatedUser;
+
+            await _jSRuntime.InvokeVoidAsync("localStorage.setItem", UserDataKey, updatedUser.ToJson());
+
+            var identity = new ClaimsIdentity(updatedUser.ToClaims(), AuthType);
+            var principal = new ClaimsPrincipal(identity);
+            _authStateTask = Task.FromResult(new AuthenticationState(principal));
+            NotifyAuthenticationStateChanged(_authStateTask);
+        }
     }
 }

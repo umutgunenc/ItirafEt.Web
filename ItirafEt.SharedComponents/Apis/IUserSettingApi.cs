@@ -13,5 +13,14 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Get("/api/getUserSettingsInfo")]
         Task<ApiResponses<UserSettingsInfoViewModel>> GetUserSettingsInfoAsync(Guid userId);
+
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/changeUserSettingsInfo")]
+        Task<ApiResponses<UserSettingsInfoViewModel>> ChangeUserSettingsInfoAsync(Guid userId, UserSettingsInfoViewModel model);
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/changeUserPassword")]
+        Task<ApiResponses<string>> ChangeUserPasswordAsync(Guid userId, UserSettingsChangePaswordViewModel model);
     }
 }
