@@ -48,7 +48,8 @@ namespace ItirafEt.Api.Services
                 Content = model.Content,
                 Title = model.Title.ToUpper(),
                 UserId = userId,
-                IsActive = true,
+                IsDeletedByUser = false,
+                IsDeletedByAdmin = false,
                 IpAddress = model.IpAddress,
                 DeviceInfo = model.DeviceInfo,
                 CategoryId = model.CategoryId,
@@ -80,7 +81,7 @@ namespace ItirafEt.Api.Services
                 .Include(p => p.User)
                 .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.Id == postId && p.IsActive && p.Category.isActive)
+                .Where(p => p.Id == postId && !p.IsDeletedByUser && !p.IsDeletedByAdmin && p.Category.isActive)
                 .Select(p => new PostViewModel
                 {
                     Id = p.Id,
@@ -126,12 +127,14 @@ namespace ItirafEt.Api.Services
                 .Take(size)
                 .Select(p => new ListOfUserPost
                 {
-                    PostContentReview = p.Content.Length > 100 ? p.Content.Substring(0, 100) + "..." : p.Content ,
+                    PostContentReview = p.Content.Length > 100 ? p.Content.Substring(0, 100) + "..." : p.Content,
                     PostId = p.Id,
-                    PostTitle = p.Title.Length > 50 ? p.Title.Substring(0, 30) + "..." : p.Title,
+                    PostTitle = p.Title.Length > 30 ? p.Title.Substring(0, 30) + "..." : p.Title,
                     PostCreatedDate = p.CreatedDate,
                     PostLikeCount = _context.PostReaction.Count(pr => pr.PostId == p.Id && pr.ReactionTypeId == (int)ReactionTypeEnum.Like),
                     PostViewCount = _context.UserReadPosts.Count(ur => ur.PostId == p.Id),
+                    IsDeletedByAdmin = p.IsDeletedByAdmin,
+                    IsDeletedByUser = p.IsDeletedByUser,
                 })
                 .ToListAsync();
 
@@ -147,9 +150,30 @@ namespace ItirafEt.Api.Services
             };
 
             return ApiResponses<UserPostsViewModel>.Success(userPostsViewModel);
-
         }
 
+        public async Task<ApiResponses> HidePostAsync(int postId, Guid userId)
+        {
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(p => p.Id == postId && p.UserId == userId);
+            if (post == null)
+                return ApiResponses.Fail("Gönderi bulunamadı.");
+            post.IsDeletedByUser = true;
+            await _context.SaveChangesAsync();
+            await _categoryHubService.CategoryPostCountChangedAsync(post.CategoryId, false);
+            return ApiResponses.Success();
+        }
 
+        public async Task<ApiResponses> ShowPostAsync(int postId, Guid userId)
+        {
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(p => p.Id == postId && p.UserId == userId);
+            if (post == null)
+                return ApiResponses.Fail("Gönderi bulunamadı.");
+            post.IsDeletedByUser = false;
+            await _context.SaveChangesAsync();
+            await _categoryHubService.CategoryPostCountChangedAsync(post.CategoryId, true);
+            return ApiResponses.Success();
+        }
     }
 }

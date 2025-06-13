@@ -49,7 +49,7 @@ namespace ItirafEt.Api.Services
                 isActive = category.isActive,
                 CategoryOrder = category.CategoryOrder,
                 CategoryIconUrl = category.CategoryIconUrl,
-                PostCount = _context.Posts.Count(p => p.CategoryId == category.Id && p.IsActive)
+                PostCount = _context.Posts.Count(p => p.CategoryId == category.Id && !p.IsDeletedByUser && !p.IsDeletedByAdmin)
             };
 
             //await _hubContext.Clients.All.SendAsync("ActiveCategoryInformationsChanged", newCategoryDto);
@@ -85,7 +85,7 @@ namespace ItirafEt.Api.Services
                 isActive = category.isActive,
                 CategoryOrder = category.CategoryOrder,
                 CategoryIconUrl = category.CategoryIconUrl,
-                PostCount = _context.Posts.Count(p => p.CategoryId == category.Id && p.IsActive)
+                PostCount = _context.Posts.Count(p => p.CategoryId == category.Id && !p.IsDeletedByAdmin && !p.IsDeletedByUser)
             };
 
             _context.Categories.Update(category);
@@ -125,7 +125,7 @@ namespace ItirafEt.Api.Services
                     CategoryOrder = c.CategoryOrder,
                     CategoryIconUrl = c.CategoryIconUrl,
                     isActive = c.isActive,
-                    PostCount = _context.Posts.Count(p => p.CategoryId == c.Id && p.IsActive)
+                    PostCount = _context.Posts.Count(p => p.CategoryId == c.Id && !p.IsDeletedByUser && !p.IsDeletedByAdmin)
                 })
                 .ToListAsync();
 
@@ -141,7 +141,7 @@ namespace ItirafEt.Api.Services
                 .Include(p => p.User)
                 .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.CategoryId == categoryId && p.IsActive && p.Category.isActive)
+                .Where(p => p.CategoryId == categoryId && !p.IsDeletedByUser && !p.IsDeletedByAdmin && p.Category.isActive)
                 .OrderByDescending(p => p.CreatedDate)
                 .Skip((pageNo - 1) * pageSize)
                 .Take(pageSize)
@@ -171,7 +171,7 @@ namespace ItirafEt.Api.Services
                 .Include(p => p.User)
                 .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.CategoryId == categoryId && p.IsActive && p.Category.isActive)
+                .Where(p => p.CategoryId == categoryId && !p.IsDeletedByUser && !p.IsDeletedByAdmin && p.Category.isActive)
                 .OrderByDescending(p => p.Readers.Count)
                 .Skip((pageNo - 1) * pageSize)
                 .Take(pageSize)
@@ -201,7 +201,7 @@ namespace ItirafEt.Api.Services
                 .Include(p => p.User)
                 .Include(p => p.Category)
                 .AsNoTracking()
-                .Where(p => p.CategoryId == categoryId && p.IsActive && p.Category.isActive)
+                .Where(p => p.CategoryId == categoryId && !p.IsDeletedByUser && !p.IsDeletedByAdmin && p.Category.isActive)
                 .OrderByDescending(p => p.PostReactions
                         .Where(pr => pr.ReactionTypeId == (int)ReactionTypeEnum.Like)
                         .Count())

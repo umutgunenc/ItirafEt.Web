@@ -208,7 +208,7 @@ namespace ItirafEt.Api.Services
             return await _context.Posts
                 .AsNoTracking()
                 .Include(p => p.PostReactions)
-                .FirstOrDefaultAsync(c => c.Id == postId && c.IsActive);
+                .FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeletedByAdmin && !p.IsDeletedByUser);
         }
         private async Task<PostReaction?> GetPostReactionAsync(int postId, Guid UserId)
         {

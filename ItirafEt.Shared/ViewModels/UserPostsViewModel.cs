@@ -24,5 +24,7 @@ namespace ItirafEt.Shared.ViewModels
         public int PostViewCount { get; set; }
         public int PostLikeCount { get; set; }
         public DateTime PostCreatedDate { get; set; }
+        public bool IsDeletedByUser { get; set; }
+        public bool IsDeletedByAdmin { get; set; }
     }
 }

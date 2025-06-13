@@ -33,7 +33,10 @@ namespace ItirafEt.Api.Data.Entities
         public int CategoryId { get; set; }
 
         [Required]
-        public bool IsActive { get; set; }
+        public bool IsDeletedByUser { get; set; }
+
+        [Required]
+        public bool IsDeletedByAdmin { get; set; }
 
         [Required, MaxLength(45)]
         public string IpAddress { get; set; }

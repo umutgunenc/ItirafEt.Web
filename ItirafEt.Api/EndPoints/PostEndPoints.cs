@@ -38,6 +38,18 @@ namespace ItirafEt.Api.EndPoints
             })
             .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
+            app.MapPost("/api/hidePost", async (int postId, Guid userId, PostService postService) =>
+            {
+                return Results.Ok(await postService.HidePostAsync(postId, userId));
+            })
+.RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
+            app.MapPost("/api/showPost", async (int postId, Guid userId, PostService postService) =>
+            {
+                return Results.Ok(await postService.ShowPostAsync(postId, userId));
+            })
+.RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
             return app;
         }
     }

@@ -31,7 +31,7 @@ namespace ItirafEt.Api.Services
 
             var post = await _context.Posts
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == postId && x.IsActive);
+                .FirstOrDefaultAsync(x => x.Id == postId);
             if (post == null)
                 return ApiResponses.Fail("Gönderi Bulunamadı.");
 
@@ -68,7 +68,6 @@ namespace ItirafEt.Api.Services
             await _postViewHubService.UpdatePostViewCountAsync(post.CategoryId, postId);
             await _postViewHubService.PostViewedAnonymousAsync(postId);
                 
-
             return ApiResponses.Success();
         }
 
