@@ -22,5 +22,9 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/changeUserPassword")]
         Task<ApiResponses<string>> ChangeUserPasswordAsync(Guid userId, UserSettingsChangePaswordViewModel model);
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/userDeactive")]
+        Task<ApiResponses<string>> UserDeactiveAsync(Guid userId, UserDeactiveViewModel model);
     }
 }

@@ -46,7 +46,7 @@ namespace ItirafEt.Api.Services
                 return new AuthResponse(default,"Kullanıcı Adı veya Şifre Hatalı");
 
             if (user.IsDeleted)
-                return new AuthResponse(default, "Hesabınız silinmiş durumda.");
+                return new AuthResponse(default, "Hesabınız aktif durumda değil.");
 
             if (user.IsBanned)
                 return new AuthResponse(default, $"Hesabınız {user.BannedDateUntil?.ToString("dd/MM/yyyy")} tarihine kadar banlanmıştır.");

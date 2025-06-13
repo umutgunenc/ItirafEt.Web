@@ -20,6 +20,10 @@ namespace ItirafEt.Api.EndPoints
                Results.Ok(await userSettingService.ChangeUserPasswordAsync(userId, model)))
                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
+            app.MapPost("/api/userDeactive", async (UserSettingService userSettingService, UserDeactiveViewModel model, Guid userId) =>
+   Results.Ok(await userSettingService.UserDeactiveAsync(userId, model)))
+       .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+
             return app;
         }
     }

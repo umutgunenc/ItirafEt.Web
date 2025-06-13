@@ -147,5 +147,29 @@ namespace ItirafEt.Api.Services
             return ApiResponses<string>.Success(newToken);
 
         }
+
+        public async Task<ApiResponses> UserDeactiveAsync(Guid userId, UserDeactiveViewModel model)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                return ApiResponses.Fail("Kullanıcı bulunamadı.");
+            if (string.IsNullOrEmpty(model.Password))
+                return ApiResponses.Fail("Şifrenizi Giriniz.");
+            var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
+            if (passwordResult == PasswordVerificationResult.Failed)
+                return ApiResponses.Fail("Şifreniz yanlış.");
+
+            if(user.RoleName == nameof(UserRoleEnum.Admin) || user.RoleName == nameof(UserRoleEnum.SuperAdmin))
+                return ApiResponses.Fail("Admin görevindeki kullanıcılar hesabını donduramaz.");
+            
+            if(user.RoleName == nameof(UserRoleEnum.Moderator))
+                return ApiResponses.Fail("Moderator görevindeki kullanıcılar hesabını donduramaz.");
+
+            user.IsDeleted = true;
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            return ApiResponses.Success();
+        }
     }
 }
