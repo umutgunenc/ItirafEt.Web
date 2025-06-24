@@ -16,7 +16,7 @@ namespace ItirafEt.Shared.ViewModels
         public string? SenderId { get; set; }
         public string? ReceiverId { get; set; }
 
-        [JsonIgnore] // Bunları client göndermez, sunucu ekler
+        [JsonIgnore] 
         public string? SenderIpAddress { get; set; }
 
         [JsonIgnore]

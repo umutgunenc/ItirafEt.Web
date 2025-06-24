@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Shared.Enums;
@@ -13,12 +14,15 @@ namespace ItirafEt.Api.Services
         private readonly dbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly AuthService _authService;
+        private readonly IWebHostEnvironment _env;
 
-        public UserSettingService(dbContext context, IPasswordHasher<User> passwordHasher, AuthService authService)
+
+        public UserSettingService(dbContext context, IPasswordHasher<User> passwordHasher, AuthService authService, IWebHostEnvironment env)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _authService = authService;
+            _env = env;
         }
 
         public async Task<ApiResponses<UserSettingsInfoViewModel>> GetUserInfoAsync(Guid userId)
@@ -160,16 +164,78 @@ namespace ItirafEt.Api.Services
             if (passwordResult == PasswordVerificationResult.Failed)
                 return ApiResponses.Fail("Şifreniz yanlış.");
 
-            if(user.RoleName == nameof(UserRoleEnum.Admin) || user.RoleName == nameof(UserRoleEnum.SuperAdmin))
+            if (user.RoleName == nameof(UserRoleEnum.Admin) || user.RoleName == nameof(UserRoleEnum.SuperAdmin))
                 return ApiResponses.Fail("Admin görevindeki kullanıcılar hesabını donduramaz.");
-            
-            if(user.RoleName == nameof(UserRoleEnum.Moderator))
+
+            if (user.RoleName == nameof(UserRoleEnum.Moderator))
                 return ApiResponses.Fail("Moderator görevindeki kullanıcılar hesabını donduramaz.");
 
             user.IsDeleted = true;
             _context.Update(user);
             await _context.SaveChangesAsync();
             return ApiResponses.Success();
+        }
+
+        public async Task<ApiResponses> DeleteProfilePictureAsync(Guid userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return ApiResponses.Fail("Kullanıcı Bulunamadı");
+
+            if (user.ProfilePictureUrl == null)
+                return ApiResponses.Fail("Kullanıcının profil resmi bulunmamaktadır.");
+
+            DeleteProfilePictureFromServer(user.ProfilePictureUrl, userId.ToString());
+
+            user.ProfilePictureUrl = null;
+            await _context.SaveChangesAsync();
+
+            return ApiResponses.Success();
+        }
+
+        public async Task<ApiResponses<ChangeProfilePictureModel>> ChangeUserProfilePictureAsync(ChangeProfilePictureModel model)
+        {
+            if (model.Photo == null)
+                return ApiResponses<ChangeProfilePictureModel>.Fail("Fotoğraf yüklenmedi.");
+
+
+            List<string> allowedExtendions = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
+
+            var extension = Path.GetExtension(model.Photo.FileName).ToLowerInvariant();
+
+            if (!allowedExtendions.Contains(extension))
+                return ApiResponses<ChangeProfilePictureModel>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
+
+            if (model.Photo.Length > 10 * 1024 * 1024)
+                return ApiResponses<ChangeProfilePictureModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
+
+            if (!Guid.TryParse(model.UserId, out var userId))
+                return ApiResponses<ChangeProfilePictureModel>.Fail("Geçersiz kullanıcı ID.");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return ApiResponses<ChangeProfilePictureModel>.Fail("Kullanıcı bulunamadı.");
+
+            if (user.ProfilePictureUrl != null)
+                DeleteProfilePictureFromServer(model.PhotoUrl, model.UserId);
+
+            user.ProfilePictureUrl = model.PhotoUrl;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return ApiResponses<ChangeProfilePictureModel>.Success(model);
+
+        }
+
+        private void DeleteProfilePictureFromServer(string fileName, string userId)
+        {
+            var safePath = Path.Combine("PrivateFiles", "messages", userId);
+            var fullPath = Path.Combine(_env.ContentRootPath, safePath, fileName);
+
+            if (File.Exists(fullPath))
+                File.Delete(fullPath);
         }
     }
 }

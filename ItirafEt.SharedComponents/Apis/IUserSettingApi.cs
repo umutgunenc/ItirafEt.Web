@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ItirafEt.Shared.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis
@@ -26,5 +27,18 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/userDeactive")]
         Task<ApiResponses<string>> UserDeactiveAsync(Guid userId, UserDeactiveViewModel model);
+
+
+        [Multipart]
+        [Headers("Authorization: Bearer")]
+        [Post("/api/changeUserProfilePicture")]
+        Task<ApiResponses<ChangeProfilePictureModel>> ChangeProfilePictureAsync(
+            [AliasAs("UserId")] string userId,
+            [AliasAs("Photo")] StreamPart? photo
+        );
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/deleteUserProfilePicture")]
+        Task<ApiResponses<string>> DeleteUserProfilePictureAsync(Guid userId);
     }
 }

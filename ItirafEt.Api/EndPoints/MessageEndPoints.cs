@@ -34,35 +34,35 @@ namespace ItirafEt.Api.EndPoints
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
-            app.MapPost("/api/message/SendMessageWithPhoto", async ([FromServices] MessageService messageService, [FromForm] CreateMessageViewModel dto, [FromServices] IWebHostEnvironment env, HttpContext httpContext) =>
+            app.MapPost("/api/message/SendMessageWithPhoto", async ([FromServices] MessageService messageService, [FromForm] CreateMessageViewModel model, [FromServices] IWebHostEnvironment env, HttpContext httpContext) =>
             {
 
-                dto.SenderIpAddress = httpContext.Connection.RemoteIpAddress?.ToString();
-                dto.SenderDeviceInfo = httpContext.Request.Headers["User-Agent"];
+                model.SenderIpAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+                model.SenderDeviceInfo = httpContext.Request.Headers["User-Agent"];
 
 
-                if (dto.Photo != null)
+                if (model.Photo != null)
                 {
-                    var ext = Path.GetExtension(dto.Photo.FileName).ToLowerInvariant();
+                    var ext = Path.GetExtension(model.Photo.FileName).ToLowerInvariant();
                     var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif" };
                     if (!allowed.Contains(ext))
                         return Results.Ok(ApiResponses<MessageViewModel>.Fail("Geçersiz dosya uzantısı."));
 
 
-                    if (dto.Photo.Length > 10 * 1024 * 1024)
+                    if (model.Photo.Length > 10 * 1024 * 1024)
                         return Results.Ok(ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz."));
 
-                    var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "messages");
-                    Directory.CreateDirectory(uploadsFolder);
+                    //var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "messages");
+                    //Directory.CreateDirectory(uploadsFolder);
 
                     var fileName = $"{Guid.NewGuid()}{ext}";
-                    var safePath = Path.Combine("PrivateFiles", "messages", dto.ConversationId);
+                    var safePath = Path.Combine("PrivateFiles", "messages", model.ConversationId);
                     var fullPath = Path.Combine(env.ContentRootPath, safePath, fileName);
                     Directory.CreateDirectory(safePath);
                     using var fs = new FileStream(fullPath, FileMode.Create);
-                    await dto.Photo.CopyToAsync(fs);
+                    await model.Photo.CopyToAsync(fs);
                     //dto.PhotoUrl = $"/{safePath}/{fileName}";
-                    dto.PhotoUrl = fileName;
+                    model.PhotoUrl = fileName;
 
 
                     //var filePath = Path.Combine(uploadsFolder, fileName);
@@ -72,7 +72,7 @@ namespace ItirafEt.Api.EndPoints
                     //dto.PhotoUrl = $"/uploads/messages/{fileName}";
                 }
 
-                var result = await messageService.SendMessageWithPhotoAsync(dto);
+                var result = await messageService.SendMessageWithPhotoAsync(model);
                 return Results.Ok(result);
 
             })
