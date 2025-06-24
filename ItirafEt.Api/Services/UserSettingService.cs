@@ -186,7 +186,7 @@ namespace ItirafEt.Api.Services
             if (user.ProfilePictureUrl == null)
                 return ApiResponses.Fail("Kullanıcının profil resmi bulunmamaktadır.");
 
-            DeleteProfilePictureFromServer(user.ProfilePictureUrl, userId.ToString());
+            DeleteProfilePictureFromServer(user.ProfilePictureUrl);
 
             user.ProfilePictureUrl = null;
             await _context.SaveChangesAsync();
@@ -194,10 +194,10 @@ namespace ItirafEt.Api.Services
             return ApiResponses.Success();
         }
 
-        public async Task<ApiResponses<ChangeProfilePictureModel>> ChangeUserProfilePictureAsync(ChangeProfilePictureModel model)
+        public async Task<ApiResponses<string>> ChangeUserProfilePictureAsync(ChangeProfilePictureModel model)
         {
             if (model.Photo == null)
-                return ApiResponses<ChangeProfilePictureModel>.Fail("Fotoğraf yüklenmedi.");
+                return ApiResponses<string>.Fail("Fotoğraf yüklenmedi.");
 
 
             List<string> allowedExtendions = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
@@ -205,37 +205,67 @@ namespace ItirafEt.Api.Services
             var extension = Path.GetExtension(model.Photo.FileName).ToLowerInvariant();
 
             if (!allowedExtendions.Contains(extension))
-                return ApiResponses<ChangeProfilePictureModel>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
+                return ApiResponses<string>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
 
             if (model.Photo.Length > 10 * 1024 * 1024)
-                return ApiResponses<ChangeProfilePictureModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
+                return ApiResponses<string>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
 
             if (!Guid.TryParse(model.UserId, out var userId))
-                return ApiResponses<ChangeProfilePictureModel>.Fail("Geçersiz kullanıcı ID.");
+                return ApiResponses<string>.Fail("Geçersiz kullanıcı ID.");
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
-                return ApiResponses<ChangeProfilePictureModel>.Fail("Kullanıcı bulunamadı.");
+                return ApiResponses<string>.Fail("Kullanıcı bulunamadı.");
 
             if (user.ProfilePictureUrl != null)
-                DeleteProfilePictureFromServer(model.PhotoUrl, model.UserId);
+                DeleteProfilePictureFromServer(user.ProfilePictureUrl);
 
             user.ProfilePictureUrl = model.PhotoUrl;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            return ApiResponses<ChangeProfilePictureModel>.Success(model);
+            return ApiResponses<string>.Success(model.PhotoUrl);
 
         }
 
-        private void DeleteProfilePictureFromServer(string fileName, string userId)
+        //private void DeleteProfilePictureFromServer(string fileName, string userId)
+        //{
+        //    var uploadFolder = Path.Combine(_env.WebRootPath, "profilepicture", userId);
+
+        //    var fullPath = Path.Combine(uploadFolder, fileName);
+
+        //    if (File.Exists(fullPath))
+        //        File.Delete(fullPath);
+
+        //    if (Directory.GetFileSystemEntries(uploadFolder).Length == 0)
+        //        Directory.Delete(uploadFolder);
+        //}
+
+
+        private void DeleteProfilePictureFromServer(string fileUrl)
         {
-            var safePath = Path.Combine("PrivateFiles", "messages", userId);
-            var fullPath = Path.Combine(_env.ContentRootPath, safePath, fileName);
+            var uri = new Uri(fileUrl);
+            var segments = uri.LocalPath
+                               .TrimStart('/')
+                               .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+
+            var userId = segments[1];
+            var fileName = segments[2];
+
+            var folder = Path.Combine(_env.WebRootPath, "profilepicture", userId);
+            var fullPath = Path.Combine(folder, fileName);
 
             if (File.Exists(fullPath))
+            {
                 File.Delete(fullPath);
+
+                if (!Directory.EnumerateFileSystemEntries(folder).Any())
+                    Directory.Delete(folder);
+            }
         }
+
+
     }
 }

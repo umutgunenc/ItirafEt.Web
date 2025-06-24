@@ -32,13 +32,13 @@ namespace ItirafEt.SharedComponents.Apis
         [Multipart]
         [Headers("Authorization: Bearer")]
         [Post("/api/changeUserProfilePicture")]
-        Task<ApiResponses<ChangeProfilePictureModel>> ChangeProfilePictureAsync(
+        Task<ApiResponses<string>> ChangeProfilePictureAsync(
             [AliasAs("UserId")] string userId,
             [AliasAs("Photo")] StreamPart? photo
         );
 
         [Headers("Authorization: Bearer")]
         [Post("/api/deleteUserProfilePicture")]
-        Task<ApiResponses<string>> DeleteUserProfilePictureAsync(Guid userId);
+        Task<ApiResponses> DeleteUserProfilePictureAsync(Guid userId);
     }
 }

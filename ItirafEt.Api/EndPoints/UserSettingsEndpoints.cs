@@ -25,7 +25,7 @@ namespace ItirafEt.Api.EndPoints
                 Results.Ok(await userSettingService.UserDeactiveAsync(userId, model)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
-            app.MapPost("/api/changeUserProfilePicture", async ([FromServices] UserSettingService userSettingService, [FromForm] ChangeProfilePictureModel model, [FromServices] IWebHostEnvironment env, HttpContext httpContext) =>
+            app.MapPost("/api/changeUserProfilePicture", async ([FromServices] UserSettingService userSettingService, [FromForm] ChangeProfilePictureModel model, [FromServices] IWebHostEnvironment env, HttpContext httpContext, HttpRequest req) =>
             {
 
                 if (model.Photo != null)
@@ -38,16 +38,20 @@ namespace ItirafEt.Api.EndPoints
                     if (model.Photo.Length > 10 * 1024 * 1024)
                         return Results.Ok(ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz."));
 
-                    //var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "ProfilePicture");
-                    //Directory.CreateDirectory(uploadsFolder);
-
                     var fileName = $"{Guid.NewGuid()}{ext}";
-                    var safePath = Path.Combine("PrivateFiles", "profilePicture", model.UserId.ToString());
-                    var fullPath = Path.Combine(env.ContentRootPath, safePath, fileName);
-                    Directory.CreateDirectory(safePath);
-                    using var fs = new FileStream(fullPath, FileMode.Create);
+                    var uploadFolder = Path.Combine(env.WebRootPath, "profilepicture", model.UserId.ToString());
+                    Directory.CreateDirectory(uploadFolder);
+                    var fullPath = Path.Combine(uploadFolder, fileName);
+
+                    await using var fs = new FileStream(fullPath, FileMode.Create);
                     await model.Photo.CopyToAsync(fs);
-                    model.PhotoUrl = fileName;
+
+                    var relativeUrl = Path.Combine("profilepicture", model.UserId.ToString(), fileName)
+                       .Replace(Path.DirectorySeparatorChar, '/');
+
+
+                    var absoluteUrl = $"{req.Scheme}://{req.Host.Value.TrimEnd('/')}/{relativeUrl}";
+                    model.PhotoUrl = absoluteUrl;
 
                 }
 
