@@ -9,7 +9,6 @@ using ItirafEt.Web.Pages.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Options;
 using Refit;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

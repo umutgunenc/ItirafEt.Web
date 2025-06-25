@@ -22,12 +22,47 @@
                     <div class="card shadow-lg border-0 mb-3 rounded-0 ">
                         <div class="card-body">
                             <div class="d-flex flex-column align-items-center text-center">
-                                <div class="py-2">
+@*                                 <div class="py-2">
                                     <img src="@(string.IsNullOrEmpty(_userSettingInfoViewModel.ProfileImageUrl) ? "/anonymousIcon.png" : _userSettingInfoViewModel.ProfileImageUrl)"
                                     alt="Profil Resmi"
                                     class="profile-photo rounded-circle"
                                     width="200"
                                     height="200">
+                                </div> *@
+
+                                <div class="py-2 d-flex justify-content-center">
+                                    <div class="position-relative profile-container d-inline-block">
+                                        <!-- Profil Resmi -->
+                                        <img src="@(string.IsNullOrEmpty(_userSettingInfoViewModel.ProfileImageUrl)
+                ? "/anonymousIcon.png"
+                : _userSettingInfoViewModel.ProfileImageUrl)"
+                                             alt="Profil Resmi"
+                                             class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
+                                             width="200"
+                                             height="200"
+                                             @onmouseover="() => _isHovering = true"
+                                             @onmouseout="() => _isHovering = false"
+                                             @onclick:preventDefault="true"
+                                             @onclick:stopPropagation="true" />
+
+                                        <!-- Silme Butonu -->
+                                        <button class="btn-profile-red position-absolute rounded-circle @( _isHovering ? "hovered" : "" )"
+                                                style="bottom:0; left:0;"
+                                                @onclick="DeleteProfilePicture"
+                                                @onmouseover="() => _isHovering = true"
+                                                @onmouseout="() => _isHovering = false">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+
+                                        <!-- Değiştir Butonu -->
+                                        <button class="btn-profile position-absolute rounded-circle @( _isHovering ? "hovered" : "" )"
+                                                style="bottom:0; right:0;"
+                                                @onclick="TriggerFileInputClick"
+                                                @onmouseover="() => _isHovering = true"
+                                                @onmouseout="() => _isHovering = false">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="mt-3">
                                     <h4 class="pb-1">@_userSettingInfoViewModel.UserName</h4>
@@ -50,14 +85,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <hr class="my-4">
+                            
                             <div @ref="fileInputWrapper">
                                 <InputFile style="display: none;"
                                            accept=".jpg,.jpeg,.png,.gif"
                                            OnChange="OnFileChanged" />
                             </div>
 
-                            <div class="d-grid gap-3">
+                            @* <div class="d-grid gap-3">
                                 <button type="button" class="btn-custom w-100"
                                         @onclick="TriggerFileInputClick">
                                     <i class="bi bi-upload me-2"></i>
@@ -68,10 +103,10 @@
                                     <i class="bi bi-trash3-fill me-2"></i>
                                     Profil Resmini Sil
                                 </button>
-                            </div>
+                            </div> *@
 
                             @if (_haveProfilePictureError){
-
+                                <hr class="my-4"> 
                                 <div class="position-relative mt-3">
                                     <div class="alert alert-danger p-2 pe-5 mb-0">
                                         <a class="alert-link d-inline-block"
@@ -90,6 +125,7 @@
                             }
                             @if (_profilePictureSuccesMessage != null)
                             {
+                                <hr class="my-4">
                                 <div class="position-relative mt-3">
                                     <div class="alert alert-success p-2 pe-5 mb-0">
                                         <a class="alert-link d-inline-block"
@@ -474,10 +510,14 @@
 
                                                         <div class="d-flex justify-content-between align-items-center">
                                                             <div class="d-flex align-items-center">
-                                                                <img src="@(string.IsNullOrEmpty(_userPostsModel.UserProfilePicture) ? "/anonymousIcon.png" : _userSettingInfoViewModel.ProfileImageUrl)"
+                                                                <img src="@(string.IsNullOrEmpty(_userSettingInfoViewModel.ProfileImageUrl)
+                ? "/anonymousIcon.png"
+                : _userSettingInfoViewModel.ProfileImageUrl)"
                                                                 alt="profilPicture"
-                                                                class="profile-picture rounded-circle me-2"
-                                                                style="width:32px;height:32px;" />
+                                                                class="profile-photo rounded-circle me-2"
+                                                                style="width:48px;height:48px; cursor:default"
+                                                                @onclick:preventDefault="true"
+                                                                @onclick:stopPropagation="true" />
                                                                 <span class="text-dark fw-medium">@_userPostsModel.UserName</span>
                                                             </div>
                                                             <div class="d-flex gap-3">
@@ -568,6 +608,7 @@
     private int _size = 5;
     private int _totalPages = 5;
     private int? _hovering;
+    private bool _isHovering;
 
     private Guid _currentUserId;
     private UserSettingsChangePaswordViewModel _userSettingChangePaswordViewModel = new();
@@ -865,6 +906,10 @@
             _haveProfilePictureError = true;
             _profilePictureErrorMessage = ex.Message;
         }
+        finally
+        {
+			await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task TriggerFileInputClick()
@@ -922,6 +967,10 @@
 			_haveProfilePictureError = true;
 			_profilePictureErrorMessage =  ex.Message;
 		}
+        finally
+        {
+            await InvokeAsync(StateHasChanged);
+        }
 	}
 	
 }

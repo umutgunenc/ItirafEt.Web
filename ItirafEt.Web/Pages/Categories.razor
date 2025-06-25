@@ -74,7 +74,11 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
                                 <img src="@(string.IsNullOrEmpty(post.PostCreatorProfilPicture)? "/anonymousIcon.png" : post.PostCreatorProfilPicture)"
-                                alt="" class="profile-picture rounded-circle me-2" style="width:32px;height:32px;">
+									 alt="Profil Resmi" 
+									 class="profile-photo rounded-circle me-2" 
+									 style="width:48px;height:48px; cursor:default;" 
+									 @onclick:preventDefault="true"
+									 @onclick:stopPropagation="true">
                                 <span class="text-dark fw-medium">@post.PostCreatorUserName</span>
                             </div>
                             <div class="d-flex gap-3">
