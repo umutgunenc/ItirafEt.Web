@@ -1,4 +1,5 @@
 using System.Text;
+using ItirafEt.Api.BackgorunServices;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.EndPoints;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
+using Quartz.Simpl;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +48,10 @@ builder.Services.AddAuthentication(options =>
 
     };
 });
+
+
+builder.Services.AddQuartz();
+builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
 builder.Services.AddSignalR();
 
@@ -106,10 +113,7 @@ app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapHub<CategoryHub>("/categoryhub");
-//});
+
 app.MapHub<CategoryHub>("/categoryhub");
 app.MapHub<ReactionHub>("/reactionhub");
 app.MapHub<CommentHub>("/commenthub");
@@ -125,6 +129,13 @@ app.MapReactionEndpoints();
 app.MapPostViewEndpoints();
 app.MapMessageEndpoints();
 app.MapUserSettingsEndpoints();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await BackgorundService.ScheduleJobs(services);
+}
 
 app.Run();
 

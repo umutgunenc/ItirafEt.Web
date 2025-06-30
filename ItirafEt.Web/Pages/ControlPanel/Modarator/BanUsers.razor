@@ -104,7 +104,7 @@
 	private bool _isBusy = false;
 	private bool _isSuccess = false;
 	private string? _errorMessage = null;
-	private string MinBannedDate => DateTime.Today.ToString("yyyy-MM-dd");
+	private string MinBannedDate => DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
 
 
 	protected override async Task OnInitializedAsync()
