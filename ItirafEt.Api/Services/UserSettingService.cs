@@ -229,20 +229,6 @@ namespace ItirafEt.Api.Services
 
         }
 
-        //private void DeleteProfilePictureFromServer(string fileName, string userId)
-        //{
-        //    var uploadFolder = Path.Combine(_env.WebRootPath, "profilepicture", userId);
-
-        //    var fullPath = Path.Combine(uploadFolder, fileName);
-
-        //    if (File.Exists(fullPath))
-        //        File.Delete(fullPath);
-
-        //    if (Directory.GetFileSystemEntries(uploadFolder).Length == 0)
-        //        Directory.Delete(uploadFolder);
-        //}
-
-
         private void DeleteProfilePictureFromServer(string fileUrl)
         {
             var uri = new Uri(fileUrl);

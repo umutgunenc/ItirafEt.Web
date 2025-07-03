@@ -44,31 +44,34 @@ static void ConfigureRefit(IServiceCollection services)
     string baseUrl = ApiBaseUrl.BaseUrl;
 
     services.AddRefitClient<IAuthApi>()
-     .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<ICategoryApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<IBanUserApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<IPostApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<ICommentApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<IReactionApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<IPostViewApi>(GetRefitSettings)
-     .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
 
     services.AddRefitClient<IMessageApi>(GetRefitSettings)
-    .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
     
     services.AddRefitClient<IUserSettingApi>(GetRefitSettings)
-    .ConfigureHttpClient(SetHttpClient);
+        .ConfigureHttpClient(SetHttpClient);
+    
+    services.AddRefitClient<IUserProfileApi>(GetRefitSettings)
+        .ConfigureHttpClient(SetHttpClient);
 
     //static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
     void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);

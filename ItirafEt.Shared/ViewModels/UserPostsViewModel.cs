@@ -13,7 +13,7 @@ namespace ItirafEt.Shared.ViewModels
         public int TotalCount { get; set; }
         public string UserName { get; set; }
         public string? UserProfilePicture { get; set; } 
-        public List<ListOfUserPost> UserPosts { get; set; } = new List<ListOfUserPost>();
+        public List<ListOfUserPost>? UserPosts { get; set; } = new List<ListOfUserPost>();
     }
 
     public class  ListOfUserPost

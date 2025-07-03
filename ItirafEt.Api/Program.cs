@@ -84,6 +84,7 @@ builder.Services.AddTransient<ReactionService>();
 builder.Services.AddTransient<PostViewService>();
 builder.Services.AddTransient<MessageService>();
 builder.Services.AddTransient<UserSettingService>();
+builder.Services.AddTransient<UserProfileService>();
 
 
 builder.Services.AddTransient<ReactionHubService>();
@@ -129,6 +130,7 @@ app.MapReactionEndpoints();
 app.MapPostViewEndpoints();
 app.MapMessageEndpoints();
 app.MapUserSettingsEndpoints();
+app.MapUserProfileEndpoints();
 
 
 using (var scope = app.Services.CreateScope())
