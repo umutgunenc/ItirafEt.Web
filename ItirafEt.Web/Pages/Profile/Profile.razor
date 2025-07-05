@@ -45,27 +45,27 @@ else
 		{
 			<div class="main-body">
 				<div class="row mx-0">
-					<div class="col-lg-12 px-0">
-						<div class="card shadow-lg border-0 mb-3 rounded-0 ">
-							<div class="card-body">
+					<div class="card col-lg-12 px-0">
+						<div class="shadow-lg border-0 rounded-0">
+							<div class="">
 								<div class="flex-column align-items-center text-center">
-									<div class="py-2 d-flex justify-content-center">
+									<div class="pt-4 pb-2 d-flex justify-content-center">
 										<div class="position-relative profile-container d-inline-block">
 											<!-- Profil Resmi -->
 											<img src="@(string.IsNullOrEmpty(_userProfileViewModel.ProfilePictureUrl)
                 ? "/anonymousIcon.png"
                 : _userProfileViewModel.ProfilePictureUrl)"
-											alt="Profil Resmi"
-											class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
-											width="200"
-											height="200"
-											@onmouseover="() => _isHovering = true"
-											@onmouseout="() => _isHovering = false"
-											@onclick:preventDefault="true"
-											@onclick:stopPropagation="true" />
+												 alt="Profil Resmi"
+												 class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
+												 width="200"
+												 height="200"
+												 @onmouseover="() => _isHovering = true"
+												 @onmouseout="() => _isHovering = false"
+												 @onclick:preventDefault="true"
+												 @onclick:stopPropagation="true" />
 										</div>
 									</div>
-									<div class="mt-3">
+									<div class="my-3">
 										<h4 class="pb-1">@_userProfileViewModel.UserName</h4>
 										<div class="d-inline-flex align-items-center gap-2">
 											<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
@@ -85,7 +85,7 @@ else
 											}
 										</div>
 									</div>
-									<div class="mt-3">
+									<div class="my-3">
 
 										@if (_userPostsViewModel.UserPosts?.Count == 0)
 										{
@@ -103,39 +103,39 @@ else
 										else
 										{
 											<div class="row mx-0">
-												<div class="card shadow-lg border-0 mb-3 rounded-0 ">
-													<div class="btn-group btn-group-sm w-100 my-4 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
+												<div class="card-body shadow-lg border-0 rounded-0 p-0">
+													<div class="btn-group btn-group-sm w-100 my-4 px-3 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
 														<input type="radio"
-														class="btn-check"
-														name="orderOptions"
-														id="orderByDate"
-														autocomplete="off"
-														@onchange="() => SetOrder(true, false, false)"
-														checked="@_isDateOrdered" />
+															   class="btn-check"
+															   name="orderOptions"
+															   id="orderByDate"
+															   autocomplete="off"
+															   @onchange="() => SetOrder(true, false, false)"
+															   checked="@_isDateOrdered" />
 														<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
 															<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
 															<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
 														</label>
 
 														<input type="radio"
-														class="btn-check"
-														name="orderOptions"
-														id="orderByView"
-														autocomplete="off"
-														@onchange="() => SetOrder(false, true, false)"
-														checked="@_isCountOrdered" />
+															   class="btn-check"
+															   name="orderOptions"
+															   id="orderByView"
+															   autocomplete="off"
+															   @onchange="() => SetOrder(false, true, false)"
+															   checked="@_isCountOrdered" />
 														<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
 															<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
 															<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
 														</label>
 
 														<input type="radio"
-														class="btn-check"
-														name="orderOptions"
-														id="orderByLike"
-														autocomplete="off"
-														@onchange="() => SetOrder(false, false, true)"
-														checked="@_isLikeOrdered" />
+															   class="btn-check"
+															   name="orderOptions"
+															   id="orderByLike"
+															   autocomplete="off"
+															   @onchange="() => SetOrder(false, false, true)"
+															   checked="@_isLikeOrdered" />
 														<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
 															<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
 															<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
@@ -157,11 +157,11 @@ else
 																	<div class="d-flex justify-content-between align-items-center">
 																		<div class="d-flex align-items-center">
 																			<img src="@(string.IsNullOrEmpty(_userProfileViewModel.ProfilePictureUrl)? "/anonymousIcon.png" : _userProfileViewModel.ProfilePictureUrl)"
-																			alt="Profil Resmi"
-																			class="profile-photo rounded-circle me-2"
-																			style="width:48px;height:48px; cursor:default;"
-																			@onclick:preventDefault="true"
-																			@onclick:stopPropagation="true">
+																				 alt="Profil Resmi"
+																				 class="profile-photo rounded-circle me-2"
+																				 style="width:48px;height:48px; cursor:default;"
+																				 @onclick:preventDefault="true"
+																				 @onclick:stopPropagation="true">
 																			<span class="text-dark fw-medium">@_userProfileViewModel.UserName</span>
 																		</div>
 																		<div class="d-flex gap-3">
@@ -176,38 +176,39 @@ else
 																</div>
 															</div>
 														}
-													</div>
-												</div>
-											</div>
-											<nav aria-label="Page navigation example">
-												<ul class="pagination justify-content-end mb-0">
-													<li class="page-item"
-													hidden="@( _currentPage == 1 )"
-													style="cursor:pointer">
-														<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
-													</li>
-													@foreach (var p in GetPageNumbers())
-													{
-														<li class="page-item @(p == _currentPage ? "disabled" : "")"
-														style="@(p != _currentPage ? "cursor: pointer;" : "")"
-														@onclick=" async () => {
+														<nav aria-label="Page navigation example">
+															<ul class="pagination justify-content-end mb-0">
+																<li class="page-item"
+																	hidden="@( _currentPage == 1 )"
+																	style="cursor:pointer">
+																	<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
+																</li>
+																@foreach (var p in GetPageNumbers())
+																{
+																	<li class="page-item @(p == _currentPage ? "disabled" : "")"
+																		style="@(p != _currentPage ? "cursor: pointer;" : "")"
+																		@onclick=" async () => {
 															if (p != _currentPage)
 															{
 																await GoToPageAsync(p);
 															}
 														}">
-															<p class="page-link mb-0">@p</p>
-														</li>
-													}
+																		<p class="page-link mb-0">@p</p>
+																	</li>
+																}
 
-													<li class="page-item"
-													hidden="@( _currentPage == _totalPages )"
-													@onclick="() => GoToPageAsync(_totalPages)"
-													style="cursor:pointer">
-														<a class="page-link mb-0">Son</a>
-													</li>
-												</ul>
-											</nav>
+																<li class="page-item"
+																	hidden="@( _currentPage == _totalPages )"
+																	@onclick="() => GoToPageAsync(_totalPages)"
+																	style="cursor:pointer">
+																	<a class="page-link mb-0">Son</a>
+																</li>
+															</ul>
+														</nav>
+													</div>
+												</div>
+											</div>
+
 										}
 									</div>
 								</div>
