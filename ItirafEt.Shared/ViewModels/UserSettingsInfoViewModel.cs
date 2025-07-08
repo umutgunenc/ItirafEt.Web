@@ -32,6 +32,8 @@ namespace ItirafEt.Shared.ViewModels
         public int GenderId { get; set; }
         public string? ProfileImageUrl { get; set; }
 
+        public bool isProfilePrivate { get; set; } = false;
+
 
     }
 }

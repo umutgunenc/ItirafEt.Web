@@ -44,9 +44,9 @@ else
 		else
 		{
 			<div class="main-body">
-				<div class="row mx-0">
-					<div class="card col-lg-12 px-0">
-						<div class="shadow-lg border-0 rounded-0">
+				<div class="">
+					<div class="col-lg-12 px-0">
+						<div class="card shadow-lg border-0 rounded-0">
 							<div class="">
 								<div class="flex-column align-items-center text-center">
 									<div class="pt-4 pb-2 d-flex justify-content-center">
@@ -55,14 +55,14 @@ else
 											<img src="@(string.IsNullOrEmpty(_userProfileViewModel.ProfilePictureUrl)
                 ? "/anonymousIcon.png"
                 : _userProfileViewModel.ProfilePictureUrl)"
-												 alt="Profil Resmi"
-												 class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
-												 width="200"
-												 height="200"
-												 @onmouseover="() => _isHovering = true"
-												 @onmouseout="() => _isHovering = false"
-												 @onclick:preventDefault="true"
-												 @onclick:stopPropagation="true" />
+											alt="Profil Resmi"
+											class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
+											width="200"
+											height="200"
+											@onmouseover="() => _isHovering = true"
+											@onmouseout="() => _isHovering = false"
+											@onclick:preventDefault="true"
+											@onclick:stopPropagation="true" />
 										</div>
 									</div>
 									<div class="my-3">
@@ -85,8 +85,7 @@ else
 											}
 										</div>
 									</div>
-									<div class="my-3">
-
+									<div class="">
 										@if (_userPostsViewModel.UserPosts?.Count == 0)
 										{
 											<div class="text-center">
@@ -102,113 +101,105 @@ else
 										}
 										else
 										{
-											<div class="row mx-0">
-												<div class="card-body shadow-lg border-0 rounded-0 p-0">
-													<div class="btn-group btn-group-sm w-100 my-4 px-3 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
-														<input type="radio"
-															   class="btn-check"
-															   name="orderOptions"
-															   id="orderByDate"
-															   autocomplete="off"
-															   @onchange="() => SetOrder(true, false, false)"
-															   checked="@_isDateOrdered" />
-														<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
-															<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
-															<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
-														</label>
+											<div class="">
+												<div class="btn-group btn-group-sm w-100 flex-nowrap p-3" role="group" aria-label="Sıralama Seçenekleri">
+													<input type="radio"
+													class="btn-check"
+													name="orderOptions"
+													id="orderByDate"
+													autocomplete="off"
+													@onchange="() => SetOrder(true, false, false)"
+													checked="@_isDateOrdered" />
+													<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
+														<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
+														<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
+													</label>
+													<input type="radio"
+													class="btn-check"
+													name="orderOptions"
+													id="orderByView"
+													autocomplete="off"
+													@onchange="() => SetOrder(false, true, false)"
+													checked="@_isCountOrdered" />
+													<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
+														<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
+														<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
+													</label>
+													<input type="radio"
+													class="btn-check"
+													name="orderOptions"
+													id="orderByLike"
+													autocomplete="off"
+													@onchange="() => SetOrder(false, false, true)"
+													checked="@_isLikeOrdered" />
+													<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
+														<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
+														<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
+													</label>
+												</div>
+												@foreach (var post in _userPostsViewModel.UserPosts)
+												{
+													<div class="card-body p-3 pt-0">
 
-														<input type="radio"
-															   class="btn-check"
-															   name="orderOptions"
-															   id="orderByView"
-															   autocomplete="off"
-															   @onchange="() => SetOrder(false, true, false)"
-															   checked="@_isCountOrdered" />
-														<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
-															<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
-															<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
-														</label>
-
-														<input type="radio"
-															   class="btn-check"
-															   name="orderOptions"
-															   id="orderByLike"
-															   autocomplete="off"
-															   @onchange="() => SetOrder(false, false, true)"
-															   checked="@_isLikeOrdered" />
-														<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
-															<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
-															<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
-														</label>
-													</div>
-													<div class="card-body">
-														@foreach (var post in _userPostsViewModel.UserPosts)
-														{
-															<div class="card mb-3 shadow-hover text-bg-light" role="button" @onclick="@(() => NavigateToPost(post.PostId))">
-																<div class="card-body ">
-																	<div class="d-flex justify-content-end align-items-end mb-3">
-																		<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
-																	</div>
-
-																	<h5 class="card-title text-start text-bg mb-3">@post.PostTitle</h5>
-
-																	<p class="card-text text-start text-secondary text-truncate-3 mb-4">@post.PostContentReview</p>
-
-																	<div class="d-flex justify-content-between align-items-center">
-																		<div class="d-flex align-items-center">
-																			<img src="@(string.IsNullOrEmpty(_userProfileViewModel.ProfilePictureUrl)? "/anonymousIcon.png" : _userProfileViewModel.ProfilePictureUrl)"
-																				 alt="Profil Resmi"
-																				 class="profile-photo rounded-circle me-2"
-																				 style="width:48px;height:48px; cursor:default;"
-																				 @onclick:preventDefault="true"
-																				 @onclick:stopPropagation="true">
-																			<span class="text-dark fw-medium">@_userProfileViewModel.UserName</span>
-																		</div>
-																		<div class="d-flex gap-3">
-																			<span class="text-muted">
-																				<i class="bi bi-eye me-1"></i>@post.PostViewCount
-																			</span>
-																			<span class="text-muted">
-																				<i class="bi bi-heart me-1"></i>@post.PostLikeCount
-																			</span>
-																		</div>
-																	</div>
+														<div class="p-3 card shadow-hover text-bg-light" role="button" @onclick="@(() => NavigateToPost(post.PostId))">
+															<div class="d-flex justify-content-end pb-3">
+																<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
+															</div>
+															<h5 class="text-start pb-3">@post.PostTitle</h5>
+															<p class="text-start text-secondary pb-4">@post.PostContentReview</p>
+															<div class="d-flex justify-content-between align-items-center">
+																<div class="d-flex align-items-center">
+																	<img src="@(string.IsNullOrEmpty(_userProfileViewModel.ProfilePictureUrl)? "/anonymousIcon.png" : _userProfileViewModel.ProfilePictureUrl)"
+																	alt="Profil Resmi"
+																	class="profile-photo rounded-circle me-2"
+																	style="width:48px;height:48px; cursor:default;"
+																	@onclick:preventDefault="true"
+																	@onclick:stopPropagation="true">
+																	<span class="text-dark fw-medium">@_userProfileViewModel.UserName</span>
+																</div>
+																<div class="d-flex gap-3">
+																	<span class="text-muted">
+																		<i class="bi bi-eye me-1"></i>@post.PostViewCount
+																	</span>
+																	<span class="text-muted">
+																		<i class="bi bi-heart me-1"></i>@post.PostLikeCount
+																	</span>
 																</div>
 															</div>
-														}
-														<nav aria-label="Page navigation example">
-															<ul class="pagination justify-content-end mb-0">
-																<li class="page-item"
-																	hidden="@( _currentPage == 1 )"
-																	style="cursor:pointer">
-																	<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
-																</li>
-																@foreach (var p in GetPageNumbers())
-																{
-																	<li class="page-item @(p == _currentPage ? "disabled" : "")"
-																		style="@(p != _currentPage ? "cursor: pointer;" : "")"
-																		@onclick=" async () => {
-															if (p != _currentPage)
-															{
-																await GoToPageAsync(p);
-															}
-														}">
-																		<p class="page-link mb-0">@p</p>
-																	</li>
-																}
-
-																<li class="page-item"
-																	hidden="@( _currentPage == _totalPages )"
-																	@onclick="() => GoToPageAsync(_totalPages)"
-																	style="cursor:pointer">
-																	<a class="page-link mb-0">Son</a>
-																</li>
-															</ul>
-														</nav>
+														</div>
 													</div>
+												}
+
+												<div class="p-3 pt-0">
+													<ul class="pagination justify-content-end mb-0">
+														<li class="page-item"
+														hidden="@( _currentPage == 1 )"
+														style="cursor:pointer">
+															<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
+														</li>
+														@foreach (var p in GetPageNumbers())
+														{
+															<li class="page-item @(p == _currentPage ? "disabled" : "")"
+															style="@(p != _currentPage ? "cursor: pointer;" : "")"
+															@onclick=" async () =>
+																	{
+																		if (p != _currentPage)
+																		{
+																			await GoToPageAsync(p);
+																		}
+																	}">
+																<p class="page-link mb-0">@p</p>
+															</li>
+														}
+														<li class="page-item"
+														hidden="@( _currentPage == _totalPages )"
+														@onclick="() => GoToPageAsync(_totalPages)"
+														style="cursor:pointer">
+															<a class="page-link mb-0">Son</a>
+														</li>
+													</ul>
 												</div>
 											</div>
-
 										}
 									</div>
 								</div>
@@ -219,6 +210,7 @@ else
 			</div>
 		}
 	</div>
+
 }
 
 
@@ -232,7 +224,7 @@ else
 
 	private string? _errorMessage;
 	private string? _currentUserId;
-	private int _currentPage = 1;
+	private int _currentPage = PageNumber.ProfilePageNo;
 	private int _size = 5;
 	private int _totalPages = 1;
 	private bool _isHovering = false;
@@ -243,7 +235,6 @@ else
 	private bool _isAuthorized = false;
 	private UserProfileViewModel _userProfileViewModel = new();
 	private UserPostsViewModel _userPostsViewModel = new();
-
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -285,6 +276,7 @@ else
 					_haveError = false;
 					_userPostsViewModel = userPostsResponse.Data;
 					_totalPages = (int)Math.Ceiling((double)_userPostsViewModel.TotalCount / _size);
+					await InvokeAsync(StateHasChanged);
 				}
 
 			}
@@ -324,6 +316,7 @@ else
 		_isCountOrdered = orderByViewCount;
 		_isLikeOrdered = orderByLikeCount;
 		_currentPage = 1;
+		PageNumber.ProfilePageNo = 1;
 		await GetUserPostAsync();
 		await InvokeAsync(StateHasChanged);
 
@@ -346,7 +339,9 @@ else
 	private async Task GoToPageAsync(int page)
 	{
 		if (page < 1 || page > _totalPages) return;
-		_currentPage = page;
+
+		PageNumber.ProfilePageNo = page;
+		_currentPage = PageNumber.ProfilePageNo;
 
 		await GetUserPostAsync();
 		await InvokeAsync(StateHasChanged);
