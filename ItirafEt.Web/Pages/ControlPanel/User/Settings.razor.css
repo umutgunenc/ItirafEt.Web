@@ -16,3 +16,43 @@
     color: #495057;
 }
 
+
+
+
+
+.toggle-wrapper {
+    width: 60px;
+    height: 32px;
+    background-color: #dee2e6;
+    border-radius: 50px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-button {
+    width: 28px;
+    height: 28px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: left 0.3s ease, background-color 0.3s ease;
+    font-size: 16px;
+}
+
+    .toggle-button.public {
+        left: 2px;
+        background: linear-gradient(to bottom right, #28a745, #218838); /* yeşil */
+        color: white;
+    }
+
+    .toggle-button.private {
+        left: 30px;
+        background: linear-gradient(to bottom right, #dc3545, #c82333); /* kırmızı */
+        color: white;
+    }

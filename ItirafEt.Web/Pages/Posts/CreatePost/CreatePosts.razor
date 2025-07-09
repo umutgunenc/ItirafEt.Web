@@ -30,7 +30,7 @@
 				<h1 class="text-center h3">İtiraf Et</h1>
 			</div>
 			<hr />
-			<EditForm Model="_postDto" OnValidSubmit="() => CreatePostAsync(_postDto)">
+			<EditForm Model="_postModel" OnValidSubmit="() => CreatePostAsync(_postModel)">
 				<DataAnnotationsValidator />
 				<div class="my-3">
 					<AutoCompleteComponent TItemType="CategoryViewModel"
@@ -41,18 +41,18 @@
 										   DisplayProperty="@(x => x.CategoryName)">
 					</AutoCompleteComponent>
 				</div>
-				<ValidationMessage For="() => _postDto.CategoryId" />
+				<ValidationMessage For="() => _postModel.CategoryId" />
 				@if (_selectedCategory != null)
 				{
 					<div class="my-3">
 						<label class="form-label">Başlık : </label>
-						<InputText @bind-Value="_postDto.Title" class="form-control" />
-						<ValidationMessage For="() => _postDto.Title" />
+						<InputText @bind-Value="_postModel.Title" class="form-control" />
+						<ValidationMessage For="() => _postModel.Title" />
 					</div>
 					<div class="my-3">
 						<label class="form-label">İçerik: </label>
-						<InputTextArea @bind-Value="_postDto.Content" class="form-control" rows="6" />
-						<ValidationMessage For="() => _postDto.Content" />
+						<InputTextArea @bind-Value="_postModel.Content" class="form-control" rows="6" />
+						<ValidationMessage For="() => _postModel.Content" />
 					</div>
 
 					@if (_errorMessage != null)
@@ -101,7 +101,7 @@
 </div>
 
 @code {
-	private PostViewModel _postDto = new();
+	private PostViewModel _postModel = new();
 	private CategoryViewModel? _selectedCategory = new();
 	private List<CategoryViewModel>? _categories = new();
 	private bool _isBusy = false;
@@ -144,7 +144,7 @@
 
 	}
 
-	private async Task CreatePostAsync(PostViewModel dto)
+	private async Task CreatePostAsync(PostViewModel model)
 	{
 		if (_isBusy) return;
 
@@ -155,9 +155,9 @@
 		{
 			_userId = Guid.Parse(AuthStateProvider.User?.id);
 
-			dto.CategoryId = _selectedCategory?.Id ?? throw new Exception("Kategori seçilmedi.");
+			model.CategoryId = _selectedCategory?.Id ?? throw new Exception("Kategori seçilmedi.");
 
-			var response = await PostApi.CreatePostAsync(dto, _userId);
+			var response = await PostApi.CreatePostAsync(model, _userId);
 
 			if (!response.IsSuccess)
 			{

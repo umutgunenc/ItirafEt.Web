@@ -25,6 +25,10 @@ namespace ItirafEt.Api.EndPoints
                 Results.Ok(await userSettingService.UserDeactiveAsync(userId, model)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
+            app.MapPost("/api/changeProfileVisibilty", async (UserSettingService userSettingService, Guid userId) =>
+                Results.Ok(await userSettingService.ChangeProfileVisibilty(userId)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof    (UserRoleEnum.SuperUser),nameof(UserRoleEnum.User)));
+
             app.MapPost("/api/changeUserProfilePicture", async ([FromServices] UserSettingService userSettingService, [FromForm] ChangeProfilePictureModel model, [FromServices] IWebHostEnvironment env, HttpContext httpContext, HttpRequest req) =>
             {
 

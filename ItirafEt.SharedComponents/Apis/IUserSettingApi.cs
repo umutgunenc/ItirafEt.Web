@@ -40,5 +40,10 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/deleteUserProfilePicture")]
         Task<ApiResponses> DeleteUserProfilePictureAsync(Guid userId);
+
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/changeProfileVisibilty")]
+        Task<ApiResponses> ChangeProfileVisibilty(Guid userId);
     }
 }

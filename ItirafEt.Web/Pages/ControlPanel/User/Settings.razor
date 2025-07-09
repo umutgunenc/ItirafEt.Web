@@ -28,30 +28,30 @@
 										<img src="@(string.IsNullOrEmpty(_userSettingInfoViewModel.ProfileImageUrl)
                 ? "/anonymousIcon.png"
                 : _userSettingInfoViewModel.ProfileImageUrl)"
-										alt="Profil Resmi"
-										class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
-										width="200"
-										height="200"
-										@onmouseover="() => _isHovering = true"
-										@onmouseout="() => _isHovering = false"
-										@onclick:preventDefault="true"
-										@onclick:stopPropagation="true" />
+											 alt="Profil Resmi"
+											 class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
+											 width="200"
+											 height="200"
+											 @onmouseover="() => _isHovering = true"
+											 @onmouseout="() => _isHovering = false"
+											 @onclick:preventDefault="true"
+											 @onclick:stopPropagation="true" />
 
 										<!-- Silme Butonu -->
 										<button class="btn-profile-red position-absolute rounded-circle @( _isHovering ? "hovered" : "" )"
-										style="bottom:0; left:0;"
-										@onclick="()=>_showProfilePictureDeleteConfirmation = true"
-										@onmouseover="() => _isHovering = true"
-										@onmouseout="() => _isHovering = false">
+												style="bottom:0; left:0;"
+												@onclick="()=>_showProfilePictureDeleteConfirmation = true"
+												@onmouseover="() => _isHovering = true"
+												@onmouseout="() => _isHovering = false">
 											<i class="bi bi-trash-fill"></i>
 										</button>
 
 										<!-- Değiştir Butonu -->
 										<button class="btn-profile position-absolute rounded-circle @( _isHovering ? "hovered" : "" )"
-										style="bottom:0; right:0;"
-										@onclick="TriggerFileInputClick"
-										@onmouseover="() => _isHovering = true"
-										@onmouseout="() => _isHovering = false">
+												style="bottom:0; right:0;"
+												@onclick="TriggerFileInputClick"
+												@onmouseover="() => _isHovering = true"
+												@onmouseout="() => _isHovering = false">
 											<i class="bi bi-pencil-fill"></i>
 										</button>
 									</div>
@@ -64,44 +64,44 @@
 										</span>
 										<div class="d-flex justify-content-center align-items-center gap-3 mt-2">
 											<button class="btn btn-custom-red text-white"
-											@onclick="DeleteProfilePicture">
+													@onclick="DeleteProfilePicture">
 												<span>Evet</span>
 												<i class="bi bi-trash3-fill ms-2"></i>
 											</button>
 											<button class="btn btn-custom text-white"
-											@onclick="()=>_showProfilePictureDeleteConfirmation = false">
+													@onclick="()=>_showProfilePictureDeleteConfirmation = false">
 												<span>Hayır</span>
 												<i class="bi bi-x-circle ms-2"></i>
 											</button>
 										</div>
 									</div>
 								}
-									<h4 class="my-3" @onclick="NavigateToUserProfile" style="cursor:pointer">@_userSettingInfoViewModel.UserName</h4>
-									<div >
-									</div>
-									<div class="d-flex align-items-center gap-2">
-										<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-											@(GetAge(_userSettingInfoViewModel.BirthDate))
+								<h4 class="my-3" @onclick="NavigateToUserProfile" style="cursor:pointer">@_userSettingInfoViewModel.UserName</h4>
+								<div>
+								</div>
+								<div class="d-flex align-items-center gap-2">
+									<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+										@(GetAge(_userSettingInfoViewModel.BirthDate))
+									</span>
+									@if (_userSettingInfoViewModel.GenderId == (int)GenderEnum.Male)
+									{
+										<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+											<i class="bi bi-gender-male me-1"></i>Erkek
 										</span>
-										@if (_userSettingInfoViewModel.GenderId == (int)GenderEnum.Male)
-										{
-											<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-												<i class="bi bi-gender-male me-1"></i>Erkek
-											</span>
-										}
-										else if (_userSettingInfoViewModel.GenderId == (int)GenderEnum.Female)
-										{
-											<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-												<i class="bi bi-gender-female me-1"></i>Kadın
-											</span>
-										}
-									</div>
+									}
+									else if (_userSettingInfoViewModel.GenderId == (int)GenderEnum.Female)
+									{
+										<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+											<i class="bi bi-gender-female me-1"></i>Kadın
+										</span>
+									}
+								</div>
 							</div>
 
 							<div @ref="fileInputWrapper">
 								<InputFile style="display: none;"
-								accept=".jpg,.jpeg,.png,.gif"
-								OnChange="OnFileChanged" />
+										   accept=".jpg,.jpeg,.png,.gif"
+										   OnChange="OnFileChanged" />
 							</div>
 
 							@if (_haveProfilePictureError)
@@ -110,16 +110,16 @@
 								<div class="position-relative mt-3">
 									<div class="alert alert-danger p-2 pe-5 mb-0">
 										<a class="alert-link d-inline-block"
-										@onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }"
-										style="cursor: pointer; word-wrap: break-word;">
+										   @onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }"
+										   style="cursor: pointer; word-wrap: break-word;">
 											@_profilePictureErrorMessage
 										</a>
 									</div>
 
 									<button type="button"
-									class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-									aria-label="Kapat"
-									@onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }">
+											class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+											aria-label="Kapat"
+											@onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }">
 									</button>
 								</div>
 							}
@@ -129,16 +129,16 @@
 								<div class="position-relative mt-3">
 									<div class="alert alert-success p-2 pe-5 mb-0">
 										<a class="alert-link d-inline-block"
-										@onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }"
-										style="cursor: pointer; word-wrap: break-word;">
+										   @onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }"
+										   style="cursor: pointer; word-wrap: break-word;">
 											@_profilePictureSuccesMessage
 										</a>
 									</div>
 
 									<button type="button"
-									class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-									aria-label="Kapat"
-									@onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }">
+											class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+											aria-label="Kapat"
+											@onclick="() => { _haveProfilePictureError = false; _profilePictureErrorMessage = null; _isChangeProfilePictureSucces = false; _profilePictureSuccesMessage = null; }">
 									</button>
 								</div>
 							}
@@ -157,16 +157,16 @@
 								</p>
 							</div>
 							<EditForm Model="_deactiveModel"
-							OnValidSubmit="DeactiveUserAccountAsync">
+									  OnValidSubmit="DeactiveUserAccountAsync">
 								<DataAnnotationsValidator />
 								<div class="input-group">
 									<InputText @bind-Value="_deactiveModel.Password"
-									class="form-control"
-									type="@(_showDeactiveAccountPassword ? "text" : "password")"
-									placeholder="Şifrenizi girin" />
+											   class="form-control"
+											   type="@(_showDeactiveAccountPassword ? "text" : "password")"
+											   placeholder="Şifrenizi girin" />
 									<button type="button"
-									class="btn btn-outline-secondary"
-									@onclick="ToogleDeactiveAccountPassword">
+											class="btn btn-outline-secondary"
+											@onclick="ToogleDeactiveAccountPassword">
 										<i class="@(_showDeactiveAccountPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 									</button>
 								</div>
@@ -184,15 +184,15 @@
 								<div class="position-relative mt-3">
 									<div class="alert alert-danger p-2 pe-5  mb-0">
 										<a class="alert-link d-block"
-										@onclick="() => { _haveDeactiveError = false; _deactiveSuccesMessage = null; }"
-										style="cursor:pointer; word-wrap: break-word;">
+										   @onclick="() => { _haveDeactiveError = false; _deactiveSuccesMessage = null; }"
+										   style="cursor:pointer; word-wrap: break-word;">
 											@_deactiveErrorMessage
 										</a>
 									</div>
 									<button type="button"
-									class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-									aria-label="Kapat"
-									@onclick="() => { _haveDeactiveError = false; _deactiveErrorMessage = null; _isDeactiveSucces = false; _deactiveSuccesMessage = null;  }">
+											class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+											aria-label="Kapat"
+											@onclick="() => { _haveDeactiveError = false; _deactiveErrorMessage = null; _isDeactiveSucces = false; _deactiveSuccesMessage = null;  }">
 									</button>
 								</div>
 							}
@@ -201,15 +201,15 @@
 								<div class="position-relative mt-3">
 									<div class="alert alert-success p-2 pe-5 mb-0">
 										<a class="alert-link d-block"
-										style="cursor:pointer; word-wrap: break-word;"
-										@onclick="() => { _haveDeactiveError = false; _deactiveErrorMessage = null; _isDeactiveSucces = false; _deactiveSuccesMessage = null; }">
+										   style="cursor:pointer; word-wrap: break-word;"
+										   @onclick="() => { _haveDeactiveError = false; _deactiveErrorMessage = null; _isDeactiveSucces = false; _deactiveSuccesMessage = null; }">
 											@((MarkupString)_deactiveSuccesMessage?.Replace("\n", "<br />"))
 										</a>
 									</div>
 									<button type="button"
-									class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-									aria-label="Kapat"
-									@onclick="() => { _isDeactiveSucces = false; _deactiveSuccesMessage = null; }">
+											class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+											aria-label="Kapat"
+											@onclick="() => { _isDeactiveSucces = false; _deactiveSuccesMessage = null; }">
 									</button>
 								</div>
 							}
@@ -217,68 +217,34 @@
 					</div>
 					<div class="card shadow-lg border-0 mb-3 rounded-0">
 						<div class="card-body">
-							<div class="d-flex justify-content-between align-items-center mb-3">
+
+							<div class="mb-3">
 								<h5 class="card-title fw-semibold mb-0">
 									Profil Görünürlüğü
 								</h5>
-								<div class="position-relative">
-									@if (!_userSettingInfoViewModel.isProfilePrivate)
-									{
-										<button type="button"
-										class="d-flex align-items-center justify-content-center"
-										style="@( _hovering == 1
-                    ? @"background: linear-gradient(to bottom right, #ff0000 0%, #ff33cc 100%); border:none; border-radius:50%; width:32px; height:32px;"
-                    : @"background: #fff; border:none; border-radius:50%; width:32px; height:32px;")"
-										@onclick:stopPropagation="true"
-										@onclick="ToggleProfilePrivacyAsync"
-										title="Profili Gizle"
-										@onmouseover="() => _hovering = 1"
-										@onmouseout="() => _hovering = null">
-											<i class="bi bi-eye-slash-fill fs-6"
-											style="@(_hovering == 1
-                   ? "color: #fff;"
-                   : "background: linear-gradient(to bottom right, #ff0000 0%, #ff33cc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;")">
-											</i>
-										</button>
-									}
-									else
-									{
-										<button type="button"
-										class="d-flex align-items-center justify-content-center"
-										style="@(_hovering == 1
-                    ? @"background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); border:none; border-radius:50%; width:32px; height:32px;"
-                    : @"background: #fff; border:none; border-radius:50%; width:32px; height:32px;")"
-										@onclick:stopPropagation="true"
-										@onclick="ToggleProfilePrivacyAsync"
-										title="Profili Göster"
-										@onmouseover="() => _hovering = 1"
-										@onmouseout="() => _hovering = null">
-											<i class="bi bi-eye-fill fs-6"
-											style="@(_hovering == 1
-                   ? "color: #fff;"
-                   : "background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;")">
-											</i>
-										</button>
-									}
-								</div>
-
 							</div>
-							<p class="m-0 text-secondary">
-								Şu anda profiliniz
-								<strong>
-									@(_userSettingInfoViewModel.isProfilePrivate ? "gizli" : "açık")
-								</strong> durumda.
-							</p>
+
+							<div class="d-flex align-items-center gap-2">
+								<div class="toggle-wrapper" @onclick="ToggleProfilePrivacyAsync">
+									<div class="toggle-button @(_userSettingInfoViewModel.isProfilePrivate ? "private" : "public")">
+										<i class="bi @(_userSettingInfoViewModel.isProfilePrivate ? "bi-lock-fill" : "bi-unlock")"></i>
+									</div>
+								</div>
+								<p class="m-0 text-secondary">
+									Şu anda profiliniz
+									<strong>
+										@(_userSettingInfoViewModel.isProfilePrivate ? "gizli" : "açık")
+									</strong> durumda.
+								</p>
+							</div>
 						</div>
 					</div>
-
-
 				</div>
 				<div class="col-lg-8 px-0 px-lg-3">
 					<div class="card shadow-lg border-0 mb-3 rounded-0 ">
 						<div class="card-body">
 							<EditForm Model="_userSettingInfoViewModel"
-							OnValidSubmit="ChangeUserInfoAsync">
+									  OnValidSubmit="ChangeUserInfoAsync">
 								<DataAnnotationsValidator />
 								<div class="row mb-3">
 									<label class="col-form-label col-sm-3">
@@ -287,10 +253,10 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingInfoViewModel.UserName"
-											class="form-control"
-											type="text"
-											maxlength="64"
-											minlength="3" />
+													   class="form-control"
+													   type="text"
+													   maxlength="64"
+													   minlength="3" />
 										</div>
 										<ValidationMessage For="()=> _userSettingInfoViewModel.UserName" />
 									</div>
@@ -302,12 +268,12 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingInfoViewModel.Email"
-											class="form-control"
-											type="email"
-											disabled="@_changeEmail" />
+													   class="form-control"
+													   type="email"
+													   disabled="@_changeEmail" />
 											<button type="button"
-											class="btn btn-outline-secondary"
-											@onclick="ToggleEmailChange">
+													class="btn btn-outline-secondary"
+													@onclick="ToggleEmailChange">
 												<i class="@(_changeEmail ? "bi bi-pencil-fill" : "bi bi-x")"></i>
 											</button>
 										</div>
@@ -358,9 +324,9 @@
 													@_infoErrorMessage
 												</div>
 												<button type="button"
-												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-												aria-label="Kapat"
-												@onclick="CloseInfoMessage">
+														class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+														aria-label="Kapat"
+														@onclick="CloseInfoMessage">
 												</button>
 											</div>
 										}
@@ -371,9 +337,9 @@
 													<a @onclick="CloseInfoMessage" class="alert-link" style="cursor:pointer">Bilgileriniz başarıyla kaydedildi.</a>
 												</div>
 												<button type="button"
-												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-												aria-label="Kapat"
-												@onclick="CloseInfoMessage">
+														class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+														aria-label="Kapat"
+														@onclick="CloseInfoMessage">
 												</button>
 											</div>
 										}
@@ -385,7 +351,7 @@
 					<div class="card shadow-lg border-0 mb-3 rounded-0 ">
 						<div class="card-body">
 							<EditForm Model="_userSettingChangePaswordViewModel"
-							OnValidSubmit="ChangePaswordAsync">
+									  OnValidSubmit="ChangePaswordAsync">
 								<DataAnnotationsValidator />
 								<div class="row mb-3">
 									<label class="col-form-label col-sm-3">
@@ -394,11 +360,11 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingChangePaswordViewModel.OldPassword"
-											class="form-control"
-											type="@(_showOldPassword ? "text" : "password")" />
+													   class="form-control"
+													   type="@(_showOldPassword ? "text" : "password")" />
 											<button type="button"
-											class="btn btn-outline-secondary"
-											@onclick="ToggleOldPasswordVisibility">
+													class="btn btn-outline-secondary"
+													@onclick="ToggleOldPasswordVisibility">
 												<i class="@(_showOldPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 											</button>
 										</div>
@@ -412,11 +378,11 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingChangePaswordViewModel.Password"
-											class="form-control"
-											type="@(_showNewPassword ? "text" : "password")" />
+													   class="form-control"
+													   type="@(_showNewPassword ? "text" : "password")" />
 											<button type="button"
-											class="btn btn-outline-secondary"
-											@onclick="ToggleNewPasswordVisibility">
+													class="btn btn-outline-secondary"
+													@onclick="ToggleNewPasswordVisibility">
 												<i class="@(_showNewPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 											</button>
 										</div>
@@ -430,11 +396,11 @@
 									<div class="col-sm-9">
 										<div class="input-group">
 											<InputText @bind-Value="_userSettingChangePaswordViewModel.PasswordConfirm"
-											class="form-control"
-											type="@(_showNewPasswordConfirm ? "text" : "password")" />
+													   class="form-control"
+													   type="@(_showNewPasswordConfirm ? "text" : "password")" />
 											<button type="button"
-											class="btn btn-outline-secondary"
-											@onclick="ToggleNewPasswordConfirmVisibility">
+													class="btn btn-outline-secondary"
+													@onclick="ToggleNewPasswordConfirmVisibility">
 												<i class="@(_showNewPasswordConfirm ? "bi bi-eye-slash" : "bi bi-eye")"></i>
 											</button>
 										</div>
@@ -467,9 +433,9 @@
 													@_passwordErrorMessage
 												</div>
 												<button type="button"
-												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-												aria-label="Kapat"
-												@onclick="ClosePasswordMessage">
+														class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+														aria-label="Kapat"
+														@onclick="ClosePasswordMessage">
 												</button>
 											</div>
 										}
@@ -480,9 +446,9 @@
 													<a @onclick="ClosePasswordMessage" class="alert-link" style="cursor:pointer">Şifeniz başarıyla değiştirildi.</a>
 												</div>
 												<button type="button"
-												class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
-												aria-label="Kapat"
-												@onclick="ClosePasswordMessage">
+														class="btn-close position-absolute top-50 end-0 translate-middle-y me-3"
+														aria-label="Kapat"
+														@onclick="ClosePasswordMessage">
 												</button>
 											</div>
 										}
@@ -491,25 +457,25 @@
 							</EditForm>
 						</div>
 					</div>
-					<div class="row mx-0">
-						<div class="col-sm-12 px-0">
-							<div class="card shadow-lg border-0 mb-3 rounded-0 ">
-								<div class="card-body">
-									<h5 class="d-flex align-items-center mb-3">Gönderilerim</h5>
-									@if (_havePostError)
-									{
-										<div class="alert alert-danger" role="alert">
-											@_postErrorMessage
-										</div>
-									}
-									else
-									{
-										@foreach (var post in _userPostsModel.UserPosts)
+					<div class="card shadow-lg border-0 rounded-0 ">
+						<div class="card-body">
+							<h5 class="d-flex align-items-center mb-3">Gönderilerim</h5>
+							@if (_havePostError)
+							{
+								<div class="alert alert-danger" role="alert">
+									@_postErrorMessage
+								</div>
+							}
+							else
+							{
+								@foreach (var post in _userPostsModel.UserPosts)
+								{
+									<div class="card mb-3 shadow-hover text-bg-light position-relative" role="button" @onclick="() => NavigateToPost(post.PostId)">
+
+
+										@if (!post.IsDeletedByUser && !post.IsDeletedByAdmin)
 										{
-											<div class="card mb-3 shadow-hover text-bg-light position-relative" role="button" @onclick="() => NavigateToPost(post.PostId)">
-												@if (!post.IsDeletedByUser && !post.IsDeletedByAdmin)
-												{
-													<button type="button"
+											<button type="button"
 													class="position-absolute top-0 start-0 m-2 p-1 d-flex align-items-center justify-content-center"
 													style="@( _hovering == post.PostId
 										        ? @"background: linear-gradient(to bottom right, #ff0000 0%, #ff33cc 100%); border:none; border-radius:50%;			width:32px;	height:32px;"
@@ -520,110 +486,137 @@
 													@onmouseover="() => _hovering = post.PostId"
 													@onmouseout="() => _hovering = null">
 
-														<i class="bi bi-eye-slash-fill fs-6"
-														style="@( _hovering == post.PostId
+												<i class="bi bi-eye-slash-fill fs-6"
+												   style="@( _hovering == post.PostId
 												? "color: #fff; "
 												: @"background: linear-gradient(to bottom right, #ff0000 0%, #ff33cc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; " )">
-														</i>
-													</button>
-												}
-												else if (post.IsDeletedByUser && !post.IsDeletedByAdmin)
-												{
-													<button type="button"
+												</i>
+											</button>
+											<button type="button"
+													class="position-absolute top-0 start-0 mt-2 ms-5 p-1 d-flex align-items-center justify-content-center"
+													style="@(_hoveringEdit == post.PostId
+												 ? @"background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); border:none; border-radius:50%; width:32px; height:32px;"
+												: @"background: #fff; border:none; border-radius:50%; width:32px; height:32px;")"
+													@onclick:stopPropagation="true"
+													@onclick="() => EditPost(post.PostId)"
+													title="Gönderiyi Düzenle"
+													@onmouseover="() => _hoveringEdit = post.PostId"
+													@onmouseout="() => _hoveringEdit = null">
+
+												<i class="bi bi-pen fs-6"
+												   style="@( _hoveringEdit == post.PostId
+												? "color: #fff; "
+												: @"background: linear-gradient(to bottom right, #ff0000 0%, #ff33cc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; " )">
+												</i>
+											</button>
+										}
+										else if (post.IsDeletedByUser && !post.IsDeletedByAdmin)
+										{
+											<button type="button"
 													class="position-absolute top-0 start-0 m-2 p-1 d-flex align-items-center justify-content-center"
-													style="@(
-                _hovering == post.PostId
-                    ? @"background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); border:none; border-radius:50%; width:32px; height:32px;"
-                    : @"background: #fff; border:none; border-radius:50%; width:32px; height:32px;"
-            )"
+													style="@(_hovering == post.PostId
+												? @"background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); border:none; border-radius:50%; width:32px; height:32px;"
+											: @"background: #fff; border:none; border-radius:50%; width:32px; height:32px;")"
 													@onclick:stopPropagation="true"
 													@onclick="() => ShowPostAsync(post.PostId)"
 													title="Gönderiyi Göster"
 													@onmouseover="() => _hovering = post.PostId"
 													@onmouseout="() => _hovering = null">
-														<i class="bi bi-eye-fill fs-6"
-														style="@(
-               _hovering == post.PostId
-                   ? "color: #fff;"
-                   : "background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; "
-           )">
-														</i>
-													</button>
-												}
-												<div class="card-body p-2">
-													<div class="d-flex justify-content-end align-items-end mb-3">
-														<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
-													</div>
-													<h5 class="card-title text-bg mb-1">@post.PostTitle</h5>
-													@if (post.IsDeletedByAdmin)
-													{
-														<div class="alert alert-warning mb-2">
-															<i class="bi bi-exclamation-triangle-fill me-1"></i>
-															Gönderiniz silinmiştir.
-														</div>
-													}
-													else
-													{
-														<p class="card-text text-secondary text-truncate-3 mb-1">@post.PostContentReview</p>
+												<i class="bi bi-eye-fill fs-6"
+												   style="@(_hovering == post.PostId
+												? "color: #fff;"
+												: "background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; ")">
+												</i>
+											</button>
+											<button type="button"
+													class="position-absolute top-0 start-0 mt-2 ms-5 p-1 d-flex align-items-center justify-content-center"
+													style="@(_hoveringEdit == post.PostId
+												? @"background: linear-gradient(to bottom right, #28a745 0%, #218838 100%); border:none; border-radius:50%; width:32px; height:32px;"
+												: @"background: #fff; border:none; border-radius:50%; width:32px; height:32px;")"
+													@onclick:stopPropagation="true"
+													@onclick="() => EditPost(post.PostId)"
+													title="Gönderiyi Düzenle"
+													@onmouseover="() => _hoveringEdit = post.PostId"
+													@onmouseout="() => _hoveringEdit = null">
 
-														<div class="d-flex justify-content-between align-items-center">
-															<div class="d-flex align-items-center">
-																<img src="@(string.IsNullOrEmpty(_userSettingInfoViewModel.ProfileImageUrl)
-                ? "/anonymousIcon.png"
-                : _userSettingInfoViewModel.ProfileImageUrl)"
-																alt="profilPicture"
-																class="profile-photo rounded-circle me-2"
-																style="width:48px;height:48px; cursor:default"
-																@onclick:preventDefault="true"
-																@onclick:stopPropagation="true" />
-																<span class="text-dark fw-medium">@_userPostsModel.UserName</span>
-															</div>
-															<div class="d-flex gap-3">
-																<span class="text-muted">
-																	<i class="bi bi-eye me-1"></i>@post.PostViewCount
-																</span>
-																<span class="text-muted">
-																	<i class="bi bi-heart me-1"></i>@post.PostLikeCount
-																</span>
-															</div>
-														</div>
-													}
-												</div>
-											</div>
+												<i class="bi bi-pen fs-6"
+												   style="@( _hoveringEdit == post.PostId
+												? "color: #fff; "
+												: @"background: linear-gradient(to bottom right, #ff0000 0%, #ff33cc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; " )">
+												</i>
+											</button>
 										}
+										<div class="card-body p-2">
+											<div class="d-flex justify-content-end align-items-end mb-3">
+												<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
+											</div>
+											<h5 class="card-title text-bg mb-1">@post.PostTitle</h5>
+											@if (post.IsDeletedByAdmin)
+											{
+												<div class="alert alert-warning mb-2">
+													<i class="bi bi-exclamation-triangle-fill me-1"></i>
+													Gönderiniz silinmiştir.
+												</div>
+											}
+											else
+											{
+												<p class="card-text text-secondary text-truncate-3 mb-1">@post.PostContentReview</p>
 
-										<nav aria-label="Page navigation example">
-											<ul class="pagination justify-content-end mb-0">
-												<li class="page-item"
-												hidden="@( _currentPage == 1 )"
-												style="cursor:pointer">
-													<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
-												</li>
-												@foreach (var p in GetPageNumbers())
-												{
-													<li class="page-item @(p == _currentPage ? "disabled" : "")"
-													style="@(p != _currentPage ? "cursor: pointer;" : "")"
-													@onclick=" async () => {
+												<div class="d-flex justify-content-between align-items-center">
+													<div class="d-flex align-items-center">
+														<img src="@(string.IsNullOrEmpty(_userSettingInfoViewModel.ProfileImageUrl)
+													? "/anonymousIcon.png"
+													: _userSettingInfoViewModel.ProfileImageUrl)"
+															 alt="profilPicture"
+															 class="profile-photo rounded-circle me-2"
+															 style="width:48px;height:48px; cursor:default"
+															 @onclick:preventDefault="true"
+															 @onclick:stopPropagation="true" />
+														<span class="text-dark fw-medium">@_userPostsModel.UserName</span>
+													</div>
+													<div class="d-flex gap-3">
+														<span class="text-muted">
+															<i class="bi bi-eye me-1"></i>@post.PostViewCount
+														</span>
+														<span class="text-muted">
+															<i class="bi bi-heart me-1"></i>@post.PostLikeCount
+														</span>
+													</div>
+												</div>
+											}
+										</div>
+									</div>
+								}
+
+								<nav aria-label="Page navigation example">
+									<ul class="pagination justify-content-end mb-0">
+										<li class="page-item"
+											hidden="@( _currentPage == 1 )"
+											style="cursor:pointer">
+											<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
+										</li>
+										@foreach (var p in GetPageNumbers())
+										{
+											<li class="page-item @(p == _currentPage ? "disabled" : "")"
+												style="@(p != _currentPage ? "cursor: pointer;" : "")"
+												@onclick=" async () => {
 															if (p != _currentPage)
 															{
 																await GoToPageAsync(p);
 															}
 														}">
-														<p class="page-link mb-0">@p</p>
-													</li>
-												}
-
-												<li class="page-item"
-												hidden="@( _currentPage == _totalPages )"
-												@onclick="() => GoToPageAsync(_totalPages)"
-												style="cursor:pointer">
-													<a class="page-link mb-0">Son</a>
-												</li>
-											</ul>
-										</nav>
-									}
-								</div>
-							</div>
+												<p class="page-link mb-0">@p</p>
+											</li>
+										}
+										<li class="page-item"
+											hidden="@( _currentPage == _totalPages )"
+											@onclick="() => GoToPageAsync(_totalPages)"
+											style="cursor:pointer">
+											<a class="page-link mb-0">Son</a>
+										</li>
+									</ul>
+								</nav>
+							}
 						</div>
 					</div>
 				</div>
@@ -667,6 +660,7 @@
 	private int _totalPages = 5;
 	private int? _hovering;
 	private bool _isHovering;
+	private int? _hoveringEdit;
 	private bool _showProfilePictureDeleteConfirmation = false;
 
 	private Guid _currentUserId;
@@ -975,7 +969,6 @@
 			await InvokeAsync(StateHasChanged);
 		}
 	}
-
 	private async Task TriggerFileInputClick()
 	{
 		await JSRuntime.InvokeVoidAsync("triggerClick", fileInputWrapper);
@@ -1040,12 +1033,35 @@
 	{
 		_isHovering = false;
 		_hovering = null;
-		_userSettingInfoViewModel.isProfilePrivate = !_userSettingInfoViewModel.isProfilePrivate;
-		await InvokeAsync(StateHasChanged);
-	}
+		try
+		{
+			var response = await UserSettingApi.ChangeProfileVisibilty(_currentUserId);
+			if (!response.IsSuccess)
+			{
+				_haveError = true;
+				_errorMessage = response.ErrorMessage;
+				return;
+			}
+			else
+				_userSettingInfoViewModel.isProfilePrivate = !_userSettingInfoViewModel.isProfilePrivate;
 
+		}
+		catch (Exception ex)
+		{
+			_haveError = true;
+			_errorMessage = ex.Message;
+			return;
+		}
+		finally
+		{
+			await InvokeAsync(StateHasChanged);
+		}
+	}
 	private void NavigateToUserProfile()
 	{
 		NavigationManager.NavigateTo($"/profile/{_currentUserId}");
+	}
+	private void EditPost(int postId){
+		NavigationManager.NavigateTo($"/posts/edit/{postId}");
 	}
 }

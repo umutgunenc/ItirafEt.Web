@@ -1,0 +1,227 @@
+﻿@page "/posts/edit/{postId:int}"
+@inject AuthStateProvider AuthStateProvider
+@inject ICategoryApi CategoryApi
+@inject IPostApi PostApi
+
+
+
+<div class="col-lg-8 col mx-auto py-lg-5">
+
+	@if (!_canUserEditMessage || _haveError)
+	{
+		<div class="alert alert-danger mt-3">
+			<strong>Hata!</strong><br />
+			<span>@_errorMessage</span>
+		</div>
+	}
+	else
+	{
+		<div class="border shadow-lg card p-3">
+			<EditForm Model="_editPostModel" OnValidSubmit="() => EditPostAsync(_editPostModel)">
+				<DataAnnotationsValidator />
+				<div class="my-3">
+					<label class="form-label">Kategori : </label>
+
+					<AutoCompleteComponent TItemType="CategoryViewModel"
+										   DisplayedItemsList="_categories"
+										   SelectedItem="_selectedCategory"
+										   SelectedItemChanged="CategoryChanged"
+										   StaticPlaceholder="Kategori Seçiniz"
+										   DisplayProperty="@(x => x.CategoryName)">
+					</AutoCompleteComponent>
+				</div>
+				<ValidationMessage For="() => _editPostModel.CategoryId" />
+
+				<div class="my-3">
+					<label class="form-label">Başlık : </label>
+					<InputText @bind-Value="_editPostModel.Title" class="form-control" />
+					<ValidationMessage For="() => _editPostModel.Title" />
+				</div>
+				<div class="my-3">
+					<label class="form-label">İçerik: </label>
+					<InputTextArea @bind-Value="_editPostModel.Content" class="form-control" rows="6" />
+					<ValidationMessage For="() => _editPostModel.Content" />
+				</div>
+
+				<div class="row mx-auto">
+					<button type="submit" class="btn btn-custom text-white fw-semibold" disabled="@_isBusy">
+						Düzenle <i class="bi bi-pen ms-2"></i>
+					</button>
+				</div>
+				@if (_isSucces != null)
+				{
+					@if (_isSucces == true)
+					{
+						<div class="alert alert-success mt-3">
+							<strong>Başarılı!</strong><br />
+							İtirafınız başarıyla düzenlendi.
+						</div>
+					}
+					else
+					{
+						<div class="alert alert-danger mt-3">
+							<strong>Hata!</strong><br />
+							<span>@_editErrorMessage</span>
+						</div>
+					}
+				}
+
+
+			</EditForm>
+		</div>
+	}
+
+</div>
+
+
+@code {
+
+	[Parameter]
+	public int PostId { get; set; }
+
+	private EditPostViewModel? _editPostModel = new();
+	private CategoryViewModel? _selectedCategory = new();
+	private List<CategoryViewModel>? _categories = new();
+	private string? _errorMessage = null;
+	private string? _editErrorMessage = null;
+
+	private Guid _currentUserId = Guid.Empty;
+	private bool _canUserEditMessage = true;
+	private bool _haveError = false;
+	private bool _isBusy = false;
+	private bool? _isSucces = null;
+	protected override async Task OnParametersSetAsync()
+	{
+		GetCurrentUserId();
+
+		await CanUserEditPostAsync(PostId, _currentUserId);
+		if (_canUserEditMessage)
+		{
+			var tasks = Task.WhenAll(
+				GetCategories(),
+				GetPostInformation()
+			);
+
+			await tasks;
+		}
+		await InvokeAsync(StateHasChanged);
+
+	}
+
+	private void GetCurrentUserId()
+	{
+		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
+	}
+
+	private async Task CanUserEditPostAsync(int postId, Guid userId)
+	{
+		try
+		{
+			var response = await PostApi.CanUserEditPostAsync(PostId, _currentUserId);
+
+			if (!response.IsSuccess)
+			{
+				_canUserEditMessage = false;
+				_errorMessage = response.ErrorMessage;
+			}
+			else
+				_canUserEditMessage = true;
+		}
+		catch (Exception ex)
+		{
+			_haveError = true;
+			_errorMessage = ex.Message;
+		}
+	}
+
+	private async Task EditPostAsync(EditPostViewModel model)
+	{
+		_isBusy = true;
+		_isSucces = null;
+		_editErrorMessage = null;
+
+		if (_categories.Any(c => c.Id == model.CategoryId))
+		{
+			try
+			{
+				var response = await PostApi.EditPostAsync(model);
+				if (response.IsSuccess)
+					_isSucces = true;
+				else
+				{
+					_isSucces = false;
+					_editErrorMessage = response.ErrorMessage;
+				}
+			}
+			catch (Exception ex)
+			{
+				_isSucces = false;
+				_editErrorMessage = ex.Message;
+			}
+		}
+		else
+		{
+			_isSucces = false;
+			_editErrorMessage = "Geçersiz Kategori Seçimi.";
+		}
+
+		_isBusy = false;
+		await InvokeAsync(StateHasChanged);
+	}
+	private async Task CategoryChanged(CategoryViewModel category)
+	{
+		_selectedCategory = category;
+		await InvokeAsync(StateHasChanged);
+	}
+	private async Task GetCategories()
+	{
+		try
+		{
+			var response = await CategoryApi.GetAllActiveCategoriesAsycn();
+
+			if (response.IsSuccess)
+				_categories = response.Data;
+			else
+			{
+				_haveError = true;
+				_errorMessage = response.ErrorMessage;
+				_categories = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			_haveError = true;
+			_errorMessage = ex.Message;
+			throw;
+		}
+	}
+
+	private async Task GetPostInformation()
+	{
+		try
+		{
+			var response = await PostApi.GetPostInformationById(PostId);
+
+			if (response.IsSuccess)
+			{
+				_editPostModel = response.Data;
+				var category = _categories?.FirstOrDefault(c => c.Id == _editPostModel?.CategoryId);
+				await CategoryChanged(category);
+
+			}
+			else
+			{
+				_haveError = true;
+				_errorMessage = response.ErrorMessage;
+				_categories = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			_haveError = true;
+			_errorMessage = ex.Message;
+			throw;
+		}
+	}
+
+}

@@ -204,7 +204,7 @@ namespace ItirafEt.Api.Data
                 CreatedDate = new DateTime(2025, 4, 10),
                 IsDeleted = false,
                 IsBanned = false,
-                IsPremium = true,
+                IsProfilePrivate = false,
                 IsTermOfUse = true
             };
 

@@ -56,7 +56,7 @@ namespace ItirafEt.Api.Data.Entities
         public bool IsBanned { get; set; }
 
         [Required]
-        public bool IsPremium { get; set; }
+        public bool IsProfilePrivate { get; set; }
 
         [Required]
         public bool IsTermOfUse { get; set; }

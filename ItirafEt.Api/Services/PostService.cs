@@ -103,6 +103,29 @@ namespace ItirafEt.Api.Services
 
         }
 
+        public async Task<ApiResponses<EditPostViewModel>> GetPostInformationByIdAsync(int postId)
+        {
+            var post = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Category)
+                .AsNoTracking()
+                .Where(p => p.Id == postId && !p.IsDeletedByUser && !p.IsDeletedByAdmin && p.Category.isActive)
+                .Select(p => new EditPostViewModel
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Content = p.Content,
+                    UpdatedDate = p.UpdatedDate,
+                    CategoryId = p.CategoryId,
+                })
+                .FirstOrDefaultAsync();
+
+            if (post == null)
+                return ApiResponses<EditPostViewModel>.Fail("Gönderi bulunamadı.");
+            return ApiResponses<EditPostViewModel>.Success(post);
+
+        }
+
         public async Task<ApiResponses<UserPostsViewModel>> GetUserPostsAsync(Guid userId, int size, int page)
         {
             var user = await _context.Users
@@ -173,6 +196,46 @@ namespace ItirafEt.Api.Services
             post.IsDeletedByUser = false;
             await _context.SaveChangesAsync();
             await _categoryHubService.CategoryPostCountChangedAsync(post.CategoryId, true);
+            return ApiResponses.Success();
+        }
+
+        public async Task<ApiResponses> CanUserEditPostAsync(int postId, Guid userId)
+        {
+            var post = await _context.Posts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == postId && p.UserId == userId && !p.IsDeletedByUser && !p.IsDeletedByAdmin);
+            if (post == null)
+                return ApiResponses.Fail("Gönderi bulunamadı.");
+            return ApiResponses.Success();
+        }
+
+        public async Task<ApiResponses> EditPostAsync(EditPostViewModel model)
+        {
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(p => p.Id == model.Id && !p.IsDeletedByUser && !p.IsDeletedByAdmin);
+
+            var category = await _context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == model.CategoryId && c.isActive);
+            if (category == null)
+                return ApiResponses.Fail("Seçilen kategori bulunamadı.");
+            if (post == null)
+                return ApiResponses.Fail("Gönderi bulunamadı.");
+            if (model.Content.Trim().Length < 100)
+                return ApiResponses.Fail("İçerik en az 100 karakter olmalıdır.");
+            if (model.Content.Trim().Length > 4096)
+                return ApiResponses.Fail("İçerik en fazla 4096 karakter olmalıdır.");
+            if (model.Title.Trim().Length < 10)
+                return ApiResponses.Fail("Başlık en az 10 karakter olmalıdır.");
+            if (model.Title.Trim().Length > 256)
+                return ApiResponses.Fail("Başlık en fazla 256 karakter olmalıdır.");
+            post.Title = model.Title.ToUpper();
+            post.Content = model.Content;
+            post.UpdatedDate = DateTime.Now;
+            post.CategoryId = model.CategoryId;
+            post.IpAddress = model.IpAddress;
+            post.DeviceInfo = model.DeviceInfo;
+            await _context.SaveChangesAsync();
             return ApiResponses.Success();
         }
     }

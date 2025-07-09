@@ -29,5 +29,21 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/showPost")]
         Task<ApiResponses> ShowPostAsync(int postId, Guid UserId);
+
+
+
+        [Headers("Authorization: Bearer")]
+        [Get("/api/getPostInformationById/")]
+        Task<ApiResponses<EditPostViewModel>> GetPostInformationById(int postId);
+
+
+        [Headers("Authorization: Bearer")]
+        [Get("/api/getPostInformationById/")]
+        Task<ApiResponses> CanUserEditPostAsync(int postId,Guid userId);
+
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/editPost")]
+        Task<ApiResponses> EditPostAsync(EditPostViewModel model);
     }
 }

@@ -84,11 +84,10 @@ namespace ItirafEt.Api.Services
                 BirthDate = (DateTime)model.BirthDate,
                 IsDeleted = false,
                 IsBanned = false,
-                IsPremium = false,
+                IsProfilePrivate = false,
                 IsTermOfUse = true,
                 RoleName = nameof(UserRoleEnum.User),
                 GenderId = (int)model.GenderId,
-
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();

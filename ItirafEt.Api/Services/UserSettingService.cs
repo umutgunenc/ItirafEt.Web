@@ -36,7 +36,8 @@ namespace ItirafEt.Api.Services
                     Email = u.Email,
                     BirthDate = u.BirthDate,
                     GenderId = u.GenderId,
-                    ProfileImageUrl = u.ProfilePictureUrl
+                    ProfileImageUrl = u.ProfilePictureUrl,
+                    isProfilePrivate = u.IsProfilePrivate
                 })
                 .FirstOrDefaultAsync();
 
@@ -229,6 +230,21 @@ namespace ItirafEt.Api.Services
 
         }
 
+        public async Task<ApiResponses> ChangeProfileVisibilty(Guid userId)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                return ApiResponses.Fail("Kullanıcı bulunamadı.");
+
+            user.IsProfilePrivate = !user.IsProfilePrivate;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return ApiResponses.Success();
+        }
+
         private void DeleteProfilePictureFromServer(string fileUrl)
         {
             var uri = new Uri(fileUrl);
@@ -251,6 +267,8 @@ namespace ItirafEt.Api.Services
                     Directory.Delete(folder);
             }
         }
+
+        
 
 
     }

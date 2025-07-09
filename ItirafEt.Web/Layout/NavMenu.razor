@@ -164,7 +164,7 @@
 			_currentUserId = Guid.Empty;
 			_inboxViewModel.Clear();
 			InboxService.Clear();
-			StateHasChanged();
+			await InvokeAsync(StateHasChanged);
 		}
 	}
 

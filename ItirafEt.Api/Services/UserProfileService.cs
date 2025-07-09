@@ -24,6 +24,9 @@ namespace ItirafEt.Api.Services
             if (user == null)
                 return ApiResponses<UserProfileViewModel>.Fail("Kullanıcı Bulunamadı");
 
+            if(user.IsProfilePrivate)
+                return ApiResponses<UserProfileViewModel>.Fail("Kullanıcının profili gizli.");
+
 
             var userProfileViewModel = new UserProfileViewModel
             {
