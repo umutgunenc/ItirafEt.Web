@@ -93,16 +93,26 @@ namespace ItirafEt.Web.Pages.Auth
 
             var jwt = jwtHandler.ReadJwtToken(Token);
             jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp);
-            var expClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+            //var expClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+            var expClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp);
 
-            if (string.IsNullOrWhiteSpace(expClaim))
+            //if (string.IsNullOrWhiteSpace(expClaim))
+            //    return false;
+
+            if(expClaim == null)
                 return false;
 
-            var expTime = long.Parse(expClaim);
+            if (!long.TryParse(expClaim.Value, out var expTime))
+                return false;
 
             var expDateTime = DateTimeOffset.FromUnixTimeSeconds(expTime).UtcDateTime;
-
             return expDateTime > DateTime.UtcNow;
+
+            //var expTime = long.Parse(expClaim);
+
+            //var expDateTime = DateTimeOffset.FromUnixTimeSeconds(expTime).UtcDateTime;
+
+            //return expDateTime > DateTime.UtcNow;
 
         }
         private void SetAuthStateTask()
