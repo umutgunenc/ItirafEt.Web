@@ -1,4 +1,4 @@
-﻿using ItirafEt.Shared.ClientServices.State;
+﻿using ItirafEt.Shared.Services.ClientServices.State;
 using ItirafEt.Shared.ViewModels;
 using Refit;
 

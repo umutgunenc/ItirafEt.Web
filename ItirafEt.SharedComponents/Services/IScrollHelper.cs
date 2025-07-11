@@ -9,5 +9,6 @@ namespace ItirafEt.Shared.ClientServices
     public interface IScrollHelper
     {
         ValueTask SetScrollYAsync(double y);
+        ValueTask<double> GetScrollYAsync();
     }
 }

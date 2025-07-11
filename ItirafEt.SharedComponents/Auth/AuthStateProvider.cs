@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Json;
 using ItirafEt.Shared;
+using ItirafEt.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -15,15 +16,14 @@ namespace ItirafEt.SharedComponents.Auth
         private const string AuthType = "ItirafEt";
         private const string UserDataKey = "uData";
         private Task<AuthenticationState> _authStateTask;
-        private readonly IJSRuntime _jSRuntime;
+        private readonly IStorageService _storageService;
         private Timer _tokenCheckTimer;
 
 
-        public AuthStateProvider(IJSRuntime jSRuntime)
+        public AuthStateProvider(IJSRuntime jSRuntime, IStorageService storageService)
         {
-            _jSRuntime = jSRuntime;
+            _storageService = storageService;
             SetAuthStateTask();
-
         }
         public override Task<AuthenticationState> GetAuthenticationStateAsync() => _authStateTask;
 
@@ -37,7 +37,7 @@ namespace ItirafEt.SharedComponents.Auth
             User = user;
             SetAuthStateTask();
             NotifyAuthenticationStateChanged(_authStateTask);
-            await _jSRuntime.InvokeVoidAsync("localStorage.setItem", UserDataKey, user.ToJson());
+            await _storageService.SetItemAsync(UserDataKey, user.ToJson());
 
         }
         public async Task SetLogoutAsync()
@@ -46,7 +46,7 @@ namespace ItirafEt.SharedComponents.Auth
             SetAuthStateTask();
             NotifyAuthenticationStateChanged(_authStateTask);
             //await _jSRuntime.InvokeVoidAsync("localStorage.removeItem", UserDataKey);
-            await _jSRuntime.InvokeVoidAsync("localStorage.clear");
+            await _storageService.ClearItemsAsync();
             _tokenCheckTimer?.Dispose();
 
         }
@@ -55,7 +55,8 @@ namespace ItirafEt.SharedComponents.Auth
         {
             try
             {
-                var uData = await _jSRuntime.InvokeAsync<string?>("localStorage.getItem", UserDataKey);
+                var uData = await _storageService.GetItemAsync<string>(UserDataKey);
+
                 if (string.IsNullOrWhiteSpace(uData))
                     return;
 
@@ -164,7 +165,7 @@ namespace ItirafEt.SharedComponents.Auth
 
             User = updatedUser;
 
-            await _jSRuntime.InvokeVoidAsync("localStorage.setItem", UserDataKey, updatedUser.ToJson());
+            await _storageService.SetItemAsync(UserDataKey, updatedUser.ToJson());
 
             var identity = new ClaimsIdentity(updatedUser.ToClaims(), AuthType);
             var principal = new ClaimsPrincipal(identity);

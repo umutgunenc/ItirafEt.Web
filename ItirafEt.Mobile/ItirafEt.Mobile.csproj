@@ -71,4 +71,8 @@
       <ProjectReference Include="..\ItirafEt.Shared\ItirafEt.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Components\Pages\" />
+    </ItemGroup>
+
 </Project>

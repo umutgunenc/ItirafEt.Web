@@ -1,11 +1,13 @@
 using Blazored.LocalStorage;
 using ItirafEt.Shared.ClientServices;
-using ItirafEt.Shared.ClientServices.State;
+using ItirafEt.Shared.Services;
+using ItirafEt.Shared.Services.ClientServices.State;
 using ItirafEt.SharedComponents.Apis;
 using ItirafEt.SharedComponents.Auth;
 using ItirafEt.SharedComponents.ClientServices;
 using ItirafEt.SharedComponents.Services;
 using ItirafEt.Web;
+using ItirafEt.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -30,6 +32,8 @@ builder.Services.AddSingleton<AuthStateProvider>();
 builder.Services.AddSingleton<InboxService>();
 builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
 builder.Services.AddAuthorizationCore();
+
+builder.Services.AddSingleton<IStorageService, StorageService>();
 
 // dinmaik olarak API adresini alabilmek için
 //builder.Services.Configure<ApiBaseUrl>(builder.Configuration.GetSection("ApiSettings"));
