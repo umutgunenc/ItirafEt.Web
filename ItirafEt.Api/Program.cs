@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
-using Quartz.Simpl;
 
 var builder = WebApplication.CreateBuilder(args);
 

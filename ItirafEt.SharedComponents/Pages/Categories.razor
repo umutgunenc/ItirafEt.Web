@@ -23,36 +23,36 @@
 		<h3 class="text-center">@_categoryName?.ToUpper()</h3>
 		<div class="btn-group btn-group-sm w-100 my-4 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
 			<input type="radio"
-				   class="btn-check"
-				   name="orderOptions"
-				   id="orderByDate"
-				   autocomplete="off"
-				   @onchange="() => SetOrderAsync(true, false, false)"
-				   checked="@_isDateOrdered" />
+			class="btn-check"
+			name="orderOptions"
+			id="orderByDate"
+			autocomplete="off"
+			@onchange="() => SetOrderAsync(true, false, false)"
+			checked="@_isDateOrdered" />
 			<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
 				<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
 				<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
 			</label>
 
 			<input type="radio"
-				   class="btn-check"
-				   name="orderOptions"
-				   id="orderByView"
-				   autocomplete="off"
-				   @onchange="() => SetOrderAsync(false, true, false)"
-				   checked="@_isCountOrdered" />
+			class="btn-check"
+			name="orderOptions"
+			id="orderByView"
+			autocomplete="off"
+			@onchange="() => SetOrderAsync(false, true, false)"
+			checked="@_isCountOrdered" />
 			<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
 				<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
 				<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
 			</label>
 
 			<input type="radio"
-				   class="btn-check"
-				   name="orderOptions"
-				   id="orderByLike"
-				   autocomplete="off"
-				   @onchange="() => SetOrderAsync(false, false, true)"
-				   checked="@_isLikeOrdered" />
+			class="btn-check"
+			name="orderOptions"
+			id="orderByLike"
+			autocomplete="off"
+			@onchange="() => SetOrderAsync(false, false, true)"
+			checked="@_isLikeOrdered" />
 			<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
 				<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
 				<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
@@ -76,11 +76,11 @@
 						<div class="d-flex justify-content-between align-items-center">
 							<div class="d-flex align-items-center">
 								<img src="@(string.IsNullOrEmpty(post.PostCreatorProfilPicture)? "/anonymousIcon.png" : post.PostCreatorProfilPicture)"
-									 alt="Profil Resmi"
-									 class="profile-photo rounded-circle me-2"
-									 style="width:48px;height:48px; cursor:default;"
-									 @onclick:preventDefault="true"
-									 @onclick:stopPropagation="true">
+								alt="Profil Resmi"
+								class="profile-photo rounded-circle me-2"
+								style="width:48px;height:48px; cursor:default;"
+								@onclick:preventDefault="true"
+								@onclick:stopPropagation="true">
 								<span class="text-dark fw-medium">@post.PostCreatorUserName</span>
 							</div>
 							<div class="d-flex gap-3">
@@ -294,8 +294,13 @@
 
 	private async Task StartPostViewHubConnectionAsync()
 	{
+		// _postViewHubConnection = new HubConnectionBuilder()
+		// 			.WithUrl("https://localhost:7292/postviewhub")
+		// 			.WithAutomaticReconnect()
+		// 			.Build();
+
 		_postViewHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/postviewhub")
+					.WithUrl("http://10.0.2.2:7292/postviewhub")
 					.WithAutomaticReconnect()
 					.Build();
 
@@ -312,8 +317,12 @@
 	private async Task StartReactionHubConnectionAsync()
 	{
 
+		// _reactionHubConnection = new HubConnectionBuilder()
+		// 			.WithUrl("https://localhost:7292/reactionhub")
+		// 			.WithAutomaticReconnect()
+		// 			.Build();
 		_reactionHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/reactionhub")
+					.WithUrl("http://10.0.2.2:7292/reactionhub")
 					.WithAutomaticReconnect()
 					.Build();
 
@@ -406,7 +415,7 @@
 	{
 		// await LocalStorage.RemoveItemAsync($"cat-{CategoryId}-items");
 		// await LocalStorage.SetItemAsync($"cat-{CategoryId}-items", State.Items);
-		
+
 		await StorageService.RemoveItemAsync($"cat-{CategoryId}-items");
 		await StorageService.SetItemAsync($"cat-{CategoryId}-items", State.Items);
 	}

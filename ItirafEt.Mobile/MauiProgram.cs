@@ -1,14 +1,23 @@
-﻿using Blazored.LocalStorage;
+﻿
+using Blazored.LocalStorage;
 using ItirafEt.Mobile.Services;
 using ItirafEt.Shared.ClientServices;
 using ItirafEt.Shared.Services;
 using ItirafEt.Shared.Services.ClientServices.State;
+using ItirafEt.SharedComponents.Apis;
 using ItirafEt.SharedComponents.Auth;
 using ItirafEt.SharedComponents.ClientServices;
 using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
-
+using Refit;
+#if ANDROID
+using Xamarin.Android.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+#elif IOS
+using Security;
+#endif
 namespace ItirafEt.Mobile
 {
     public static class MauiProgram
@@ -26,8 +35,8 @@ namespace ItirafEt.Mobile
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
 
             builder.Services.AddSingleton<IStorageService, StorageService>();
@@ -38,7 +47,6 @@ namespace ItirafEt.Mobile
             builder.Services.AddScoped(typeof(InfiniteScrollState<>));
             builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
             builder.Services.AddScoped<SignalRInboxService>();
-            //builder.Services.AddSingleton<ApiBaseUrl>();
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddSingleton<AuthStateProvider>();
@@ -46,7 +54,85 @@ namespace ItirafEt.Mobile
             builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
             builder.Services.AddAuthorizationCore();
 
+            ConfigureRefit(builder.Services);
+
             return builder.Build();
         }
+
+        private static readonly string apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android 
+                                                    ? ApiBaseUrl.AndroidBaseUrl 
+                                                    : ApiBaseUrl.BaseUrl;
+
+        static void ConfigureRefit(IServiceCollection services)
+        {
+
+            //string baseUrl = ApiBaseUrl.BaseUrl;
+
+            services.AddRefitClient<IAuthApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<ICategoryApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IBanUserApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IPostApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<ICommentApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IReactionApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IPostViewApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IMessageApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IUserSettingApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IUserProfileApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            //static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
+            void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(apiBaseUrl);
+
+            static RefitSettings GetRefitSettings(IServiceProvider sp)
+            {
+                var authStateProvider = sp.GetRequiredService<AuthStateProvider>();
+                return new RefitSettings
+                {
+                    AuthorizationHeaderValueGetter = (_, __) => Task.FromResult(authStateProvider.User?.Token ?? ""),
+
+                    HttpMessageHandlerFactory = () =>
+                    {
+#if ANDROID
+                        var androidMessageHandler = new AndroidMessageHandler();
+
+                        androidMessageHandler.ServerCertificateCustomValidationCallback =
+                        (HttpRequestMessage httpRequestMessage, X509Certificate2? certificate2, X509Chain? chain, SslPolicyErrors errors) =>
+                            certificate2?.Issuer == "CN=localhost" || errors == SslPolicyErrors.None;
+
+                        return androidMessageHandler;
+#elif IOS 
+                        var nsUrlSessionHandler = new NSUrlSessionHandler();
+                        nsUrlSessionHandler.TrustOverrideForUrl = 
+                        (NSUrlSessionHandler sender, string url, SecTrust trust) 
+                            => url.StartsWith("http://localhost");
+                        return nsUrlSessionHandler;
+
+#endif
+
+                        return null;
+                       
+                    }
+                };
+            }
+        }
     }
+
 }

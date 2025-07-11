@@ -595,11 +595,16 @@
 	}
 	private async Task StartReactionHubConnectionAsync()
 	{
+		// _reactionHubConnection = new HubConnectionBuilder()
+		// 			.WithUrl("https://localhost:7292/reactionhub")
+		// 			.WithAutomaticReconnect()
+		// 			.Build();		
+					
 		_reactionHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/reactionhub")
+					.WithUrl("http://10.0.2.2:7292/reactionhub")
 					.WithAutomaticReconnect()
 					.Build();
-
+					
 		if (!allowedRoles.Contains(_userRoleId))
 		{
 			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", (oldReactionId, newReactionId, userId) =>
@@ -623,8 +628,13 @@
 	}
 	private async Task StartPostViewHubConnectionAsync()
 	{
+		// _postViewHubConnection = new HubConnectionBuilder()
+		// 			.WithUrl("https://localhost:7292/postviewhub")
+		// 			.WithAutomaticReconnect()
+		// 			.Build();
+		
 		_postViewHubConnection = new HubConnectionBuilder()
-					.WithUrl("https://localhost:7292/postviewhub")
+					.WithUrl("http://10.0.2.2:7292/postviewhub")
 					.WithAutomaticReconnect()
 					.Build();
 
@@ -657,10 +667,15 @@
 	}
 	private async Task StartCommentHubConnectionAsync()
 	{
+		// _commentHubConnection = new HubConnectionBuilder()
+		// 	.WithUrl("https://localhost:7292/commenthub")
+		// 	.WithAutomaticReconnect()
+		// 	.Build();
+			
 		_commentHubConnection = new HubConnectionBuilder()
-		.WithUrl("https://localhost:7292/commenthub")
-		.WithAutomaticReconnect()
-		.Build();
+			.WithUrl("http://10.0.2.2:7292/commenthub")
+			.WithAutomaticReconnect()
+			.Build();
 
 		_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
 		{

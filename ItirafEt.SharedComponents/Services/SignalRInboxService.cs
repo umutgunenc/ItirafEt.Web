@@ -22,8 +22,13 @@ namespace ItirafEt.SharedComponents.Services
             if (_connection is not null) return;
 
             _currentUserId = currentUserId;
+            //_connection = new HubConnectionBuilder()
+            //    .WithUrl("https://localhost:7292/messagehub")
+            //    .WithAutomaticReconnect()
+            //    .Build();
+            
             _connection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7292/messagehub")
+                .WithUrl("http://10.0.2.2:7292/messagehub")
                 .WithAutomaticReconnect()
                 .Build();
 
@@ -46,8 +51,13 @@ namespace ItirafEt.SharedComponents.Services
             if (_connectionReadMessage is not null) return;
 
             _currentUserId = currentUserId;
+            //_connectionReadMessage = new HubConnectionBuilder()
+            //    .WithUrl("https://localhost:7292/messagehub")
+            //    .WithAutomaticReconnect()
+            //    .Build();           
+            
             _connectionReadMessage = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7292/messagehub")
+                .WithUrl("http://10.0.2.2:7292/messagehub")
                 .WithAutomaticReconnect()
                 .Build();
 

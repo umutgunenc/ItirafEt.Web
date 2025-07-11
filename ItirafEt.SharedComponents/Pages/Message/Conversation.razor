@@ -438,10 +438,15 @@ else
 	}
 	private async Task StartHubConnection()
 	{
+		// _hubConnection = new HubConnectionBuilder()
+		// 	.WithUrl("https://localhost:7292/messagehub")
+		// 	.WithAutomaticReconnect()
+		// 	.Build();		
+		
 		_hubConnection = new HubConnectionBuilder()
-		.WithUrl("https://localhost:7292/messagehub")
-		.WithAutomaticReconnect()
-		.Build();
+			.WithUrl("http://10.0.2.2:7292/messagehub")
+			.WithAutomaticReconnect()
+			.Build();
 
 		_hubConnection.On<Guid, MessageViewModel>("SendMessageAsync", async (conversationId, messageDto) =>
 		{
