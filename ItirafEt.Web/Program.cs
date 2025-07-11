@@ -2,14 +2,15 @@ using Blazored.LocalStorage;
 using ItirafEt.Shared.ClientServices;
 using ItirafEt.Shared.ClientServices.State;
 using ItirafEt.SharedComponents.Apis;
+using ItirafEt.SharedComponents.Auth;
 using ItirafEt.SharedComponents.ClientServices;
 using ItirafEt.SharedComponents.Services;
 using ItirafEt.Web;
-using ItirafEt.Web.Pages.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Refit;
+
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

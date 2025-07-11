@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -23,6 +23,10 @@
   <ItemGroup>
     <ProjectReference Include="..\ItirafEt.SharedComponents\ItirafEt.SharedComponents.csproj" />
     <ProjectReference Include="..\ItirafEt.Shared\ItirafEt.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\" />
   </ItemGroup>
 
 </Project>

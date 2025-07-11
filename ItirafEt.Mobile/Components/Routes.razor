@@ -1,6 +1,66 @@
-﻿<Router AppAssembly="@typeof(MauiProgram).Assembly">
+﻿@using ItirafEt.SharedComponents.Layout
+@using ItirafEt.SharedComponents.Auth
+
+@* <Router AppAssembly="@typeof(MauiProgram).Assembly" AdditionalAssemblies="new []{typeof(ItirafEt.SharedComponents.Auth.AuthStateProvider).Assembly}">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>
+ *@
+
+
+ 
+
+<Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new []{typeof(ItirafEt.SharedComponents.Auth.AuthStateProvider).Assembly}">
+	<Found Context="routeData">
+		<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+			@* RouteView AuthorizeRouteView oldu *@
+			<NotAuthorized>
+				<main class="flex-fill d-flex align-items-center justify-content-center bg-light" style="min-height: calc(100vh - 56px); width: 100%;">
+					<div class="card shadow-sm" >
+						<div class="card-body text-center">
+							<i class="bi bi-lock-fill" style="font-size: 3rem; color: #dc3545;"></i>
+							<h1 class="card-title mt-3">Erişim Reddedildi</h1>
+							<p class="card-text">
+								Bu sayfaya erişim yetkiniz yok. Lütfen gerekli yetkiye sahip olduğunuzdan emin olun.
+							</p>
+							<a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+						</div>
+					</div>
+				</main>
+			</NotAuthorized>
+		</AuthorizeRouteView>
+		<FocusOnNavigate RouteData="@routeData" Selector="h1" />
+	</Found>
+	<NotFound>
+@* 		<PageTitle>Not found</PageTitle>
+		<LayoutView Layout="@typeof(MainLayout)">
+			<p role="alert">Sorry, there's nothing at this address.</p>
+		</LayoutView> *@
+		<PageTitle>Not found</PageTitle>
+		<LayoutView Layout="@typeof(MainLayout)">
+			<main class="flex-fill d-flex align-items-center justify-content-center bg-light" style="min-height: calc(100vh - 56px); width: 100%;">
+				<div class="card shadow-sm p-4">
+					<div class="card-body text-center">
+						<i class="bi bi-question-circle-fill" style="font-size: 3rem; color: #ffc107;"></i>
+						<h1 class="card-title mt-3">Kayboldunuz mu?</h1>
+						<p class="card-text">
+							Aradığınız sayfa bulunamadı veya mevcut değil. Belki bir harf hatası yaptınız ya da sayfa taşınmış olabilir.
+						</p>
+						<a href="/" class="btn btn-warning text-white">Ana Sayfaya Dön</a>
+					</div>
+				</div>
+			</main>
+		</LayoutView>
+	</NotFound>
+</Router>
+
+@inject AuthStateProvider AuthStateProvider
+
+@code {
+	protected override async Task OnInitializedAsync()
+	{
+		await AuthStateProvider.InitializeAsync();
+	}
+}

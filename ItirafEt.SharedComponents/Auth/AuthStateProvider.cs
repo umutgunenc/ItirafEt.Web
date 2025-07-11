@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
-namespace ItirafEt.Web.Pages.Auth
+namespace ItirafEt.SharedComponents.Auth
 {
     public class AuthStateProvider : AuthenticationStateProvider
     {
@@ -99,7 +99,7 @@ namespace ItirafEt.Web.Pages.Auth
             //if (string.IsNullOrWhiteSpace(expClaim))
             //    return false;
 
-            if(expClaim == null)
+            if (expClaim == null)
                 return false;
 
             if (!long.TryParse(expClaim.Value, out var expTime))
