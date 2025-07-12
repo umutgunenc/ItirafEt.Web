@@ -6,6 +6,7 @@ using ItirafEt.Api.EndPoints;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Api.Services;
+using ItirafEt.Shared.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,28 +26,28 @@ builder.Services.AddDbContext<dbContext>(options =>
 
 builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-
-.AddJwtBearer(options =>
-{
-    var secretKey = builder.Configuration.GetValue<string>("Jwt:Secret");
-    var symmetricKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services
+    .AddAuthentication(options =>
     {
-        IssuerSigningKey = symmetricKey,
-        ValidIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer"),
-        ValidAudience = builder.Configuration.GetValue<string>("Jwt:Audience"),
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateIssuerSigningKey = true,
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var secretKey = builder.Configuration.GetValue<string>("Jwt:Secret");
+        var symmetricKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            IssuerSigningKey = symmetricKey,
+            ValidIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer"),
+            ValidAudience = builder.Configuration.GetValue<string>("Jwt:Audience"),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+
+        };
+    });
 
 
 builder.Services.AddQuartz();
@@ -54,22 +55,44 @@ builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete
 
 builder.Services.AddSignalR();
 
+//builder.Services.AddCors(options =>
+//{
+//    options.AddDefaultPolicy(policy =>
+//    {
+//        //var allowedOriginsStr = builder.Configuration.GetValue<string>("AllowedOrigins");
+//        //var allowedOrigins = allowedOriginsStr?.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+//        //policy.WithOrigins(allowedOrigins)
+//        //    .AllowAnyHeader()
+//        //    .AllowAnyMethod()
+//        //    .AllowCredentials();
+
+
+//        //policy.AllowAnyOrigin()
+//        //    .AllowAnyHeader()
+//        //    .AllowAnyMethod();
+
+
+//        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+//        options.AddDefaultPolicy(policy =>
+//            policy.WithOrigins(allowedOrigins)
+//                  .AllowAnyHeader()
+//                  .AllowAnyMethod());
+//    });
+
+//});
+
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
     options.AddDefaultPolicy(policy =>
     {
-        var allowedOriginsStr = builder.Configuration.GetValue<string>("AllowedOrigins");
-        var allowedOrigins = allowedOriginsStr?.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-
         policy.WithOrigins(allowedOrigins)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-        //policy.AllowAnyOrigin()
-        //    .AllowAnyHeader()
-        //    .AllowAnyMethod();
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // SignalR için gerekebilir
     });
-
 });
 
 builder.Services.AddAuthorization();
@@ -95,7 +118,7 @@ builder.Services.AddTransient<MessageHubService>();
 
 var app = builder.Build();
 
-app.UseStaticFiles();  
+app.UseStaticFiles();
 
 #if DEBUG
 ApplyDbMigrations(app.Services);
@@ -114,11 +137,11 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHub<CategoryHub>("/categoryhub");
-app.MapHub<ReactionHub>("/reactionhub");
-app.MapHub<CommentHub>("/commenthub");
-app.MapHub<PostViewHub>("/postviewhub");
-app.MapHub<MessageHub>("/messagehub");
+app.MapHub<CategoryHub>(HubConstants.CategoryHub);
+app.MapHub<ReactionHub>(HubConstants.ReactionHub);
+app.MapHub<CommentHub>(HubConstants.CommentHub);
+app.MapHub<PostViewHub>(HubConstants.PostViewHub);
+app.MapHub<MessageHub>(HubConstants.MessageHub);
 
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();

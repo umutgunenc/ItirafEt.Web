@@ -18,14 +18,12 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddBlazorBootstrap();
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped(typeof(InfiniteScrollState<>));
 builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
 builder.Services.AddScoped<SignalRInboxService>();
-//builder.Services.AddSingleton<ApiBaseUrl>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthStateProvider>();
@@ -34,9 +32,9 @@ builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredS
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddSingleton<IStorageService, StorageService>();
+builder.Services.AddScoped<ISignalRService, WebSignalRService>();
 
-// dinmaik olarak API adresini alabilmek için
-//builder.Services.Configure<ApiBaseUrl>(builder.Configuration.GetSection("ApiSettings"));
+
 
 
 ConfigureRefit(builder.Services);

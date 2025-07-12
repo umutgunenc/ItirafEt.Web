@@ -54,6 +54,9 @@ namespace ItirafEt.Mobile
             builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
             builder.Services.AddAuthorizationCore();
 
+            builder.Services.AddSingleton<IStorageService, StorageService>();
+            builder.Services.AddScoped<ISignalRService, MobileSignalRService>();
+
             ConfigureRefit(builder.Services);
 
             return builder.Build();
@@ -111,7 +114,7 @@ namespace ItirafEt.Mobile
                     HttpMessageHandlerFactory = () =>
                     {
 #if ANDROID
-                        var androidMessageHandler = new AndroidMessageHandler();
+                        var androidMessageHandler = new Xamarin.Android.Net.AndroidMessageHandler();
 
                         androidMessageHandler.ServerCertificateCustomValidationCallback =
                         (HttpRequestMessage httpRequestMessage, X509Certificate2? certificate2, X509Chain? chain, SslPolicyErrors errors) =>

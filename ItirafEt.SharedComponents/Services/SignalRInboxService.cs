@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ItirafEt.Shared.Models;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -13,6 +14,13 @@ namespace ItirafEt.SharedComponents.Services
         private HubConnection? _connectionNewMessage;
         private HubConnection? _connectionReadMessage;
         private HubConnection? _connection;
+        private readonly ISignalRService _signalRServices;
+
+        public SignalRInboxService(ISignalRService signalRServices)
+        {
+            _signalRServices = signalRServices;
+        }
+
         private Guid _currentUserId;
 
         public event Func<InboxViewModel, Task>? NewInboxMessage;
@@ -26,11 +34,12 @@ namespace ItirafEt.SharedComponents.Services
             //    .WithUrl("https://localhost:7292/messagehub")
             //    .WithAutomaticReconnect()
             //    .Build();
-            
-            _connection = new HubConnectionBuilder()
-                .WithUrl("http://10.0.2.2:7292/messagehub")
-                .WithAutomaticReconnect()
-                .Build();
+            _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
+            _connection = _signalRServices.GetConnection(HubConstants.HubType.Message);
+            //_connection = new HubConnectionBuilder()
+            //    .WithUrl("http://localhost:7292/messagehub")
+            //    .WithAutomaticReconnect()
+            //    .Build();
 
             _connection.On<Guid, InboxViewModel>("NewMessageForInboxAsync", (_, model) =>
                 NewInboxMessage?.Invoke(model) ?? Task.CompletedTask
@@ -55,13 +64,15 @@ namespace ItirafEt.SharedComponents.Services
             //    .WithUrl("https://localhost:7292/messagehub")
             //    .WithAutomaticReconnect()
             //    .Build();           
-            
-            _connectionReadMessage = new HubConnectionBuilder()
-                .WithUrl("http://10.0.2.2:7292/messagehub")
-                .WithAutomaticReconnect()
-                .Build();
+            _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
+            _connectionReadMessage = _signalRServices.GetConnection(HubConstants.HubType.Message);
 
-            _connection.On<Guid, Guid>("MessageReadByCurrentUserAsync", (uid, convId) =>
+            //_connectionReadMessage = new HubConnectionBuilder()
+            //    .WithUrl("http://10.0.2.2:7292/messagehub")
+            //    .WithAutomaticReconnect()
+            //    .Build();
+
+            _connectionReadMessage.On<Guid, Guid>("MessageReadByCurrentUserAsync", (uid, convId) =>
                 MessageRead?.Invoke(uid, convId) ?? Task.CompletedTask
             );
 

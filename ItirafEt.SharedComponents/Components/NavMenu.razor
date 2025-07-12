@@ -1,19 +1,22 @@
-﻿@inherits LayoutComponentBase
+﻿@using ItirafEt.Shared.Models
+@inherits LayoutComponentBase
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject ICategoryApi CategoryApi
 @inject IJSRuntime JSRuntime
 @inject InboxService InboxService
 @inject IMessageApi MessageApi
+@inject ISignalRService SignalRServiceBase
 
 
 
 <nav class="navbar navbar-expand-lg navbar-light fixed-top py-lg-0 blue">
 	<div class="container-fluid">
 		<a class="navbar-brand text-white fw-bold" href="/">ItirafEt</a>
+		<p class="navbar-brand text-white fw-bold" p>@errorMessage</p>
 
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-				aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+		aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon @(_isHaveUnreadMessages ?"text-danger":"")" style="filter: invert(1);"></span>
 		</button>
 
@@ -120,29 +123,38 @@
 	private List<InboxViewModel> _inboxViewModel = new();
 	private List<ToastMessage> _toastMessages = new();
 
-	private HubConnection _categoryHubConnection;
-	private HubConnection _conversationHubConnection;
-	private HubConnection _messageReadHubConnection;
+	private HubConnection? _categoryHubConnection;
+	private HubConnection? _conversationHubConnection;
+	private HubConnection? _messageReadHubConnection;
 	private Guid _currentUserId = Guid.Empty;
 
 	private string allowedRoles = string.Join(",",
-		nameof(UserRoleEnum.SuperAdmin),
-		nameof(UserRoleEnum.Admin),
-		nameof(UserRoleEnum.Moderator));
+	nameof(UserRoleEnum.SuperAdmin),
+	nameof(UserRoleEnum.Admin),
+	nameof(UserRoleEnum.Moderator));
 	private bool _isHaveUnreadMessages = false;
+	private string? errorMessage;
 
 	protected override async Task OnInitializedAsync()
 	{
+		try
+		{
+			AuthStateProvider.AuthenticationStateChanged += async (task) => await OnAuthStateChanged(task);
+			while (AuthStateProvider.IsInitializing)
+				await Task.Delay(500);
 
-		AuthStateProvider.AuthenticationStateChanged += async (task) => await OnAuthStateChanged(task);
-		while (AuthStateProvider.IsInitializing)
-			await Task.Delay(500);
+			await StartCategoryInfoHubAsync();
+			await GelAllActiveCategoryAsync();
 
-		await StartCategoryInfoHubAsync();
-		await GelAllActiveCategoryAsync();
+			if (AuthStateProvider.IsLoggedIn)
+				await InitializeLogedInUserServices();
+		}
+		catch (Exception ex)
+		{
 
-		if (AuthStateProvider.IsLoggedIn)
-			await InitializeLogedInUserServices();
+			errorMessage = ex.Message;
+		}
+
 	}
 
 	private void CheckUnreadMessage()
@@ -192,8 +204,8 @@
 			if (response.IsSuccess)
 			{
 				_categories = response.Data?
-			.OrderBy(c => c.CategoryOrder)
-			.ToList();
+					.OrderBy(c => c.CategoryOrder)
+					.ToList();
 			}
 			else
 				_categories = null;
@@ -211,27 +223,29 @@
 		// ("https://localhost:7292/categoryhub")
 		// 	.WithAutomaticReconnect()
 		// 	.Build();
-		
-		_categoryHubConnection = new HubConnectionBuilder()
-			.WithUrl("http://10.0.2.2:7292/categoryhub")
-			.WithAutomaticReconnect()
-			.Build();
 
-		_categoryHubConnection.On<CategoryViewModel>("CategoryInfoChangedAsync", (category) =>
-	{
-		UpdateCategories(category);
-		StateHasChanged();
-	});
+		SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Category);
 
-		_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync", (categoryId, isPostAdded) =>
-	{
-		UpdateCategories(categoryId, isPostAdded);
-		StateHasChanged();
-	});
+		_categoryHubConnection = SignalRServiceBase.GetConnection(HubConstants.HubType.Category);
 
-		await _categoryHubConnection.StartAsync();
-		await _categoryHubConnection.SendAsync("JoinCategoryInfoChangedGroup");
-		await _categoryHubConnection.SendAsync("JoinCategoryPostCountChangedGroup");
+		if (_categoryHubConnection != null)
+		{
+			_categoryHubConnection.On<CategoryViewModel>("CategoryInfoChangedAsync", async (category) =>
+			{
+				UpdateCategories(category);
+				await InvokeAsync(StateHasChanged);
+			});
+
+			_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync",async (categoryId, isPostAdded) =>
+			{
+				UpdateCategories(categoryId, isPostAdded);
+				await InvokeAsync(StateHasChanged);
+			});
+
+			await _categoryHubConnection.StartAsync();
+			await _categoryHubConnection.SendAsync("JoinCategoryInfoChangedGroup");
+			await _categoryHubConnection.SendAsync("JoinCategoryPostCountChangedGroup");
+		}
 	}
 
 	private void UpdateCategories(CategoryViewModel category)
@@ -279,10 +293,10 @@
 			_currentUserId = parsedId;
 	}
 
-	private void ShowToastMessage(ToastType toastType, MessageViewModel messageDto)
+	private async Task ShowToastMessageAsync(ToastType toastType, MessageViewModel messageDto)
 	{
 		_toastMessages.Add(CreateToastMessage(toastType, messageDto));
-		StateHasChanged();
+		await InvokeAsync(StateHasChanged);
 	}
 
 	private ToastMessage CreateToastMessage(ToastType toastType, MessageViewModel messageDto)
@@ -322,38 +336,40 @@
 		// 	.WithUrl("https://localhost:7292/messagehub")
 		// 	.WithAutomaticReconnect()
 		// 	.Build();
-		
-		_conversationHubConnection = new HubConnectionBuilder()
-			.WithUrl("http://10.0.2.2:7292/messagehub")
-			.WithAutomaticReconnect()
-			.Build();
 
-		_conversationHubConnection.On<Guid, MessageViewModel>("SendMessageNotificationAsync", (conversationId, messageViewModel) =>
+		SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Message);
+
+		_conversationHubConnection = SignalRServiceBase.GetConnection(HubConstants.HubType.Message);
+
+		if (_conversationHubConnection != null)
 		{
-			if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId != messageViewModel.SenderId)
+
+			_conversationHubConnection.On<Guid, MessageViewModel>("SendMessageNotificationAsync", async (conversationId, messageViewModel) =>
 			{
-				_isHaveUnreadMessages = true;
-				ShowToastMessage(ToastType.Danger, messageViewModel);
+				if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId != messageViewModel.SenderId)
+				{
+					_isHaveUnreadMessages = true;
+					await ShowToastMessageAsync(ToastType.Danger, messageViewModel);
+				}
+
+			});
+
+			_conversationHubConnection.On<Guid, Guid>("MessageReadByCurrentUserAsync", async (messageReadUserId, conversationId) =>
+			{
+				if (_currentUserId == messageReadUserId)
+					await CheckForUnreadMessagesAsync(messageReadUserId);
+			});
+
+
+			await _conversationHubConnection.StartAsync();
+
+			await _conversationHubConnection.SendAsync("JoinMessageReadGroup", _currentUserId);
+
+			foreach (var conversation in _inboxViewModel)
+			{
+				await _conversationHubConnection.SendAsync("JoinMessageGroup", conversation.ConversationId);
 			}
-
-		});
-
-		_conversationHubConnection.On<Guid, Guid>("MessageReadByCurrentUserAsync", async (messageReadUserId, conversationId) =>
-		{
-			if (_currentUserId == messageReadUserId)
-				await CheckForUnreadMessagesAsync(messageReadUserId);
-		});
-
-
-		await _conversationHubConnection.StartAsync();
-
-		await _conversationHubConnection.SendAsync("JoinMessageReadGroup", _currentUserId);
-
-		foreach (var conversation in _inboxViewModel)
-		{
-			await _conversationHubConnection.SendAsync("JoinMessageGroup", conversation.ConversationId);
 		}
-
 
 	}
 

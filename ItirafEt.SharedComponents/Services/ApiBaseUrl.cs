@@ -10,6 +10,7 @@ namespace ItirafEt.SharedComponents.Services
     {
         public static string BaseUrl { get; } = "https://localhost:7292";
         public static string AndroidBaseUrl { get; } = "https://10.0.2.2:7292";
+        public static string AndroidBaseUrlHttp { get; } = "http://10.0.2.2:7292";
 
     }
 }
