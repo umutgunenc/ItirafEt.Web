@@ -120,18 +120,19 @@
 
 @code {
 	private List<CategoryViewModel>? _categories = new();
-	private List<InboxViewModel> _inboxViewModel = new();
+	private List<InboxViewModel>? _inboxViewModel = new();
 	private List<ToastMessage> _toastMessages = new();
+
+	private List<InboxViewModel>? _inboxItems = new();
 
 	private HubConnection? _categoryHubConnection;
 	private HubConnection? _conversationHubConnection;
-	private HubConnection? _messageReadHubConnection;
 	private Guid _currentUserId = Guid.Empty;
 
 	private string allowedRoles = string.Join(",",
-	nameof(UserRoleEnum.SuperAdmin),
-	nameof(UserRoleEnum.Admin),
-	nameof(UserRoleEnum.Moderator));
+		nameof(UserRoleEnum.SuperAdmin),
+		nameof(UserRoleEnum.Admin),
+		nameof(UserRoleEnum.Moderator));
 	private bool _isHaveUnreadMessages = false;
 	private string? errorMessage;
 
@@ -175,7 +176,7 @@
 		{
 			_currentUserId = Guid.Empty;
 			_inboxViewModel.Clear();
-			InboxService.Clear();
+			await InboxService.ClearAsync();
 			await InvokeAsync(StateHasChanged);
 		}
 	}
@@ -204,8 +205,8 @@
 			if (response.IsSuccess)
 			{
 				_categories = response.Data?
-					.OrderBy(c => c.CategoryOrder)
-					.ToList();
+				.OrderBy(c => c.CategoryOrder)
+				.ToList();
 			}
 			else
 				_categories = null;
@@ -218,15 +219,7 @@
 
 	private async Task StartCategoryInfoHubAsync()
 	{
-		// _categoryHubConnection = new HubConnectionBuilder()
-		// 	.
-		// ("https://localhost:7292/categoryhub")
-		// 	.WithAutomaticReconnect()
-		// 	.Build();
-
-		SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Category);
-
-		_categoryHubConnection = SignalRServiceBase.GetConnection(HubConstants.HubType.Category);
+		_categoryHubConnection = SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Category);
 
 		if (_categoryHubConnection != null)
 		{
@@ -236,7 +229,7 @@
 				await InvokeAsync(StateHasChanged);
 			});
 
-			_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync",async (categoryId, isPostAdded) =>
+			_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync", async (categoryId, isPostAdded) =>
 			{
 				UpdateCategories(categoryId, isPostAdded);
 				await InvokeAsync(StateHasChanged);
@@ -284,7 +277,7 @@
 	private async Task GetUserConversationsAsync()
 	{
 		await InboxService.InitializeAsync(_currentUserId);
-		_inboxViewModel = InboxService.GetUserConversations();
+		_inboxViewModel = await InboxService.GetUserConversationsAsync();
 	}
 
 	private void GetUserId()
@@ -332,32 +325,39 @@
 
 	private async Task StartConversationHubConnection()
 	{
-		// _conversationHubConnection = new HubConnectionBuilder()
-		// 	.WithUrl("https://localhost:7292/messagehub")
-		// 	.WithAutomaticReconnect()
-		// 	.Build();
 
-		SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Message);
-
-		_conversationHubConnection = SignalRServiceBase.GetConnection(HubConstants.HubType.Message);
+		_conversationHubConnection = SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Message);
 
 		if (_conversationHubConnection != null)
 		{
-
 			_conversationHubConnection.On<Guid, MessageViewModel>("SendMessageNotificationAsync", async (conversationId, messageViewModel) =>
 			{
 				if (!CheckCurrentChatPage(conversationId.ToString()) && _currentUserId != messageViewModel.SenderId)
 				{
 					_isHaveUnreadMessages = true;
 					await ShowToastMessageAsync(ToastType.Danger, messageViewModel);
+
 				}
 
 			});
 
-			_conversationHubConnection.On<Guid, Guid>("MessageReadByCurrentUserAsync", async (messageReadUserId, conversationId) =>
+			_conversationHubConnection.On<Guid, InboxViewModel>("NewMessageForInboxAsync", async (currentUserId, inboxItem) =>
 			{
-				if (_currentUserId == messageReadUserId)
-					await CheckForUnreadMessagesAsync(messageReadUserId);
+				if (_currentUserId == currentUserId)
+				{
+					await InboxService.UpdateConversationOrderAsync(inboxItem);
+					await InboxService.NotifyInboxItemsOrderChangedAsync();
+					errorMessage = "1";
+				}
+				errorMessage = "2";
+
+				await InvokeAsync(StateHasChanged);
+			});
+
+			_conversationHubConnection.On<Guid, Guid>("MessageReadByCurrentUserAsync", async (messageReaderUserId, conversationId) =>
+			{
+				if (_currentUserId == messageReaderUserId)
+					await CheckForUnreadMessagesAsync(messageReaderUserId);
 			});
 
 
@@ -373,6 +373,16 @@
 
 	}
 
+	private async Task RefreshInbox()
+	{
+		_inboxItems = await InboxService.GetUserConversationsAsync();
+		await InboxService.RemoveConversationsFromLocalStorageAsync();
+		_inboxItems.Sort((a, b) => b.LastMessageDate.CompareTo(a.LastMessageDate));
+		await InvokeAsync(StateHasChanged);
+		await InboxService.SetUserConversationsToLocalStorageAsync(_inboxItems);
+	}
+
+	//TODO exception doldur
 	private async Task CheckForUnreadMessagesAsync(Guid currentUserId)
 	{
 		try

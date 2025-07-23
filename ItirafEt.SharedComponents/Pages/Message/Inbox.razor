@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @inject InboxService InboxService
 @inject SignalRInboxService SignalRInboxService
+@inject IStorageService StorageService
 @implements IAsyncDisposable
 
 
@@ -81,15 +82,20 @@
 @code {
 
 	private Guid _currentUserId;
-	private List<InboxViewModel> _inboxItems = new();
+	private List<InboxViewModel>? _inboxItems = new();
 	private bool _isError = false;
 	private string? _errorMessage;
 	private Func<InboxViewModel, Task>? _onNewMessageHandler;
 	private Func<Guid, Guid, Task>? _onMessageReadHandler;
+	// private bool _isInitialized = false;
 
 	protected override async Task OnInitializedAsync()
 	{
+		// if (_isInitialized)
+		// 	return;
+		// _isInitialized = true;
 		GetUserId();
+
 		await SignalRInboxService.StartAsync(_currentUserId);
 		await SignalRInboxService.StartReadMessageAsync(_currentUserId);
 		await GetUserMessagesAsync();
@@ -97,13 +103,25 @@
 		_onNewMessageHandler = async model =>
 			await UpdateInboxItemUnreadMessageCountAsync(model);
 
-		_onMessageReadHandler = async (uid, convId) =>
-			await UpdateInboxItemAfterReadUnreadMessageAsync(uid, convId);
+		_onMessageReadHandler = async (userId, conversationId) =>
+			await UpdateInboxItemAfterReadUnreadMessageAsync(userId, conversationId);
 
 		SignalRInboxService.NewInboxMessage += _onNewMessageHandler;
 		SignalRInboxService.MessageRead += _onMessageReadHandler;
+		InboxService.OnUnreadMessageChanged += RefreshInbox;
+		InboxService.InboxItemsOrderChanged += RefreshInbox;
 
 		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task RefreshInbox()
+	{
+		_inboxItems = await InboxService.GetUserConversationsAsync();
+		await InboxService.RemoveConversationsFromLocalStorageAsync();
+		_inboxItems.Sort((a, b) => b.LastMessageDate.CompareTo(a.LastMessageDate));
+		await InvokeAsync(StateHasChanged);
+		await InboxService.SetUserConversationsToLocalStorageAsync(_inboxItems);
+
 	}
 	private void GetUserId()
 	{
@@ -112,7 +130,6 @@
 	}
 	private async Task GetUserMessagesAsync()
 	{
-
 		await InboxService.InitializeAsync(_currentUserId);
 
 		if (InboxService._haveError)
@@ -123,8 +140,10 @@
 		else
 		{
 			_isError = false;
-			_inboxItems = InboxService.GetUserConversations();
+			_inboxItems = await InboxService.GetUserConversationsAsync();
 			_inboxItems.Sort((a, b) => b.LastMessageDate.CompareTo(a.LastMessageDate));
+			await InboxService.RemoveConversationsFromLocalStorageAsync();
+			await InboxService.SetUserConversationsToLocalStorageAsync(_inboxItems);
 
 		}
 	}
@@ -133,6 +152,10 @@
 	{
 		if (_inboxItems.Count == 0)
 			_inboxItems = new();
+		else
+			_inboxItems = await InboxService.GetUserConversationsAsync();
+
+		await InboxService.RemoveConversationsFromLocalStorageAsync();
 
 		var existingIndex = _inboxItems.FindIndex(i => i.ConversationId == model.ConversationId);
 
@@ -140,16 +163,20 @@
 		{
 			var existingItem = _inboxItems[existingIndex];
 			model.UnreadMessageCount = existingItem.UnreadMessageCount + 1;
+
 			_inboxItems.RemoveAt(existingIndex);
 		}
 
 		_inboxItems.Insert(0, model);
 
+		await InboxService.SetUserConversationsToLocalStorageAsync(_inboxItems);
 		await InvokeAsync(StateHasChanged);
 	}
 
 	private async Task UpdateInboxItemAfterReadUnreadMessageAsync(Guid currentUserId, Guid conversationId)
 	{
+		_inboxItems = await InboxService.GetUserConversationsAsync();
+		await InboxService.RemoveConversationsFromLocalStorageAsync();
 		if (_currentUserId == currentUserId)
 		{
 			var item = _inboxItems.FirstOrDefault(i => i.ConversationId == conversationId);
@@ -159,16 +186,19 @@
 				await InvokeAsync(StateHasChanged);
 			}
 		}
+		await InboxService.SetUserConversationsToLocalStorageAsync(_inboxItems);
 	}
 	private void NavigateToConversation(Guid conversationId)
 	{
-		NavigationManager.NavigateTo($"/conversations/{conversationId}", forceLoad: true);
+		NavigationManager.NavigateTo($"/conversations/{conversationId}");
 	}
 
-	public async ValueTask DisposeAsync()
+	public ValueTask DisposeAsync()
 	{
+		InboxService.OnUnreadMessageChanged -= RefreshInbox;
+		InboxService.InboxItemsOrderChanged -= RefreshInbox;
 		SignalRInboxService.NewInboxMessage -= _onNewMessageHandler;
 		SignalRInboxService.MessageRead -= _onMessageReadHandler;
-		await SignalRInboxService.DisposeAsync();
+		return ValueTask.CompletedTask;
 	}
 }

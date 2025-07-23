@@ -1,5 +1,4 @@
-﻿
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using ItirafEt.Mobile.Services;
 using ItirafEt.Shared.ClientServices;
 using ItirafEt.Shared.Services;
@@ -11,6 +10,9 @@ using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Refit;
+using ItirafEt.SharedComponents.HelperStrings;
+
+
 #if ANDROID
 using Xamarin.Android.Net;
 using System.Net.Security;

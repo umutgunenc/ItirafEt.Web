@@ -49,8 +49,9 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/getConversationMessages/")]
-        Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(ConversationViewModel conversation, DateTime? nextBefore, int take);        
-        
+        Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(GetConversationMessageViewModel model);
+
+
         [Headers("Authorization: Bearer")]
         [Get("/api/message/GetUserMessages/")]
         Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId);

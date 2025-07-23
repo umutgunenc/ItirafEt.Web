@@ -331,7 +331,7 @@ namespace ItirafEt.Api.Services
             };
         }
 
-        private async Task<UserInfoViewModel> GetResponderUserAsync(Guid RespondoerId)
+        private async Task<UserInfoViewModel?> GetResponderUserAsync(Guid RespondoerId)
         {
             return await _context.Users.Where(x => x.Id == RespondoerId)
                 .AsNoTracking()
@@ -347,21 +347,31 @@ namespace ItirafEt.Api.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(ConversationViewModel conversation, DateTime? nextBefore, int take)
+        public async Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(GetConversationMessageViewModel model)
         {
             var isThereConversation = await _context.Conversations
                 .AsNoTracking()
-                .AnyAsync(c => c.ConversationId == conversation.ConversationId);
+                .AnyAsync(c => c.ConversationId == model.ConversationId);
 
 
             if (!isThereConversation)
                 return ApiResponses<InfiniteScrollState<MessageViewModel>>.Fail("Mesajlaşma Bulunamadı.");
 
-            var messages = await _context.Messages
+            var query = _context.Messages
                 .AsNoTracking()
-                .Where(m => m.ConversationId == conversation.ConversationId && m.SentDate < nextBefore.Value)
+                .Where(m => m.ConversationId == model.ConversationId);
+
+            if (model.Model.NextBefore.HasValue && model.Model.LastId.HasValue)
+            {
+                query = query.Where(m =>
+                    m.SentDate < model.Model.NextBefore ||
+                    (m.SentDate == model.Model.NextBefore && m.Id < model.Model.LastId));
+            }
+
+            var messages = await query
                 .OrderByDescending(m => m.SentDate)
-                .Take(take)
+                .ThenByDescending(m => m.Id)
+                .Take(model.Model.Take)
                 .Select(m => new MessageViewModel
                 {
                     Id = m.Id,
@@ -370,29 +380,25 @@ namespace ItirafEt.Api.Services
                     CreatedDate = m.SentDate,
                     ReadDate = m.ReadDate,
                     SenderId = m.SenderId,
-                    ReceiverId = conversation.ResponderUser.UserId,
+                    ReceiverId = model.ResponderUserId,
                     IsRead = m.IsRead,
                     IsDeletedBySender = m.IsVisibleToInitiatorUser,
                     IsDeletedByReceiver = m.IsVisibleToResponderUser,
                     PhotoUrl = m.PhotoUrl,
-
                 })
                 .ToListAsync();
 
+            var hasMore = messages.Count == model.Model.Take;
 
-            //messages.Reverse(); 
-
-            var hasMore = messages.Count == take;
-            var nextBeforeDateTime = hasMore ? messages.Last().CreatedDate : (DateTime?)null;
             var scrollStateMessageList = new InfiniteScrollState<MessageViewModel>
             {
                 Items = messages,
                 HasMore = hasMore,
-                NextBefore = nextBeforeDateTime
+                NextBefore = messages.Last().CreatedDate,
+                LastId = hasMore ? messages.Last().Id : null
             };
 
             return ApiResponses<InfiniteScrollState<MessageViewModel>>.Success(scrollStateMessageList);
-
         }
 
         public async Task<(bool, string?, User?)> IsMessageValidAsync(CreateMessageViewModel messageDto, Guid senderId, Guid receiverId, Guid conversationId)
@@ -402,25 +408,25 @@ namespace ItirafEt.Api.Services
                 .FirstOrDefaultAsync(x => x.Id == senderId);
 
             if (senderUser == null)
-                return (false, "Gönderici Kullanıcı Bulunamadı.",null);
+                return (false, "Gönderici Kullanıcı Bulunamadı.", null);
 
             var receiverUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == receiverId);
             if (receiverUser == null)
-                return (false, "Alıcı Kullanıcı Bulunamadı.",null);
+                return (false, "Alıcı Kullanıcı Bulunamadı.", null);
 
             var conversation = await _context.Conversations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
 
             if (conversation == null)
-                return (false, "Mesaj gönderilemedi.",null);
+                return (false, "Mesaj gönderilemedi.", null);
 
             if (!((conversation.InitiatorId == senderId && conversation.ResponderId == receiverId) || (conversation.InitiatorId == receiverId && conversation.ResponderId == senderId)))
-                return (false, "Mesaj gönderilemedi.",null);
+                return (false, "Mesaj gönderilemedi.", null);
 
 
-            return (true, null,senderUser);
+            return (true, null, senderUser);
         }
 
         public async Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId)

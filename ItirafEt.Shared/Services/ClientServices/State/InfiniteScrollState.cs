@@ -13,5 +13,7 @@ namespace ItirafEt.Shared.Services.ClientServices.State
         public bool HasMore { get; set; } = true;
         public double ScrollY { get; set; } = 0;
         public DateTime? NextBefore { get; set; }
+        public int? LastId { get; set; }
+        public int Take { get; set; } = PageItemSize.Size;
     }
 }

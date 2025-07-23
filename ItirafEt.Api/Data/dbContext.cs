@@ -92,6 +92,9 @@ namespace ItirafEt.Api.Data
                 .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Message>()
+                .Property(m => m.SentDate)
+                .HasPrecision(7);
 
             modelBuilder.Entity<PostHistory>()
                 .HasOne(ph => ph.User)

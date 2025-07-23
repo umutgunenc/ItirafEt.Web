@@ -10,7 +10,16 @@ namespace ItirafEt.SharedComponents.ClientServices
     public interface IInboxService
     {
         Task InitializeAsync(Guid userId);
-        ref List<InboxViewModel> GetUserConversations();
-        void Clear();
+        //ref List<InboxViewModel> GetUserConversationsAsync();
+
+        Task<List<InboxViewModel>?> GetUserConversationsAsync();
+
+        Task RemoveConversationsFromLocalStorageAsync();
+
+        Task SetUserConversationsToLocalStorageAsync(List<InboxViewModel> Conversations);
+
+        Task NotifyUnreadMessageChangedAsync();
+        Task NotifyInboxItemsOrderChangedAsync();
+        Task ClearAsync();
     }
 }

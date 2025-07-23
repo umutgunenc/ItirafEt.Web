@@ -15,6 +15,7 @@ namespace ItirafEt.SharedComponents.Services
         private HubConnection? _connectionReadMessage;
         private HubConnection? _connection;
         private readonly ISignalRService _signalRServices;
+        private bool _isSignalRConnected;
 
         public SignalRInboxService(ISignalRService signalRServices)
         {
@@ -27,19 +28,11 @@ namespace ItirafEt.SharedComponents.Services
         public event Func<Guid, Guid, Task>? MessageRead;
         public async Task StartAsync(Guid currentUserId)
         {
-            if (_connection is not null) return;
+            if (_connection is not null || _isSignalRConnected) return;
 
             _currentUserId = currentUserId;
-            //_connection = new HubConnectionBuilder()
-            //    .WithUrl("https://localhost:7292/messagehub")
-            //    .WithAutomaticReconnect()
-            //    .Build();
-            _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
-            _connection = _signalRServices.GetConnection(HubConstants.HubType.Message);
-            //_connection = new HubConnectionBuilder()
-            //    .WithUrl("http://localhost:7292/messagehub")
-            //    .WithAutomaticReconnect()
-            //    .Build();
+            _connection = _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
+
 
             _connection.On<Guid, InboxViewModel>("NewMessageForInboxAsync", (_, model) =>
                 NewInboxMessage?.Invoke(model) ?? Task.CompletedTask
@@ -52,6 +45,7 @@ namespace ItirafEt.SharedComponents.Services
             await _connection.StartAsync();
             await _connection.SendAsync("JoinInboxGroup", currentUserId);
             await _connection.SendAsync("JoinMessageReadGroup", currentUserId);
+            _isSignalRConnected = true;
 
         }
 
@@ -60,17 +54,8 @@ namespace ItirafEt.SharedComponents.Services
             if (_connectionReadMessage is not null) return;
 
             _currentUserId = currentUserId;
-            //_connectionReadMessage = new HubConnectionBuilder()
-            //    .WithUrl("https://localhost:7292/messagehub")
-            //    .WithAutomaticReconnect()
-            //    .Build();           
-            _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
-            _connectionReadMessage = _signalRServices.GetConnection(HubConstants.HubType.Message);
-
-            //_connectionReadMessage = new HubConnectionBuilder()
-            //    .WithUrl("http://10.0.2.2:7292/messagehub")
-            //    .WithAutomaticReconnect()
-            //    .Build();
+       
+            _connectionReadMessage = _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
 
             _connectionReadMessage.On<Guid, Guid>("MessageReadByCurrentUserAsync", (uid, convId) =>
                 MessageRead?.Invoke(uid, convId) ?? Task.CompletedTask

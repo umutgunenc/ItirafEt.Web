@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using ItirafEt.Api.Services;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.Services.ClientServices.State;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Refit;
@@ -109,9 +110,9 @@ namespace ItirafEt.Api.EndPoints
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
-            app.MapPost("/api/message/getConversationMessages", async (ConversationViewModel conversation, DateTime? nextBefore, int take, MessageService messageService) =>
+            app.MapPost("/api/message/getConversationMessages", async (GetConversationMessageViewModel model, MessageService messageService) =>
                 Results
-                .Ok(await messageService.GetConversationMessagesAsync(conversation, nextBefore, take)))
+                .Ok(await messageService.GetConversationMessagesAsync(model)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
             app.MapGet("/api/message/GetUserMessages", async (Guid userId, MessageService messageService) =>

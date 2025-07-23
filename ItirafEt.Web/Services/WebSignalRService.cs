@@ -1,13 +1,13 @@
 ﻿using ItirafEt.Shared.Models;
+using ItirafEt.SharedComponents.HelperStrings;
 using ItirafEt.SharedComponents.Services;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace ItirafEt.Web.Services
 {
     public class WebSignalRService : SignalRServiceBase
     {
-        
+
         //private readonly NavigationManager _navigationManager;
 
         //public WebSignalRService(NavigationManager navigationManager)
@@ -17,7 +17,10 @@ namespace ItirafEt.Web.Services
 
         public override HubConnection? ConfigureHubConnection(HubConstants.HubType hubType)
         {
-            if (IsConnected(hubType)) return GetConnection(hubType);
+            if (IsConnected(hubType))
+                return
+
+            GetConnection(hubType);
 
             var baseUrl = ApiBaseUrl.BaseUrl;
 
