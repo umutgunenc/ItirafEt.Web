@@ -1,4 +1,5 @@
 ﻿@page "/posts/{postId:int}"
+@using ItirafEt.Shared.Models
 @inject IPostApi PostApi
 @inject IReactionApi ReactionApi
 @inject ICommentApi CommentApi
@@ -6,6 +7,8 @@
 @inject IMessageApi MessageApi
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
+@inject ISignalRService SignalRService
+
 
 
 <div class="col-lg-8 col mx-auto py-5 px-2">
@@ -33,7 +36,7 @@
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
 					<p class="card-text text-break"
-					   style="text-align: justify;
+					style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
@@ -45,7 +48,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								   style="cursor:pointer" @onclick="LikePostAsync"></i>
+								style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -53,7 +56,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -63,7 +66,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportPost"></i>
+									style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -90,7 +93,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								   style="cursor:pointer" @onclick="LikePostAsync"></i>
+								style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -98,7 +101,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -108,7 +111,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									   style="cursor:pointer" @onclick="ReportPost"></i>
+									style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -122,8 +125,8 @@
 						<div class="d-flex align-items-center gap-3">
 							<!-- Profil Fotoğrafı -->
 							<img src="@(string.IsNullOrEmpty(_postDto.UserProfileImageUrl)? "/anonymousIcon.png" : _postDto.UserProfileImageUrl)"
-								 class="profile-photo rounded-circle"
-								 width="56" height="56">
+							class="profile-photo rounded-circle"
+							width="56" height="56">
 
 							<!-- Kullanıcı Bilgileri -->
 							<div class="d-flex flex-column">
@@ -176,10 +179,10 @@
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-													   class="form-control"
-													   placeholder="Yorum yazın..."
-													   @bind-Value="_commentModel.Content"
-													   rows="4" />
+										class="form-control"
+										placeholder="Yorum yazın..."
+										@bind-Value="_commentModel.Content"
+										rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -211,13 +214,13 @@
 											@if (_replyToCommentId == comment.Id)
 											{
 												<EditForm Model="_replyModel"
-														  OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+												OnValidSubmit="()=>AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
 													<div class="input-group mb-2">
 														<input type="text"
-															   class="form-control form-control-sm"
-															   placeholder="Cevabınızı yazın..."
-															   @bind="_replyModel.Content" />
+														class="form-control form-control-sm"
+														placeholder="Cevabınızı yazın..."
+														@bind="_replyModel.Content" />
 														<div class="input-group-append">
 															<button class="btn btn-sm btn-outline-primary" type="submit">
 																@* @onclick="() => AddReplyAsync(comment.Id)" *@
@@ -240,8 +243,8 @@
 															<div class="card-text p-2">
 																<div class="d-flex justify-content-between">
 																	<div>
-													<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
-													class="profile-photo rounded-circle ms-2" width="24" height="24" />
+																		<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
+																		class="profile-photo rounded-circle ms-2" width="24" height="24" />
 																		<strong class="ms-2">@comment.UserName</strong>
 																		<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
 																	</div>
@@ -263,15 +266,15 @@
 								</div>
 
 								<EditForm Model="_commentModel"
-										  OnValidSubmit="AddCommentAsync">
+								OnValidSubmit="AddCommentAsync">
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-													   class="form-control"
-													   placeholder="Yorum yazın..."
-													   @bind-Value="_commentModel.Content"
-													   rows="4" />
+										class="form-control"
+										placeholder="Yorum yazın..."
+										@bind-Value="_commentModel.Content"
+										rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -308,8 +311,8 @@
 							<div class="d-flex align-items-center gap-2 gap-md-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-									 class="profile-photo rounded-circle"
-									 width="56" height="56">
+								class="profile-photo rounded-circle"
+								width="56" height="56">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -378,8 +381,8 @@
 							<div class="d-flex align-items-center gap-2 gap-sm-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-									 class="profile-photo rounded-circle"
-									 width="56" height="56">
+								class="profile-photo rounded-circle"
+								width="56" height="56">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -452,9 +455,9 @@
 						<div class="d-flex align-items-center gap-2 gap-sm-4">
 							<!-- Profil Fotoğrafı -->
 							<img src="@(string.IsNullOrEmpty(viewer.PostViewerUserProfileImageUrl)? "/anonymousIcon.png" : viewer.PostViewerUserProfileImageUrl)"
-								 class="profile-photo rounded-circle"
-								 width="56" height="56"
-								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+							class="profile-photo rounded-circle"
+							width="56" height="56"
+							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 							<div class="d-flex flex-column">
 								<div class="d-flex align-items-center gap-1 gap-md-3 mb-2">
 									<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(viewer.PostViewerUserId)">@viewer.PostViewerUserName</h5>
@@ -513,6 +516,7 @@
 		<button class="btn blue col text-white fw-medium" @onclick="_sendMessageErrorModel.Close">Kapat</button>
 	</FooterContent>
 </ModalComponent>
+
 @code {
 	[Parameter]
 	public int postId { get; set; }
@@ -595,16 +599,10 @@
 	}
 	private async Task StartReactionHubConnectionAsync()
 	{
-		// _reactionHubConnection = new HubConnectionBuilder()
-		// 			.WithUrl("https://localhost:7292/reactionhub")
-		// 			.WithAutomaticReconnect()
-		// 			.Build();		
-					
-		_reactionHubConnection = new HubConnectionBuilder()
-					.WithUrl("http://10.0.2.2:7292/reactionhub")
-					.WithAutomaticReconnect()
-					.Build();
-					
+
+		_reactionHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.Reaction);
+
+
 		if (!allowedRoles.Contains(_userRoleId))
 		{
 			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", (oldReactionId, newReactionId, userId) =>
@@ -628,16 +626,8 @@
 	}
 	private async Task StartPostViewHubConnectionAsync()
 	{
-		// _postViewHubConnection = new HubConnectionBuilder()
-		// 			.WithUrl("https://localhost:7292/postviewhub")
-		// 			.WithAutomaticReconnect()
-		// 			.Build();
-		
-		_postViewHubConnection = new HubConnectionBuilder()
-					.WithUrl("http://10.0.2.2:7292/postviewhub")
-					.WithAutomaticReconnect()
-					.Build();
 
+		_postViewHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.PostView);
 
 		if (allowedRoles.Contains(_userRoleId))
 		{
@@ -667,15 +657,7 @@
 	}
 	private async Task StartCommentHubConnectionAsync()
 	{
-		// _commentHubConnection = new HubConnectionBuilder()
-		// 	.WithUrl("https://localhost:7292/commenthub")
-		// 	.WithAutomaticReconnect()
-		// 	.Build();
-			
-		_commentHubConnection = new HubConnectionBuilder()
-			.WithUrl("http://10.0.2.2:7292/commenthub")
-			.WithAutomaticReconnect()
-			.Build();
+		_commentHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.Comment);
 
 		_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
 		{

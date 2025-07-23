@@ -10,7 +10,7 @@ using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Refit;
-using ItirafEt.SharedComponents.HelperStrings;
+using ItirafEt.SharedComponents.Helpers;
 
 
 #if ANDROID

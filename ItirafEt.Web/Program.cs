@@ -5,7 +5,7 @@ using ItirafEt.Shared.Services.ClientServices.State;
 using ItirafEt.SharedComponents.Apis;
 using ItirafEt.SharedComponents.Auth;
 using ItirafEt.SharedComponents.ClientServices;
-using ItirafEt.SharedComponents.HelperStrings;
+using ItirafEt.SharedComponents.Helpers;
 using ItirafEt.SharedComponents.Services;
 using ItirafEt.Web;
 using ItirafEt.Web.Services;

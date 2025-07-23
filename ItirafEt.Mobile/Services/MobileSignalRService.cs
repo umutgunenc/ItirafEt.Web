@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ItirafEt.Shared.Models;
-using ItirafEt.SharedComponents.HelperStrings;
+using ItirafEt.SharedComponents.Helpers;
 using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 

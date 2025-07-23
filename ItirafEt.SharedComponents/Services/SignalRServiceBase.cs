@@ -13,12 +13,12 @@ namespace ItirafEt.SharedComponents.Services
     {
         protected readonly ConcurrentDictionary<HubConstants.HubType, HubConnection> _connections = new();
 
-        public HubConnection? GetConnection(HubConstants.HubType hubType)
+        protected HubConnection? GetConnection(HubConstants.HubType hubType)
         {
             return _connections.TryGetValue(hubType, out var connection) ? connection : null;
         }
 
-        public bool IsConnected(HubConstants.HubType hubType)
+        protected bool IsConnected(HubConstants.HubType hubType)
         {
             return _connections.TryGetValue(hubType, out var connection) &&
                    connection.State == HubConnectionState.Connected;

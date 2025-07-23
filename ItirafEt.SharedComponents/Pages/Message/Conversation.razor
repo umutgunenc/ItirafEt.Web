@@ -1,6 +1,6 @@
 ﻿@page "/conversations/{ConversationId:guid}"
 @using ItirafEt.Shared.Models
-@using ItirafEt.SharedComponents.HelperStrings
+@using ItirafEt.SharedComponents.Helpers
 
 @inject NavigationManager NavigationManager
 @inject IMessageApi MessageApi
@@ -127,15 +127,25 @@ else
 
 				<!-- Fotoğraf Butonu: label for uploadPhoto olduğu için tıklayınca file dialog açılır -->
 				<label for="uploadPhoto"
-					   class="btn blue rounded-circle ms-3 align-items-center justify-content-center"
+					   class="btn-custom-circle ms-3"
 					   style="cursor: pointer;">
 					<i class="bi bi-image text-white"></i>
 				</label>
 
 				<!-- Gönder Butonu -->
-				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center"
+				<button class="btn-custom-circle ms-3"
 						@onclick="() => SendMessageAsync(_messageDto)" disabled="@_isSendMessageBusy">
-					<i class="bi bi-send-check text-white"></i>
+
+					@if (_isSendMessageBusy)
+					{
+						<div class="spinner-border spinner-border-sm text-white" role="status">
+							<span class="visually-hidden">Gönderiliyor...</span>
+						</div>
+					}
+					else
+					{
+						<i class="bi bi-send-check text-white"></i>
+					}
 				</button>
 			</div>
 			@if (_messageErrorMessage != null)
@@ -154,10 +164,10 @@ else
 	</div>
 
 }
-
+@* 
 <ModalComponent @ref="_sendPhotoModal" Title="Fotoğraf Gönder" TitleClass="mx-auto" ChildClass="py-0 mx-auto h-100 d-inline-block mb-0">
 	<ChildContent>
-		<div class="bg-light-subtle">
+@* 		<div class="bg-light-subtle">
 			<img src="@_previewImageUrl"
 				 class="b-3"
 				 style="
@@ -166,7 +176,12 @@ else
 				 height: auto;
 				 width: -webkit-fill-available;
 				 object-fit: contain;">
+		</div> 
+
+		<div class="image-area d-flex justify-content-center align-items-center">
+			<img src="@_previewImageUrl" class="responsive-image" />
 		</div>
+
 		<div class="message-input bg-light-subtle px-1">
 			<div class="input-group align-items-center">
 				<input type="text"
@@ -176,19 +191,83 @@ else
 					   @bind:event="oninput"
 					   @onkeydown="HandleKeyPress" />
 
-				<button class="btn blue rounded-circle ms-3 align-items-center justify-content-center"
-						@onclick="() => SendMessageWithPhotoAsync(_messageDto)" disabled="@_isSendMessageBusy">
-					<i class="bi bi-send-check text-white"></i>
-				</button>
 
+
+				<button class="btn-custom-circle ms-3"
+						@onclick="() => SendMessageAsync(_messageDto)" disabled="@_isSendMessageBusy">
+
+					@if (_isSendMessageBusy)
+					{
+						<div class="spinner-border spinner-border-sm text-white" role="status">
+							<span class="visually-hidden">Gönderiliyor...</span>
+						</div>
+					}
+					else
+					{
+						<i class="bi bi-send-check text-white"></i>
+					}
+				</button>
+				<button class="btn-custom-red-circle ms-3" @onclick="_sendPhotoModal.Close">
+					<i class="bi bi-x-lg text-white"></i>
+				</button>
 			</div>
 		</div>
 	</ChildContent>
-	<FooterContent>
+	 <FooterContent>
 		<button class="btn blue col text-white fw-medium" @onclick="_sendPhotoModal.Close">Kapat</button>
-	</FooterContent>
-</ModalComponent>
+	</FooterContent> 
+</ModalComponent> *@
+<ModalComponent @ref="_sendPhotoModal"
+				Title="Fotoğraf Gönder"
+				TitleClass="d-none"
+				HeaderClass="d-none my-0"
+				FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
+				ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
+	<ChildContent>
+		<div class="d-flex flex-column h-100">
+			<!-- Image container with dynamic sizing -->
+			<div class="flex-grow-1 d-flex justify-content-center align-items-center"
+				 style="min-height:0; overflow:hidden; background-color:#030303">
+				<img src="@_previewImageUrl"
+					 class="w-100"
+					 style="max-height:100%; max-width:100%; object-fit:contain" />
+			</div>
 
+			<!-- Fixed input area at bottom -->
+			<div class="message-input bg-light-subtle px-3 py-2">
+				<div class="input-group align-items-center">
+					<input type="text"
+						   class="form-control rounded-pill"
+						   placeholder="Bir mesaj yazın..."
+						   @bind="_messageDto.Content"
+						   @bind:event="oninput"
+						   @onkeydown="HandleKeyPress" />
+
+					<button class="btn-custom-circle ms-3"
+							@onclick="() => SendMessageWithPhotoAsync(_messageDto)"
+							disabled="@_isSendMessageBusy">
+
+						@if (_isSendMessageBusy)
+						{
+							<div class="spinner-border spinner-border-sm text-white" role="status">
+								<span class="visually-hidden">Gönderiliyor...</span>
+							</div>
+						}
+						else
+						{
+							<i class="bi bi-send-check text-white"></i>
+						}
+					</button>
+
+					<button class="btn-custom-red-circle ms-3"
+							@onclick="_sendPhotoModal.Close">
+						<i class="bi bi-x-lg text-white"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+	</ChildContent>
+</ModalComponent>
 
 @code {
 
@@ -327,8 +406,8 @@ else
 			}
 		}
 
-		await InboxService.UpdateUnreadMessageCountAsync(ConversationId);
-		await InboxService.NotifyUnreadMessageChangedAsync();
+		await InboxService.UpdateInboxItemsAfterUnreadMessageReadedAsync(ConversationId);
+		await InboxService.NotifyMessageReadedAsync();
 	}
 	private async Task ReadMessageAsync(MessageViewModel message)
 	{

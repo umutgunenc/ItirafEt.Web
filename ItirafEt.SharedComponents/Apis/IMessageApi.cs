@@ -54,7 +54,7 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Get("/api/message/GetUserMessages/")]
-        Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId);
+        Task<ApiResponses<List<InboxItemViewModel>>> GetUserMessagesAsync(Guid userId);
         
         [Headers("Authorization: Bearer")]
         [Get("/api/message/CheckUnreadMessages/")]

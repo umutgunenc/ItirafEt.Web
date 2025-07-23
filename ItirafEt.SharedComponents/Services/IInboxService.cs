@@ -12,14 +12,14 @@ namespace ItirafEt.SharedComponents.ClientServices
         Task InitializeAsync(Guid userId);
         //ref List<InboxViewModel> GetUserConversationsAsync();
 
-        Task<List<InboxViewModel>?> GetUserConversationsAsync();
+        Task<List<InboxItemViewModel>?> GetUserConversationsAsync();
 
         Task RemoveConversationsFromLocalStorageAsync();
 
-        Task SetUserConversationsToLocalStorageAsync(List<InboxViewModel> Conversations);
+        Task SetUserConversationsToLocalStorageAsync(List<InboxItemViewModel> Conversations);
 
-        Task NotifyUnreadMessageChangedAsync();
-        Task NotifyInboxItemsOrderChangedAsync();
+        Task NotifyMessageReadedAsync();
+        Task NotifyNewMessageRecivedAsync();
         Task ClearAsync();
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItirafEt.SharedComponents.HelperStrings
+namespace ItirafEt.SharedComponents.Helpers
 {
     public static class PageNumber
     {

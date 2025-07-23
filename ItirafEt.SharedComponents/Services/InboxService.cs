@@ -10,14 +10,15 @@ namespace ItirafEt.SharedComponents.ClientServices
     {
         private Task? _initializationTask;
 
-        private List<InboxViewModel> _conversations = new();
+        private List<InboxItemViewModel> _conversations = new();
         public bool _isInitialized = false;
         public string? _errorMessage { get; set; }
         public bool _haveError { get; set; }
         private readonly IMessageApi MessageApi;
         private readonly IStorageService _storageService;
-        public event Func<Task>? OnUnreadMessageChanged;
-        public event Func<Task>? InboxItemsOrderChanged;
+        public event Func<Task>? MessageReaded;
+        public event Func<Task>? NewMessageRecived;
+        public event Func<Task>? NewMessageRecivedInInboxPage;
 
 
         public InboxService(IMessageApi messageApi, IStorageService storageService)
@@ -66,9 +67,9 @@ namespace ItirafEt.SharedComponents.ClientServices
             }
         }
 
-        public async Task<List<InboxViewModel>?> GetUserConversationsAsync()
+        public async Task<List<InboxItemViewModel>?> GetUserConversationsAsync()
         {
-            return await _storageService.GetItemAsync<List<InboxViewModel>>("UserConversations");
+            return await _storageService.GetItemAsync<List<InboxItemViewModel>>("UserConversations");
         }
 
         public async Task RemoveConversationsFromLocalStorageAsync()
@@ -76,7 +77,7 @@ namespace ItirafEt.SharedComponents.ClientServices
             await _storageService.RemoveItemAsync("UserConversations");
         }
 
-        public async Task SetUserConversationsToLocalStorageAsync(List<InboxViewModel> Conversations)
+        public async Task SetUserConversationsToLocalStorageAsync(List<InboxItemViewModel> Conversations)
         {
             await _storageService.SetItemAsync("UserConversations", Conversations);
         }
@@ -91,13 +92,13 @@ namespace ItirafEt.SharedComponents.ClientServices
             _initializationTask = null;
         }
 
-        public async Task NotifyUnreadMessageChangedAsync()
+        public async Task NotifyMessageReadedAsync()
         {
-            if (OnUnreadMessageChanged is not null)
-                await OnUnreadMessageChanged.Invoke();
+            if (MessageReaded is not null)
+                await MessageReaded.Invoke();
         }
 
-        public async Task UpdateUnreadMessageCountAsync(Guid conversationId)
+        public async Task UpdateInboxItemsAfterUnreadMessageReadedAsync(Guid conversationId)
         {
             var conversations = await GetUserConversationsAsync();
             if (conversations?.Count != 0)
@@ -114,13 +115,13 @@ namespace ItirafEt.SharedComponents.ClientServices
             await SetUserConversationsToLocalStorageAsync(conversations);
         }
 
-        public async Task NotifyInboxItemsOrderChangedAsync()
+        public async Task NotifyNewMessageRecivedAsync()
         {
-            if (InboxItemsOrderChanged is not null)
-                await InboxItemsOrderChanged.Invoke();
+            if (NewMessageRecived is not null)
+                await NewMessageRecived.Invoke();
         }
 
-        public async Task UpdateConversationOrderAsync(InboxViewModel conversation)
+        public async Task UpdateInboxItemsAfterNewMessageRecivedAsync(InboxItemViewModel conversation)
         {
             var conversations = await GetUserConversationsAsync();
 
@@ -132,7 +133,28 @@ namespace ItirafEt.SharedComponents.ClientServices
             {
                 item.LastMessagePrewiew = conversation.LastMessagePrewiew;
                 item.LastMessageDate = conversation.LastMessageDate;
-                item.UnreadMessageCount = conversation.UnreadMessageCount++;
+                item.UnreadMessageCount++;
+            }
+
+            await SetUserConversationsToLocalStorageAsync(conversations);
+        }
+        public async Task NotifyNewMessageRecivedInInboxPageAsync()
+        {
+            if (NewMessageRecivedInInboxPage is not null)
+                await NewMessageRecivedInInboxPage.Invoke();
+        }
+        public async Task UpdateInboxItemsAfterNewMessageRecivedInInboxPageAsync(InboxItemViewModel conversation)
+        {
+            var conversations = await GetUserConversationsAsync();
+
+            if (conversations?.Count != 0)
+                await RemoveConversationsFromLocalStorageAsync();
+
+            var item = conversations.FirstOrDefault(i => i.ConversationId == conversation.ConversationId);
+            if (item != null)
+            {
+                item.LastMessagePrewiew = conversation.LastMessagePrewiew;
+                item.LastMessageDate = conversation.LastMessageDate;
             }
 
             await SetUserConversationsToLocalStorageAsync(conversations);

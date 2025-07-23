@@ -24,7 +24,7 @@ namespace ItirafEt.SharedComponents.Services
 
         private Guid _currentUserId;
 
-        public event Func<InboxViewModel, Task>? NewInboxMessage;
+        public event Func<InboxItemViewModel, Task>? NewInboxMessage;
         public event Func<Guid, Guid, Task>? MessageRead;
         public async Task StartAsync(Guid currentUserId)
         {
@@ -34,7 +34,7 @@ namespace ItirafEt.SharedComponents.Services
             _connection = _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
 
 
-            _connection.On<Guid, InboxViewModel>("NewMessageForInboxAsync", (_, model) =>
+            _connection.On<Guid, InboxItemViewModel>("NewMessageForInboxAsync", (_, model) =>
                 NewInboxMessage?.Invoke(model) ?? Task.CompletedTask
             );
 

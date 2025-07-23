@@ -38,7 +38,7 @@ namespace ItirafEt.Api.HubServices
                 .SendAsync("MessageReadByCurrentUserAsync", currentUserId, conversationId);
         }
 
-        public async Task NewMessageForInboxAsync(Guid currentUserId, InboxViewModel model)
+        public async Task NewMessageForInboxAsync(Guid currentUserId, InboxItemViewModel model)
         {
             await _hubContext.Clients
                 .Group($"userInbox-{currentUserId}")

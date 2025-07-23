@@ -11,7 +11,7 @@ namespace ItirafEt.SharedComponents.Services
     public interface ISignalRService
     {
         HubConnection? ConfigureHubConnection(HubConstants.HubType hubType);
-        HubConnection? GetConnection(HubConstants.HubType hubType);
-        bool IsConnected(HubConstants.HubType hubType);
+        //HubConnection? GetConnection(HubConstants.HubType hubType);
+        //bool IsConnected(HubConstants.HubType hubType);
     }
 }

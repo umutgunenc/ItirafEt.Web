@@ -3,14 +3,14 @@
 <div class="@htmlClass @ModalClass" @ref="modalElement" tabindex="-1" role="dialog" style="display:@display">
     <div class="modal-dialog modal-fullscreen modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg">
-            <div class="modal-header my-3">
+            <div class="modal-header my-3 @HeaderClass">
                 <h5 class="modal-title @TitleClass">@Title</h5>
                 @*                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="Close"></button>
  *@            </div>
-            <div class="modal-body px-md-5 px-1 @ChildClass">
+            <div class="@ChildClass">
                 @ChildContent
             </div>
-            <div class="modal-footer mb-3 px-md-5 px-1">
+            <div class="@FooterClass">
                 @FooterContent
             </div>
         </div>
@@ -19,7 +19,10 @@
 
 @code {
     [Parameter]
-    public string Title { get; set; }
+    public string Title { get; set; } 
+    
+    [Parameter]
+    public string HeaderClass { get; set; }
 
     [Parameter]
     public string TitleClass { get; set; }    
@@ -29,6 +32,9 @@
     
     [Parameter]
     public string ChildClass { get; set; }
+    
+    [Parameter]
+    public string FooterClass { get; set; }
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ItirafEt.Shared.ViewModels
 {
-    public class InboxViewModel
+    public class InboxItemViewModel
     {
         public Guid ConversationId { get; set; }
         public string? SenderUserUserName { get; set; }

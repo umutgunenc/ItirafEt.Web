@@ -51,3 +51,21 @@
     transform: scale(1.15);
     box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
 }
+
+.image-area {
+    flex: 1 1 auto;
+    /*height: calc(100vh - 70px);*/ /* Alt kısmın yüksekliğine göre ayarlayabilirsin */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    padding: 0;
+}
+
+.responsive-image {
+    max-height: 100%;
+    max-width: 100%;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+}

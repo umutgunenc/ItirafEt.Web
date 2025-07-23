@@ -16,7 +16,7 @@
 		<p class="navbar-brand text-white fw-bold" p>@errorMessage</p>
 
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-		aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+				aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon @(_isHaveUnreadMessages ?"text-danger":"")" style="filter: invert(1);"></span>
 		</button>
 
@@ -120,19 +120,19 @@
 
 @code {
 	private List<CategoryViewModel>? _categories = new();
-	private List<InboxViewModel>? _inboxViewModel = new();
+	private List<InboxItemViewModel>? _inboxViewModel = new();
 	private List<ToastMessage> _toastMessages = new();
 
-	private List<InboxViewModel>? _inboxItems = new();
+	private List<InboxItemViewModel>? _inboxItems = new();
 
 	private HubConnection? _categoryHubConnection;
 	private HubConnection? _conversationHubConnection;
 	private Guid _currentUserId = Guid.Empty;
 
 	private string allowedRoles = string.Join(",",
-		nameof(UserRoleEnum.SuperAdmin),
-		nameof(UserRoleEnum.Admin),
-		nameof(UserRoleEnum.Moderator));
+	nameof(UserRoleEnum.SuperAdmin),
+	nameof(UserRoleEnum.Admin),
+	nameof(UserRoleEnum.Moderator));
 	private bool _isHaveUnreadMessages = false;
 	private string? errorMessage;
 
@@ -152,7 +152,6 @@
 		}
 		catch (Exception ex)
 		{
-
 			errorMessage = ex.Message;
 		}
 
@@ -205,8 +204,8 @@
 			if (response.IsSuccess)
 			{
 				_categories = response.Data?
-				.OrderBy(c => c.CategoryOrder)
-				.ToList();
+			.OrderBy(c => c.CategoryOrder)
+			.ToList();
 			}
 			else
 				_categories = null;
@@ -224,16 +223,16 @@
 		if (_categoryHubConnection != null)
 		{
 			_categoryHubConnection.On<CategoryViewModel>("CategoryInfoChangedAsync", async (category) =>
-			{
-				UpdateCategories(category);
-				await InvokeAsync(StateHasChanged);
-			});
+		{
+			UpdateCategories(category);
+			await InvokeAsync(StateHasChanged);
+		});
 
 			_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync", async (categoryId, isPostAdded) =>
-			{
-				UpdateCategories(categoryId, isPostAdded);
-				await InvokeAsync(StateHasChanged);
-			});
+		{
+			UpdateCategories(categoryId, isPostAdded);
+			await InvokeAsync(StateHasChanged);
+		});
 
 			await _categoryHubConnection.StartAsync();
 			await _categoryHubConnection.SendAsync("JoinCategoryInfoChangedGroup");
@@ -336,20 +335,22 @@
 				{
 					_isHaveUnreadMessages = true;
 					await ShowToastMessageAsync(ToastType.Danger, messageViewModel);
-
 				}
 
 			});
 
-			_conversationHubConnection.On<Guid, InboxViewModel>("NewMessageForInboxAsync", async (currentUserId, inboxItem) =>
+			_conversationHubConnection.On<Guid, InboxItemViewModel>("NewMessageForInboxAsync", async (currentUserId, inboxItem) =>
 			{
-				if (_currentUserId == currentUserId)
+				if (_currentUserId == currentUserId && !CheckCurrentChatPage(inboxItem.ConversationId.ToString()))
 				{
-					await InboxService.UpdateConversationOrderAsync(inboxItem);
-					await InboxService.NotifyInboxItemsOrderChangedAsync();
-					errorMessage = "1";
+					await InboxService.UpdateInboxItemsAfterNewMessageRecivedAsync(inboxItem);
+					await InboxService.NotifyNewMessageRecivedAsync();
 				}
-				errorMessage = "2";
+				else if (_currentUserId == currentUserId)
+				{
+					await InboxService.UpdateInboxItemsAfterNewMessageRecivedInInboxPageAsync(inboxItem);
+					await InboxService.NotifyNewMessageRecivedInInboxPageAsync();
+				}
 
 				await InvokeAsync(StateHasChanged);
 			});
@@ -364,6 +365,7 @@
 			await _conversationHubConnection.StartAsync();
 
 			await _conversationHubConnection.SendAsync("JoinMessageReadGroup", _currentUserId);
+			await _conversationHubConnection.SendAsync("JoinInboxGroup", _currentUserId);
 
 			foreach (var conversation in _inboxViewModel)
 			{
@@ -371,15 +373,6 @@
 			}
 		}
 
-	}
-
-	private async Task RefreshInbox()
-	{
-		_inboxItems = await InboxService.GetUserConversationsAsync();
-		await InboxService.RemoveConversationsFromLocalStorageAsync();
-		_inboxItems.Sort((a, b) => b.LastMessageDate.CompareTo(a.LastMessageDate));
-		await InvokeAsync(StateHasChanged);
-		await InboxService.SetUserConversationsToLocalStorageAsync(_inboxItems);
 	}
 
 	//TODO exception doldur

@@ -158,7 +158,7 @@ namespace ItirafEt.Api.Services
             await _hubService.SendMessageAsync(message.ConversationId, returnModel);
             await _hubService.SendMessageNotificationAsync(conversationId, returnModel);
 
-            var inboxViewModel = new InboxViewModel
+            var inboxViewModel = new InboxItemViewModel
             {
                 ConversationId = conversationId,
                 LastMessageDate = message.SentDate,
@@ -231,7 +231,7 @@ namespace ItirafEt.Api.Services
             await _hubService.SendMessageAsync(message.ConversationId, returnModel);
             await _hubService.SendMessageNotificationAsync(message.ConversationId, returnModel);
 
-            var inboxViewModel = new InboxViewModel
+            var inboxViewModel = new InboxItemViewModel
             {
                 ConversationId = conversationId,
                 LastMessageDate = message.SentDate,
@@ -429,7 +429,7 @@ namespace ItirafEt.Api.Services
             return (true, null, senderUser);
         }
 
-        public async Task<ApiResponses<List<InboxViewModel>>> GetUserMessagesAsync(Guid userId)
+        public async Task<ApiResponses<List<InboxItemViewModel>>> GetUserMessagesAsync(Guid userId)
         {
 
             var userExists = await _context.Users
@@ -437,7 +437,7 @@ namespace ItirafEt.Api.Services
                 .AnyAsync(u => u.Id == userId);
 
             if (!userExists)
-                return ApiResponses<List<InboxViewModel>>.Fail("Kullanıcı bulunamadı.");
+                return ApiResponses<List<InboxItemViewModel>>.Fail("Kullanıcı bulunamadı.");
 
             var conversations = await _context.Conversations
                 .AsNoTracking()
@@ -474,7 +474,7 @@ namespace ItirafEt.Api.Services
                     var lastMessage = lastMessages.FirstOrDefault(m => m.ConversationId == c.ConversationId);
                     var unreadCount = unreadCounts.FirstOrDefault(u => u.ConversationId == c.ConversationId)?.Count ?? 0;
 
-                    return new InboxViewModel
+                    return new InboxItemViewModel
                     {
                         ConversationId = c.ConversationId,
                         SenderUserUserName = partnerUser.UserName,
@@ -488,9 +488,9 @@ namespace ItirafEt.Api.Services
                 .ToList();
 
             if (!inboxModel.Any())
-                return ApiResponses<List<InboxViewModel>>.Fail("Mesaj Kutunuz Boş");
+                return ApiResponses<List<InboxItemViewModel>>.Fail("Mesaj Kutunuz Boş");
 
-            return ApiResponses<List<InboxViewModel>>.Success(inboxModel);
+            return ApiResponses<List<InboxItemViewModel>>.Success(inboxModel);
         }
 
         public async Task<ApiResponses<bool>> CheckUnreadMessagesAsync(Guid userId)
