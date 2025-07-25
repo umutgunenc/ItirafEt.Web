@@ -82,18 +82,32 @@ builder.Services.AddSignalR();
 
 //});
 
+//builder.Services.AddCors(options =>
+//{
+//    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+//    options.AddDefaultPolicy(policy =>
+//    {
+//        policy.WithOrigins(allowedOrigins)
+//              .AllowAnyHeader()
+//              .AllowAnyMethod()
+//              .AllowCredentials(); // SignalR için gerekebilir
+//    });
+//});
+
+
 builder.Services.AddCors(options =>
 {
-    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
-
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); // SignalR için gerekebilir
-    });
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("https://itirafetweb.runasp.net") // Ýstemci adresi
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
 });
+
 
 builder.Services.AddAuthorization();
 
@@ -133,9 +147,21 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRouting();
-app.UseCors();
+app.UseCors("AllowSpecificOrigin");
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204; // No Content
+        await context.Response.CompleteAsync();
+    }
+    else
+        await next();
+});
 app.UseAuthentication();
 app.UseAuthorization();
+
+
 
 app.MapHub<CategoryHub>(HubConstants.CategoryHub);
 app.MapHub<ReactionHub>(HubConstants.ReactionHub);

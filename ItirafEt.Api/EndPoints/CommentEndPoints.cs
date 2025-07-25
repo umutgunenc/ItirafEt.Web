@@ -11,7 +11,9 @@ namespace ItirafEt.Api.EndPoints
         {
 
             app.MapGet("/api/getPostComments", async (CommentService commentService, int postId) =>
-                Results.Ok(await commentService.GetPostCommentsAsync(postId)));
+                Results.Ok(await commentService.GetPostCommentsAsync(postId)))
+                    .RequireCors("AllowSpecificOrigin");
+
 
             app.MapPost("/api/addComment", async (int PostId,CommentsViewModel model, Guid userId, HttpContext context, CommentService commentService) =>
             {
@@ -23,7 +25,9 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await commentService.AddCommentAsync(PostId, userId, model));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                    .RequireCors("AllowSpecificOrigin");
+
 
 
             app.MapPost("/api/addCommentRepyl", async (int postId, int commentId, Guid userId, CommentsViewModel model, HttpContext context, CommentService commentService) =>
@@ -36,7 +40,9 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await commentService.AddCommentReplyAsync(postId, commentId, userId, model));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                    .RequireCors("AllowSpecificOrigin");
+
 
             return app;
         }

@@ -202,7 +202,7 @@ namespace ItirafEt.Api.Data
                 Email = "umutgunenc@gmail.com",
                 RoleName = nameof(UserRoleEnum.SuperAdmin),
                 GenderId = (int)GenderEnum.Male,
-                PasswordHash = "AQAAAAIAAYagAAAAEDGkeNBPkIC6dpfiEZADjVlY4moqDLEdnjPJsoYwJisCORLAorXXMHStspf6Yf4KtA==",
+                PasswordHash = "AQAAAAIAAYagAAAAED2ATLdR3ZV/GbRKgMX8CnBTh6eN737Th/HT2GGvgGOLlzEQ50HcF8GT5XPRB2scoA==",
                 BirthDate = new DateTime(1989, 5, 29),
                 CreatedDate = new DateTime(2025, 4, 10),
                 IsDeleted = false,

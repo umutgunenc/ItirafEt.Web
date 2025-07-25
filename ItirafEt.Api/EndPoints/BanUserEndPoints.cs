@@ -11,11 +11,14 @@ namespace ItirafEt.Api.EndPoints
 
             app.MapGet("/api/getAllUsers", async (BanUserService banUserService) =>
                 Results.Ok(await banUserService.GetAllUsers()))
-                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin),nameof(UserRoleEnum.Moderator)));
+                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator)))
+                    .RequireCors("AllowSpecificOrigin");
 
-            app.MapPost("/api/banUser", async (BanUserViewModel bannedUser,Guid adminId, BanUserService banUserService) =>
+            app.MapPost("/api/banUser", async (BanUserViewModel bannedUser, Guid adminId, BanUserService banUserService) =>
                 Results.Ok(await banUserService.BanUser(bannedUser, adminId)))
-                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator)));
+                    .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator)))
+                    .RequireCors("AllowSpecificOrigin");
+
 
             return app;
         }

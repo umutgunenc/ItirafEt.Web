@@ -18,9 +18,7 @@ namespace ItirafEt.Web.Services
         public override HubConnection? ConfigureHubConnection(HubConstants.HubType hubType)
         {
             if (IsConnected(hubType))
-                return
-
-            GetConnection(hubType);
+                return GetConnection(hubType);
 
             var baseUrl = ApiBaseUrl.BaseUrl;
 

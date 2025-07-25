@@ -349,6 +349,7 @@ namespace ItirafEt.Api.Services
 
         public async Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(GetConversationMessageViewModel model)
         {
+
             var isThereConversation = await _context.Conversations
                 .AsNoTracking()
                 .AnyAsync(c => c.ConversationId == model.ConversationId);
@@ -388,13 +389,16 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
+            //if(messages.Count == 0)
+            //    return ApiResponses<InfiniteScrollState<MessageViewModel>>.Fail("Mesaj bulunamadı.");
+
             var hasMore = messages.Count == model.Model.Take;
 
             var scrollStateMessageList = new InfiniteScrollState<MessageViewModel>
             {
                 Items = messages,
                 HasMore = hasMore,
-                NextBefore = messages.Last().CreatedDate,
+                NextBefore = messages.Count != 0 ? messages.Last().CreatedDate : null,
                 LastId = hasMore ? messages.Last().Id : null
             };
 

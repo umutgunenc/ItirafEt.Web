@@ -8,9 +8,9 @@ namespace ItirafEt.SharedComponents.Helpers
 {
     public static class ApiBaseUrl
     {
-        public static string BaseUrl { get; } = "https://localhost:7292";
-        public static string AndroidBaseUrl { get; } = "https://10.0.2.2:7292";
-        public static string AndroidBaseUrlHttp { get; } = "http://10.0.2.2:7292";
+        public static string BaseUrl { get; } = "https://itirafetapi.runasp.net";
+        public static string AndroidBaseUrlHttps { get; } = "https://itirafetapi.runasp.net";
+        public static string AndroidBaseUrlHttp { get; } = "https://itirafetapi.runasp.net";
 
     }
 }

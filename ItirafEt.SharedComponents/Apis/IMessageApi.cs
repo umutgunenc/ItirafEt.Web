@@ -23,15 +23,15 @@ namespace ItirafEt.SharedComponents.Apis
         );
 
         [Headers("Authorization: Bearer")]
-        [Post("/api/message/GetConversationDto/")]
+        [Post("/api/message/GetConversationDto")]
         Task<ApiResponses<ConversationViewModel>> GetConversationDtoAsync(Guid senderUserId, Guid receiverUserId);
 
         [Headers("Authorization: Bearer")]
-        [Post("/api/message/GetConversation/")]
+        [Post("/api/message/GetConversation")]
         Task<ApiResponses<ConversationViewModel>> GetConversationAsync(Guid ConversationId,Guid senderUserId);        
         
         [Headers("Authorization: Bearer")]
-        [Get("/api/message/CanUserReadConversation/")]
+        [Get("/api/message/CanUserReadConversation")]
         Task<ApiResponses<bool>> CanUserReadMessageApiAsync(Guid conversationId, Guid userId);
         
         //[Headers("Authorization: Bearer")]
@@ -39,25 +39,25 @@ namespace ItirafEt.SharedComponents.Apis
         //Task<ApiResponses<List<ConversationViewModel>>> GetUserConversaionsAsync(Guid userId);
 
         [Headers("Authorization: Bearer")]
-        [Get("/api/message/photo/")]
+        [Get("/api/message/photo")]
         Task<Stream> GetPhotoAsync([Query] string filename);
 
 
         [Headers("Authorization: Bearer")]
-        [Post("/api/message/readMessage/")]
+        [Post("/api/message/readMessage")]
         Task<ApiResponses> ReadMessageAsync(Guid ConversationId, MessageViewModel model);
 
         [Headers("Authorization: Bearer")]
-        [Post("/api/message/getConversationMessages/")]
+        [Post("/api/message/getConversationMessages")]
         Task<ApiResponses<InfiniteScrollState<MessageViewModel>>> GetConversationMessagesAsync(GetConversationMessageViewModel model);
 
 
         [Headers("Authorization: Bearer")]
-        [Get("/api/message/GetUserMessages/")]
+        [Get("/api/message/GetUserMessages")]
         Task<ApiResponses<List<InboxItemViewModel>>> GetUserMessagesAsync(Guid userId);
         
         [Headers("Authorization: Bearer")]
-        [Get("/api/message/CheckUnreadMessages/")]
+        [Get("/api/message/CheckUnreadMessages")]
         Task<ApiResponses<bool>> CheckUnreadMessagesAsync(Guid userId);
     }
 }

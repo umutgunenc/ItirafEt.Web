@@ -37,7 +37,7 @@ else
 		<!-- Header -->
 		<div class="chat-header d-flex align-items-center">
 			<div class="position-relative me-3">
-				<img src="@(string.IsNullOrEmpty(_conversationDto.ResponderUser.ProfilePictureUrl) ? "/anonymousIcon.png" : _conversationDto.ResponderUser.ProfilePictureUrl)"
+				<img src="@(string.IsNullOrEmpty(_conversationDto?.ResponderUser.ProfilePictureUrl) ? "/anonymousIcon.png" : _conversationDto.ResponderUser.ProfilePictureUrl)"
 					 class="profile-photo rounded-circle"
 					 width="56"
 					 height="56"
@@ -45,7 +45,7 @@ else
 					 alt="Profile Resmi">
 			</div>
 			<div>
-				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto.ResponderUser.UserName</h5>
+				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto?.ResponderUser.UserName</h5>
 				@* <small class="text-muted">Çevrimiçi</small> *@
 			</div>
 		</div>
@@ -53,60 +53,64 @@ else
 		<!-- Mesajlar -->
 
 		<div class="chat-messages bg-light-subtle reverse" @ref="_messagesDiv" id="messageDiv">
-			@foreach (var message in _model.Model.Items)
+			@if (_model?.Model?.Items != null)
 			{
-				var isMine = message.SenderId == _currentUserId;
-				var baseClass = isMine ? "message-out" : "message-in bg-primary-subtle";
-				var fullClass = $"{baseClass} chat-message d-flex flex-column";
+				@foreach (var message in _model.Model.Items)
+				{
+					var isMine = message.SenderId == _currentUserId;
+					var baseClass = isMine ? "message-out" : "message-in bg-primary-subtle";
+					var fullClass = $"{baseClass} chat-message d-flex flex-column";
 
-				<div id="message-@message.Id" class="d-flex flex-column @fullClass">
-					@if (!string.IsNullOrEmpty(message.PhotoUrl))
-					{
-						<div class="message-photo mb-2">
-							@if (_photoCache.TryGetValue(message.PhotoUrl, out var base64Data))
-							{
-								<img src="@base64Data"
-									 class="rounded"
-									 style="max-width: 100%; object-fit: cover; pointer-events: none;" />
-							}
-							else
-							{
-
-								<span>Default Foto Error Ekle</span>
-							}
-						</div>
-					}
-
-					<div class="message-content">@message.Content</div>
-
-					<div class="message-meta d-flex justify-content-between align-items-end mt-1">
-						<small class="message-time pe-3 @(isMine ? "text-white-50" : "text-muted")">
-							@if (message.CreatedDate.Day < DateTime.Now.Day)
-							{
-								@message.CreatedDate.ToString("dd MMMM yyyy HH:mm")
-							}
-							else
-							{
-								@message.CreatedDate.ToString("HH:mm")
-							}
-						</small>
-
-						@if (isMine)
+					<div id="message-@message.Id" class="d-flex flex-column @fullClass">
+						@if (!string.IsNullOrEmpty(message.PhotoUrl))
 						{
-							<div class="read-status">
-								@if (message.IsRead)
+							<div class="message-photo mb-2">
+								@if (_photoCache.TryGetValue(message.PhotoUrl, out var base64Data))
 								{
-									<i class="bi bi-check2-all text-white"></i>
+									<img src="@base64Data"
+										 class="rounded"
+										 style="max-width: 100%; object-fit: cover; pointer-events: none;" />
 								}
 								else
 								{
-									<i class="bi bi-check2"></i>
+
+									<span>Default Foto Error Ekle</span>
 								}
 							</div>
 						}
+
+						<div class="message-content">@message.Content</div>
+
+						<div class="message-meta d-flex justify-content-between align-items-end mt-1">
+							<small class="message-time pe-3 @(isMine ? "text-white-50" : "text-muted")">
+								@if (message.CreatedDate.Day < DateTime.Now.Day)
+								{
+									@message.CreatedDate.ToString("dd MMMM yyyy HH:mm")
+								}
+								else
+								{
+									@message.CreatedDate.ToString("HH:mm")
+								}
+							</small>
+
+							@if (isMine)
+							{
+								<div class="read-status">
+									@if (message.IsRead)
+									{
+										<i class="bi bi-check2-all text-white"></i>
+									}
+									else
+									{
+										<i class="bi bi-check2"></i>
+									}
+								</div>
+							}
+						</div>
 					</div>
-				</div>
+				}
 			}
+
 		</div>
 
 		<div class="message-input">
@@ -369,11 +373,14 @@ else
 			else
 			{
 				_model.Model = response.Data;
-
-				foreach (var message in _model.Model.Items.Where(m => !string.IsNullOrEmpty(m.PhotoUrl)))
+				if (_model?.Model?.Items != null)
 				{
-					await GetMessagePhotoAsync(message);
+					foreach (var message in _model.Model.Items.Where(m => !string.IsNullOrEmpty(m.PhotoUrl)))
+					{
+						await GetMessagePhotoAsync(message);
+					}
 				}
+				
 				_isLoading = false;
 			}
 
@@ -398,16 +405,17 @@ else
 	private async Task ReadAllMessageAsync()
 	{
 		var items = _model.Model?.Items;
-		if (items != null)
+		if (items != null && items.Count != 0)
 		{
 			foreach (var message in items)
 			{
 				await ReadMessageAsync(message);
 			}
+			await InboxService.UpdateInboxItemsAfterUnreadMessageReadedAsync(ConversationId);
+			await InboxService.NotifyMessageReadedAsync();
 		}
 
-		await InboxService.UpdateInboxItemsAfterUnreadMessageReadedAsync(ConversationId);
-		await InboxService.NotifyMessageReadedAsync();
+
 	}
 	private async Task ReadMessageAsync(MessageViewModel message)
 	{
@@ -443,7 +451,7 @@ else
 			return;
 
 		_isSendMessageBusy = true;
-		messageDto.ReceiverId = _conversationDto.ResponderUser.UserId.ToString();
+		messageDto.ReceiverId = _conversationDto?.ResponderUser.UserId.ToString();
 		messageDto.SenderId = _currentUserId.ToString();
 		messageDto.ConversationId = ConversationId.ToString();
 

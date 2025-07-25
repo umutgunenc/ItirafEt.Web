@@ -65,7 +65,7 @@ namespace ItirafEt.Mobile
         }
 
         private static readonly string apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android 
-                                                    ? ApiBaseUrl.AndroidBaseUrl 
+                                                    ? ApiBaseUrl.AndroidBaseUrlHttps 
                                                     : ApiBaseUrl.BaseUrl;
 
         static void ConfigureRefit(IServiceCollection services)

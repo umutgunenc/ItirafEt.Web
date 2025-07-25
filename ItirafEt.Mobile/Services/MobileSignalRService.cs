@@ -15,7 +15,8 @@ namespace ItirafEt.Mobile.Services
 
         public override HubConnection? ConfigureHubConnection(HubConstants.HubType hubType)
         {
-            if (IsConnected(hubType)) return GetConnection(hubType);
+            if (IsConnected(hubType))
+                return GetConnection(hubType);
 
             var baseUrl = DeviceInfo.Platform == DevicePlatform.Android ?
                 ApiBaseUrl.AndroidBaseUrlHttp :
@@ -43,9 +44,7 @@ namespace ItirafEt.Mobile.Services
 
     public class AndroidMessageHandler : DelegatingHandler
     {
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Android için gerekli özel işlemler
             return await base.SendAsync(request, cancellationToken);

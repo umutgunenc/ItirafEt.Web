@@ -61,6 +61,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="Platforms\Android\Resources\network_security_config.xml" />
+      <None Remove="Platforms\Android\Resources\network_security_config1.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
@@ -73,6 +78,10 @@
 
     <ItemGroup>
       <Folder Include="Components\Pages\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Resource Include="Platforms\Android\Resources\network_security_config1.xml" />
     </ItemGroup>
 
 </Project>

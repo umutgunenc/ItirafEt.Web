@@ -11,14 +11,14 @@ namespace ItirafEt.SharedComponents.Apis
         Task<ApiResponses> CreatePostAsync(PostViewModel model,Guid UserId);
 
         [Headers("Authorization: Bearer")]
-        [Get("/api/getCreatedPost/")]
+        [Get("/api/getCreatedPost")]
         Task<ApiResponses<int>> GetCreatedPostIdAsync(Guid UserId);
 
-        [Get("/api/getPostById/")]
+        [Get("/api/getPostById")]
         Task<ApiResponses<PostViewModel>> GetPostByIdAsync(int postId);
 
         [Headers("Authorization: Bearer")]
-        [Get("/api/getUserPost/")]
+        [Get("/api/getUserPost")]
         Task<ApiResponses<UserPostsViewModel>> GetUserPostsAsync(Guid UserId,int size, int PageNo);
 
 
@@ -33,12 +33,12 @@ namespace ItirafEt.SharedComponents.Apis
 
 
         [Headers("Authorization: Bearer")]
-        [Get("/api/getPostInformationById/")]
+        [Get("/api/getPostInformationById")]
         Task<ApiResponses<EditPostViewModel>> GetPostInformationById(int postId);
 
 
         [Headers("Authorization: Bearer")]
-        [Get("/api/getPostInformationById/")]
+        [Get("/api/getPostInformationById")]
         Task<ApiResponses> CanUserEditPostAsync(int postId,Guid userId);
 
 
