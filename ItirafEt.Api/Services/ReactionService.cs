@@ -36,7 +36,7 @@ namespace ItirafEt.Api.Services
                     ReactingUserId = pr.ReactingUserId,
                     ReactingUserUserName = pr.ReactingUser.UserName,
                     CreatedDate = pr.CreatedDate,
-                    ReactingUserAge = DateTime.Now.Year - pr.ReactingUser.BirthDate.Year,
+                    ReactingUserAge = DateTime.UtcNow.Year - pr.ReactingUser.BirthDate.Year,
                     ReactingUserGenderId = pr.ReactingUser.GenderId,
                     ReactingUserProfileImageUrl = pr.ReactingUser.ProfilePictureUrl
                 })
@@ -91,7 +91,7 @@ namespace ItirafEt.Api.Services
                     likeCount++;
                 }
 
-                reaction.CreatedDate = DateTime.Now;
+                reaction.CreatedDate = DateTime.UtcNow;
                 _context.PostReaction.Update(reaction);
                 await _context.SaveChangesAsync();
 
@@ -111,7 +111,7 @@ namespace ItirafEt.Api.Services
                     PostId = postId,
                     ReactingUserId = UserId,
                     ReactionTypeId = (int)ReactionTypeEnum.Like,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.UtcNow
                 };
                 _context.PostReaction.Add(reaction);
                 likeCount++;
@@ -157,7 +157,7 @@ namespace ItirafEt.Api.Services
                     reaction.ReactionTypeId = (int)ReactionTypeEnum.Dislike;
                 }
 
-                reaction.CreatedDate = DateTime.Now;
+                reaction.CreatedDate = DateTime.UtcNow;
 
                 _context.PostReaction.Update(reaction);
                 await _context.SaveChangesAsync();
@@ -176,7 +176,7 @@ namespace ItirafEt.Api.Services
                     PostId = postId,
                     ReactingUserId = UserId,
                     ReactionTypeId = (int)ReactionTypeEnum.Dislike,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.UtcNow
                 };
                 _context.PostReaction.Add(reaction);
 
@@ -232,7 +232,7 @@ namespace ItirafEt.Api.Services
                 ReactionTypeId = reaction.ReactionTypeId,
                 ReactingUserUserName = reaction.ReactingUser.UserName,
                 ReactingUserProfileImageUrl = reaction.ReactingUser.ProfilePictureUrl,
-                ReactingUserAge = DateTime.Now.Year - reaction.ReactingUser.BirthDate.Year,
+                ReactingUserAge = DateTime.UtcNow.Year - reaction.ReactingUser.BirthDate.Year,
                 CreatedDate = reaction.CreatedDate,
 
             };

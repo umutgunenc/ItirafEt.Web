@@ -27,7 +27,7 @@ namespace ItirafEt.Api.Data.Entities
         public ReactionType ReactionType { get; set; }
 
         [Required]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         [MaxLength(1024)]
         public string? ReportExplanation { get; set; }

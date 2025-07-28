@@ -44,7 +44,7 @@ namespace ItirafEt.Api.Services
 
             var post = new Post
             {
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 Content = model.Content,
                 Title = model.Title.ToUpper(),
                 UserId = userId,
@@ -92,7 +92,7 @@ namespace ItirafEt.Api.Services
                     UserName = p.User.UserName,
                     UserId = p.UserId,
                     CategoryId = p.CategoryId,
-                    UserAge = DateTime.Now.Year - p.User.BirthDate.Year,
+                    UserAge = DateTime.UtcNow.Year - p.User.BirthDate.Year,
                     UserGenderId = p.User.Gender.Id,
                     UserProfileImageUrl = p.User.ProfilePictureUrl
                 })
@@ -231,7 +231,7 @@ namespace ItirafEt.Api.Services
                 return ApiResponses.Fail("Başlık en fazla 256 karakter olmalıdır.");
             post.Title = model.Title.ToUpper();
             post.Content = model.Content;
-            post.UpdatedDate = DateTime.Now;
+            post.UpdatedDate = DateTime.UtcNow;
             post.CategoryId = model.CategoryId;
             post.IpAddress = model.IpAddress;
             post.DeviceInfo = model.DeviceInfo;

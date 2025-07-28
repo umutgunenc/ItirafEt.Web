@@ -43,7 +43,7 @@ namespace ItirafEt.Api.Services
             if(user.UserName.ToUpper() != model.UserName.ToUpper())
                 return ApiResponses.Fail("Kullanıcı adını değiştirmezsiniz.");
 
-            if(model.BannedDateUntil != null && model.BannedDateUntil <= DateTime.Now && model.IsBanned)
+            if(model.BannedDateUntil != null && model.BannedDateUntil <= DateTime.UtcNow && model.IsBanned)
                 return ApiResponses.Fail("Ban bitiş tarihi geçmiş bir tarih olamaz.");
 
             if (model.BannedDateUntil == null && model.IsBanned)
@@ -56,7 +56,7 @@ namespace ItirafEt.Api.Services
             else
                 user.BannedDateUntil = null;
 
-            user.BannedDate = DateTime.Now;
+            user.BannedDate = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return ApiResponses.Success();

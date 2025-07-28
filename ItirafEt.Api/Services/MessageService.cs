@@ -133,7 +133,7 @@ namespace ItirafEt.Api.Services
                 Content = model.Content,
                 ConversationId = conversationId,
                 SenderId = senderId,
-                SentDate = DateTime.Now,
+                SentDate = DateTime.UtcNow,
                 IsRead = false,
                 IsVisibleToInitiatorUser = true,
                 IsVisibleToResponderUser = true,
@@ -207,7 +207,7 @@ namespace ItirafEt.Api.Services
                 SenderId = senderId,
                 Content = model.Content,
                 PhotoUrl = model.PhotoUrl,
-                SentDate = DateTime.Now,
+                SentDate = DateTime.UtcNow,
                 IpAddress = model.SenderIpAddress,
                 DeviceInfo = model.SenderDeviceInfo,
                 IsRead = false
@@ -304,7 +304,7 @@ namespace ItirafEt.Api.Services
                 return ApiResponses.Fail("Mesaj zaten okunmuş.");
 
 
-            message.ReadDate = DateTime.Now;
+            message.ReadDate = DateTime.UtcNow;
             message.IsRead = true;
             _context.Update(message);
             await _context.SaveChangesAsync();
@@ -337,7 +337,7 @@ namespace ItirafEt.Api.Services
                 .AsNoTracking()
                 .Select(x => new UserInfoViewModel
                 {
-                    Age = DateTime.Now.Year - x.BirthDate.Year,
+                    Age = DateTime.UtcNow.Year - x.BirthDate.Year,
                     GenderId = x.GenderId,
                     ProfilePictureUrl = x.ProfilePictureUrl,
                     UserName = x.UserName,

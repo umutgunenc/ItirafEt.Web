@@ -30,7 +30,7 @@ namespace ItirafEt.Api.Data.Entities
         public ReactionType Reaction { get; set; }
 
         [Required]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public int? ReportName { get; set; }
 

@@ -97,7 +97,7 @@ namespace ItirafEt.Api.Services
             var comment = new Comment
             {
                 Content = model.Content,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 UserId = UserId,
                 PostId = postId,
                 ParentCommentId = null,
@@ -142,7 +142,7 @@ namespace ItirafEt.Api.Services
             var reply = new Comment
             {
                 Content = replyDto.Content,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 UserId = UserId,
                 PostId = postId,
                 ParentCommentId = commentId,

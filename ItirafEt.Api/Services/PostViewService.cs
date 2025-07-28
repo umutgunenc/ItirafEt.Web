@@ -49,14 +49,14 @@ namespace ItirafEt.Api.Services
             {
                 PostId = postId,
                 UserId = (Guid)userId,
-                ReadDate = DateTime.Now
+                ReadDate = DateTime.UtcNow
             };
             await _context.UserReadPosts.AddAsync(userReadPost);
             await _context.SaveChangesAsync();
 
             var postViewerDto = new PostViewersViewModel
             {
-                PostViewerAge = DateTime.Now.Year - user.BirthDate.Year,
+                PostViewerAge = DateTime.UtcNow.Year - user.BirthDate.Year,
                 PostViewerGenderId = user.GenderId,
                 PostViewerUserName = user.UserName,
                 PostViewerUserId = user.Id,
@@ -79,7 +79,7 @@ namespace ItirafEt.Api.Services
                 .Where(urp => urp.PostId == postId)
                 .Select(urp => new PostViewersViewModel
                 {
-                    PostViewerAge = DateTime.Now.Year - urp.User.BirthDate.Year,
+                    PostViewerAge = DateTime.UtcNow.Year - urp.User.BirthDate.Year,
                     PostViewerGenderId = urp.User.GenderId,
                     PostViewerUserName = urp.User.UserName,
                     PostViewerUserId = urp.User.Id,

@@ -14,7 +14,7 @@ namespace ItirafEt.Api.BackgorunServices
 
             var jobUnbanUser = JobBuilder.Create<UnbanUserServiceJob>().Build();
 
-            DateTime now = DateTime.Now;
+            DateTime now = DateTime.UtcNow;
             DateTime scheduledTime = new DateTime(now.Year, now.Month, now.Day, 00, 00, 05);
 
             var unbanUser = TriggerBuilder.Create()

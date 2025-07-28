@@ -341,10 +341,7 @@
 		if (_conversationHubConnection != null)
 		{
 			if (_conversationHubConnection == null)
-			{
-				errorMessage = "SignalR bağlantısı kurulamadı (conversation hub).";
 				return;
-			}
 			else
 			{
 				_conversationHubConnection.On<Guid, MessageViewModel>("SendMessageNotificationAsync", async (conversationId, messageViewModel) =>

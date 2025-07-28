@@ -74,7 +74,7 @@ namespace ItirafEt.Api.Services
             if (!new EmailAddressAttribute().IsValid(model.Email))
                 return ApiResponses.Fail("Geçersiz e-posta adresi.");
 
-            if (DateTime.Now - model.BirthDate < TimeSpan.FromDays(365 * 18))
+            if (DateTime.UtcNow - model.BirthDate < TimeSpan.FromDays(365 * 18))
                 return ApiResponses.Fail("Kullanıcı 18 yaşından küçük olamaz.");
 
             if (model.GenderId != (int)GenderEnum.Male && model.GenderId != (int)GenderEnum.Female)

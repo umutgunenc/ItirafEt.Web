@@ -80,7 +80,7 @@ namespace ItirafEt.Api.Services
                 UserName = model.UserName,
                 Email = model.Email,
                 PasswordHash = _passwordHasher.HashPassword(null, model.Password),
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 BirthDate = (DateTime)model.BirthDate,
                 IsDeleted = false,
                 IsBanned = false,
@@ -168,10 +168,10 @@ namespace ItirafEt.Api.Services
             if (!dto.isTermsAccepted)
                 return ApiResponses.Fail("Kullanım Koşulları ve Gizlilik Politikasını kabul etmelisiniz.");
 
-            if(dto.BirthDate > DateTime.Now.AddYears(-18))
+            if(dto.BirthDate > DateTime.UtcNow.AddYears(-18))
                 return ApiResponses.Fail("18 yaşından küçük olamazsınız.");
 
-            if (dto.BirthDate < DateTime.Now.AddYears(-100))
+            if (dto.BirthDate < DateTime.UtcNow.AddYears(-100))
                 return ApiResponses.Fail("100 yaşından büyük olamazsınız.");
             
             if(dto.BirthDate == null)
