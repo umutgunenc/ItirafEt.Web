@@ -34,6 +34,8 @@ builder.Services.AddAuthorizationCore();
 
 builder.Services.AddSingleton<IStorageService, StorageService>();
 builder.Services.AddScoped<ISignalRService, WebSignalRService>();
+builder.Services.AddSingleton<IDateTimeHelperService, DateTimeHelperService>();
+
 
 
 

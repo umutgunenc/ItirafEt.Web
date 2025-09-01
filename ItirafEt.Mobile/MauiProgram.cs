@@ -42,6 +42,7 @@ namespace ItirafEt.Mobile
 #endif
 
             builder.Services.AddSingleton<IStorageService, StorageService>();
+            builder.Services.AddSingleton<IDateTimeHelperService, DateTimeHelperService>();
 
             builder.Services.AddBlazorBootstrap();
 

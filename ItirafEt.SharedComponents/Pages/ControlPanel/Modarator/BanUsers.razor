@@ -1,6 +1,7 @@
 ﻿@page "/admin/banUsers"
 @inject AuthStateProvider AuthStateProvider
 @inject IBanUserApi BanUserApi
+@inject IDateTimeHelperService DateTimeHelperService
 
 
 <div class="px-lg-5 py-5">
@@ -23,7 +24,7 @@
 
 					<div class="col-lg-4 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-start">
 						<div class="col d-flex-inline d-lg-flex">
-						<label class="form-label col-lg-6 col-12 text-start pt-2 ps-1">Kullanıcı Adı</label>
+							<label class="form-label col-lg-6 col-12 text-start pt-2 ps-1">Kullanıcı Adı</label>
 							<InputText @bind-Value="_selectedUser.UserName" disabled class="form-control" />
 						</div>
 					</div>
@@ -47,13 +48,13 @@
 
 					<div class="col-lg-4 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
 						<div class="col d-flex-inline d-lg-flex">
-						<label class="form-label col-lg-6 col-12 text-start pt-2 ps-1">Ban Bitiş Tarihi</label>
+							<label class="form-label col-lg-6 col-12 text-start pt-2 ps-1">Ban Bitiş Tarihi</label>
 							<InputDate @bind-Value="_selectedUser.BannedDateUntil" min="@MinBannedDate" class="form-control" disabled="@(!_selectedUser.IsBanned)" />
 						</div>
 					</div>
 
 
-				<div class="col-lg-2 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
+					<div class="col-lg-2 col-12 mb-2 mb-lg-0 text-center d-flex justify-content-around">
 						@if (!_isBusy)
 						{
 							<button type="submit" class="col btn btn-success">Kaydet</button>
@@ -125,6 +126,9 @@
 		_isBusy = true;
 		try
 		{
+			user.BannedDateUntil = user.BannedDateUntil.HasValue
+				? ToUTC(user.BannedDateUntil.Value, await GetUserTimeZoneId())
+				: null;
 			var response = await BanUserApi.BanUserAsync(user, _adminId);
 			if (response.IsSuccess)
 			{
@@ -212,5 +216,15 @@
 
 		}
 
+	}
+
+	private async Task<string> GetUserTimeZoneId()
+	{
+		return await DateTimeHelperService.GetUserTimeZoneIdAsync();
+	}
+
+	private DateTime ToUTC(DateTime date, string timeZoneId)
+	{
+		return DateTimeHelperService.ToUtc(date, timeZoneId);
 	}
 }

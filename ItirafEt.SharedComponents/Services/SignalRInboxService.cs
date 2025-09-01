@@ -1,98 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ItirafEt.Shared.Models;
+﻿using ItirafEt.Shared.Models;
 using ItirafEt.Shared.ViewModels;
+using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace ItirafEt.SharedComponents.Services
+public class SignalRInboxService : IAsyncDisposable
 {
-    public class SignalRInboxService
+    private HubConnection? _connection;
+    private readonly ISignalRService _signalRServices;
+    private Guid _currentUserId;
+
+    public event Func<InboxItemViewModel, Task>? NewInboxMessage;
+    public event Func<Guid, Guid, Task>? MessageRead;
+
+    public SignalRInboxService(ISignalRService signalRServices)
+        => _signalRServices = signalRServices;
+
+    public async Task InitializeAsync(Guid currentUserId)
     {
-        private HubConnection? _connectionNewMessage;
-        private HubConnection? _connectionReadMessage;
-        private HubConnection? _connection;
-        private readonly ISignalRService _signalRServices;
-        private bool _isSignalRConnected;
+        if (_connection != null &&
+            _connection.State == HubConnectionState.Connected &&
+            _currentUserId == currentUserId)
+            return;
 
-        public SignalRInboxService(ISignalRService signalRServices)
+        // Eğer eski connection varsa temizle
+        if (_connection != null)
         {
-            _signalRServices = signalRServices;
+            await _connection.StopAsync();
+            await _connection.DisposeAsync();
         }
 
-        private Guid _currentUserId;
+        _currentUserId = currentUserId;
+        _connection = _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
 
-        public event Func<InboxItemViewModel, Task>? NewInboxMessage;
-        public event Func<Guid, Guid, Task>? MessageRead;
-        public async Task StartAsync(Guid currentUserId)
+        _connection.On<Guid, InboxItemViewModel>(
+            "NewMessageForInboxAsync",
+            (_, model) => NewInboxMessage?.Invoke(model) ?? Task.CompletedTask);
+
+        _connection.On<Guid, Guid>(
+            "MessageReadByCurrentUserAsync",
+            (uid, convId) => MessageRead?.Invoke(uid, convId) ?? Task.CompletedTask);
+
+        await _connection.StartAsync();
+
+        // Aynı connection ile iki gruba katılıyoruz
+        await _connection.SendAsync("JoinInboxGroup", currentUserId);
+        await _connection.SendAsync("JoinMessageReadGroup", currentUserId);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_connection != null)
         {
-            if (_connection is not null || _isSignalRConnected) return;
-
-            _currentUserId = currentUserId;
-            _connection = _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
-
-
-            _connection.On<Guid, InboxItemViewModel>("NewMessageForInboxAsync", (_, model) =>
-                NewInboxMessage?.Invoke(model) ?? Task.CompletedTask
-            );
-
-            _connection.On<Guid, Guid>("MessageReadByCurrentUserAsync", (uid, convId) =>
-                    MessageRead?.Invoke(uid, convId) ?? Task.CompletedTask
-            );
-
-            await _connection.StartAsync();
-            await _connection.SendAsync("JoinInboxGroup", currentUserId);
-            await _connection.SendAsync("JoinMessageReadGroup", currentUserId);
-            _isSignalRConnected = true;
-
-        }
-
-        public async Task StartReadMessageAsync(Guid currentUserId)
-        {
-            if (_connectionReadMessage is not null) return;
-
-            _currentUserId = currentUserId;
-       
-            _connectionReadMessage = _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
-
-            _connectionReadMessage.On<Guid, Guid>("MessageReadByCurrentUserAsync", (uid, convId) =>
-                MessageRead?.Invoke(uid, convId) ?? Task.CompletedTask
-            );
-
-            await _connectionReadMessage.StartAsync();
-            await _connectionReadMessage.SendAsync("JoinMessageReadGroup", currentUserId);
-        }
-
-        public async ValueTask DisposeNewMessageAsync()
-        {
-            if (_connectionNewMessage != null)
-            {
-                await _connectionNewMessage.StopAsync();
-                await _connectionNewMessage.DisposeAsync();
-                _connectionNewMessage = null;
-            }
-        }       
-        
-        public async ValueTask DisposeReadMessageAsync()
-        {
-            if (_connectionReadMessage != null)
-            {
-                await _connectionReadMessage.StopAsync();
-                await _connectionReadMessage.DisposeAsync();
-                _connectionReadMessage = null;
-            }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (_connection != null)
-            {
-                await _connection.StopAsync();
-                await _connection.DisposeAsync();
-                _connection = null;
-            }
+            await _connection.StopAsync();
+            await _connection.DisposeAsync();
+            _connection = null;
         }
     }
 }
