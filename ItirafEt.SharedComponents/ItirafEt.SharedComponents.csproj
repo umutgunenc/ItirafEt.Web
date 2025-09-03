@@ -6,6 +6,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
+	<!--<ItemGroup>
+	  <Content Remove="_Imports.razor" />
+	</ItemGroup>-->
+
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />

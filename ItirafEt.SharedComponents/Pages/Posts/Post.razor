@@ -8,11 +8,12 @@
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject ISignalRService SignalRService
+@inject IDateTimeHelperService DateTimeHelperService
 
 
 
-<div class="col-lg-8 col mx-auto py-5 px-2">
-	<div class="card shadow-lg rounded-4 border-1 mb-3 text-bg-light">
+<div class="col-lg-8 col mx-auto py-lg-5 px-lg-2">
+	<div class="card shadow-lg rounded-0 border-1 mb-lg-3 text-bg-light">
 		@if (_isPostHaveError)
 		{
 			<div class="alert alert-danger m-3" role="alert">
@@ -36,7 +37,7 @@
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
 					<p class="card-text text-break"
-					style="text-align: justify;
+					   style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
@@ -48,7 +49,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -56,7 +57,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -66,7 +67,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="ReportPost"></i>
+									   style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -93,7 +94,7 @@
 							<!-- Beğeni -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+								   style="cursor:pointer" @onclick="LikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
@@ -101,7 +102,7 @@
 							<!-- Beğenmeme -->
 							<div class="d-flex flex-column align-items-center">
 								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+								   style="cursor:pointer" @onclick="DislikePostAsync"></i>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
@@ -111,7 +112,7 @@
 							{
 								<div class="d-flex flex-column align-items-center">
 									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="ReportPost"></i>
+									   style="cursor:pointer" @onclick="ReportPost"></i>
 									<span class="text-muted small">Şikayet</span>
 								</div>
 							}
@@ -125,8 +126,8 @@
 						<div class="d-flex align-items-center gap-3">
 							<!-- Profil Fotoğrafı -->
 							<img src="@(string.IsNullOrEmpty(_postDto.UserProfileImageUrl)? "/anonymousIcon.png" : _postDto.UserProfileImageUrl)"
-							class="profile-photo rounded-circle"
-							width="56" height="56">
+								 class="profile-photo rounded-circle"
+								 width="56" height="56">
 
 							<!-- Kullanıcı Bilgileri -->
 							<div class="d-flex flex-column">
@@ -179,10 +180,10 @@
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -199,8 +200,8 @@
 											<div class="d-flex justify-content-between">
 												<div>
 													<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
-													class="profile-photo rounded-circle" 
-													width="24" height="24" />
+														 class="profile-photo rounded-circle"
+														 width="40" height="40" />
 													<strong class="ms-2">@comment.UserName</strong>
 													<small class="text-muted ms-2">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
 												</div>
@@ -214,13 +215,13 @@
 											@if (_replyToCommentId == comment.Id)
 											{
 												<EditForm Model="_replyModel"
-												OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+														  OnValidSubmit="()=>AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
 													<div class="input-group mb-2">
 														<input type="text"
-														class="form-control form-control-sm"
-														placeholder="Cevabınızı yazın..."
-														@bind="_replyModel.Content" />
+															   class="form-control form-control-sm"
+															   placeholder="Cevabınızı yazın..."
+															   @bind="_replyModel.Content" />
 														<div class="input-group-append">
 															<button class="btn btn-sm btn-outline-primary" type="submit">
 																@* @onclick="() => AddReplyAsync(comment.Id)" *@
@@ -234,6 +235,7 @@
 												</EditForm>
 											}
 											<!-- Alt yorumlar (replies) -->
+
 											@if (comment.CommentReplies?.Any() == true)
 											{
 												<div class="ms-5">
@@ -243,9 +245,9 @@
 															<div class="card-text p-2">
 																<div class="d-flex justify-content-between">
 																	<div>
-																		<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
-																		class="profile-photo rounded-circle ms-2" width="24" height="24" />
-																		<strong class="ms-2">@comment.UserName</strong>
+																		<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
+																			 class="profile-photo rounded-circle ms-2" width="40" height="40" />
+																		<strong class="ms-2">@reply.UserName</strong>
 																		<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
 																	</div>
 																</div>
@@ -266,15 +268,15 @@
 								</div>
 
 								<EditForm Model="_commentModel"
-								OnValidSubmit="AddCommentAsync">
+										  OnValidSubmit="AddCommentAsync">
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -311,8 +313,8 @@
 							<div class="d-flex align-items-center gap-2 gap-md-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-								class="profile-photo rounded-circle"
-								width="56" height="56">
+									 class="profile-photo rounded-circle"
+									 width="56" height="56">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -381,8 +383,8 @@
 							<div class="d-flex align-items-center gap-2 gap-sm-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-								class="profile-photo rounded-circle"
-								width="56" height="56">
+									 class="profile-photo rounded-circle"
+									 width="56" height="56">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -455,9 +457,9 @@
 						<div class="d-flex align-items-center gap-2 gap-sm-4">
 							<!-- Profil Fotoğrafı -->
 							<img src="@(string.IsNullOrEmpty(viewer.PostViewerUserProfileImageUrl)? "/anonymousIcon.png" : viewer.PostViewerUserProfileImageUrl)"
-							class="profile-photo rounded-circle"
-							width="56" height="56"
-							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+								 class="profile-photo rounded-circle"
+								 width="56" height="56"
+								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 							<div class="d-flex flex-column">
 								<div class="d-flex align-items-center gap-1 gap-md-3 mb-2">
 									<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(viewer.PostViewerUserId)">@viewer.PostViewerUserName</h5>
@@ -556,12 +558,14 @@
 	private bool _showComments = false;
 	private bool _isCommentsHaveError = false;
 	private bool _isPostHaveError = false;
+	private bool _showCommentReplies = false;
 	private string? _newCommentText;
 	private string? _errorMessage;
 	private string? _commentErrorMessage;
 	private string? _replyText;
 	private string? _userRoleId = null;
 	private string? _sendMessageError;
+	private string _userTimeZoneId = string.Empty;
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -569,7 +573,14 @@
 		CheckUserLoggedIn();
 		GetUserRoleId();
 		IsUserPostOwner();
-
+		try
+		{
+			_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
+		}
+		catch (Exception)
+		{
+			_userTimeZoneId = "UTC";
+		}
 		await StartTasksWithUserRoleAsync();
 
 		await StartReactionHubConnectionAsync();
@@ -659,31 +670,40 @@
 	{
 		_commentHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.Comment);
 
-		_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrDeletedAsync", (commentDto, isAdded) =>
+		_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrDeletedAsync", (commentModel, isAdded) =>
 		{
 
 			if (isAdded)
 			{
+				commentModel.CreatedDate = ToLocalTime(commentModel.CreatedDate);
 				if (_comments == null)
-					_comments = new List<CommentsViewModel>
-				();
-				_comments.Insert(0, commentDto);
+					_comments = new List<CommentsViewModel>();
+				_comments.Insert(0, commentModel);
 			}
+			else if (!isAdded)
+				_comments.Remove(commentModel);
 			else
-				_comments.Remove(commentDto);
+			{
+				var existingComment = _comments.FirstOrDefault(c => c.Id == commentModel.Id);
+				if (existingComment != null)
+				{
+					existingComment.Content = commentModel.Content;
+					existingComment.UpdatedDate = ToLocalTime(commentModel.UpdatedDate.Value);
+				}
+			}
 
 			StateHasChanged();
 		});
 
 		_commentHubConnection.On<CommentsViewModel, bool>("ReplyAddedOrDeletedAsync", (replyDto, isAdded) =>
 		{
-			var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
-			if (comment != null)
-			{
-				if (comment.CommentReplies == null)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsViewModel>
-						();
+			var reply = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
 
+			if (reply != null)
+			{
+				replyDto.CreatedDate = ToLocalTime(replyDto.CreatedDate);
+				if (reply.CommentReplies == null)
+					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsViewModel>();
 				if (isAdded)
 					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
 				else
@@ -969,6 +989,8 @@
 	}
 	private void UpdateReactions(ReactionViewModel reaction, bool? isReactionUpdated)
 	{
+		reaction.CreatedDate = ToLocalTime(reaction.CreatedDate);
+
 		if (isReactionUpdated == true)
 		{
 			var index = _reactions?.FindIndex(r => r.ReactingUserId == reaction.ReactingUserId) ?? -1;
@@ -1056,7 +1078,6 @@
 		{
 			if (response.IsSuccess)
 			{
-
 				if (response.Data == (int)ReactionTypeEnum.Like)
 					_isAlreadyLiked = true;
 				else if (response.Data == (int)ReactionTypeEnum.Dislike)
@@ -1066,7 +1087,6 @@
 					_isAlreadyLiked = false;
 					_isAlreadyDisliked = false;
 				}
-
 
 				if (_errorMessage != null)
 					_errorMessage = null;
@@ -1091,9 +1111,11 @@
 			if (response.IsSuccess)
 			{
 				_postDto = response.Data;
+				if (_postDto.UpdatedDate != null)
+					_postDto.UpdatedDate = ToLocalTime(_postDto.UpdatedDate.Value);
+				_postDto.CreatedDate = ToLocalTime(_postDto.CreatedDate);
 				_errorMessage = null;
 				_isPostHaveError = false;
-
 			}
 			else
 			{
@@ -1117,6 +1139,15 @@
 			if (response.IsSuccess)
 			{
 				_reactions = response.Data;
+
+				if (_reactions?.Count != 0)
+				{
+					foreach (var reaction in _reactions)
+					{
+						reaction.CreatedDate = ToLocalTime(reaction.CreatedDate);
+					}
+				}
+
 				if (_errorMessage != null)
 					_errorMessage = null;
 				_isPostHaveError = false;
@@ -1222,6 +1253,26 @@
 				_comments = response.Data
 					.OrderByDescending(c => c.CreatedDate)
 					.ToList();
+				if (_comments.Count != 0)
+				{
+					foreach (var comment in _comments)
+					{
+						comment.CreatedDate = ToLocalTime(comment.CreatedDate);
+						if (comment.UpdatedDate != null)
+							comment.UpdatedDate = ToLocalTime(comment.UpdatedDate.Value);
+
+						if (comment.CommentReplies != null && comment.CommentReplies.Count > 0)
+						{
+							foreach (var reply in comment.CommentReplies)
+							{
+								reply.CreatedDate = ToLocalTime(reply.CreatedDate);
+								if (reply.UpdatedDate != null)
+									reply.UpdatedDate = ToLocalTime(reply.UpdatedDate.Value);
+							}
+						}
+					}
+				}
+
 				_commentErrorMessage = null;
 			}
 			else
@@ -1246,6 +1297,14 @@
 			if (response.IsSuccess)
 			{
 				_viewers = response.Data;
+				if (_viewers?.Count != 0)
+				{
+					foreach (var viewer in _viewers)
+					{
+						viewer.ReadDate = ToLocalTime(viewer.ReadDate);
+					}
+				}
+
 				_postViewCount = _viewers.Count;
 				_errorMessage = null;
 				_isPostHaveError = false;
@@ -1361,6 +1420,11 @@
 		_replyModel.Content = string.Empty;
 		_replyToCommentId = null;
 		_isApiBusy = false;
+	}
+
+	private DateTime ToLocalTime(DateTime date)
+	{
+		return DateTimeHelperService.ToLocal(date, _userTimeZoneId);
 	}
 
 }

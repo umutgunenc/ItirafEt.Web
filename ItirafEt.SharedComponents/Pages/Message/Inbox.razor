@@ -76,13 +76,10 @@
 		try
 		{
 			_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
-
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			_isError = true;
-			_errorMessage = "Zaman dilimi alınırken bir hata oluştu: " + ex.Message;
-			
+			_userTimeZoneId = "UTC";
 		}
 
 		await SignalRInboxService.InitializeAsync(_currentUserId);

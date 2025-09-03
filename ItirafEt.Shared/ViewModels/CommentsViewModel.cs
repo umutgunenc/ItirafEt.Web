@@ -22,6 +22,7 @@ namespace ItirafEt.Shared.ViewModels
         public int? LikeCount { get; set; }
         public int? DislikeCount { get; set; }
         public int? ReportCount { get; set; }
+        public bool AnyReplies { get; set; }
         public string? CommentUserProfilPhotoUrl { get; set; }
 
         [JsonIgnore]

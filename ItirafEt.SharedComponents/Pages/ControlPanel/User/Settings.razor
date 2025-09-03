@@ -8,7 +8,6 @@
 @inject IJSRuntime JSRuntime
 @inject IDateTimeHelperService DateTimeHelperService
 
-
 <div class="col-lg-8 col mx-auto py-lg-5">
 	@if (_haveError)
 	{
@@ -675,7 +674,15 @@
 	protected override async Task OnInitializedAsync()
 	{
 		GetUserId();
-		_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
+		try
+		{
+			_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
+		}
+		catch (Exception ex)
+		{
+			_userTimeZoneId = "UTC";
+			_userTimeZoneId = ex.Message;
+		}
 		await GetUserSettingsInfoAsync();
 		await GetUserPostsAsync(_size, _currentPage);
 	}
@@ -718,7 +725,6 @@
 	}
 	private int GetAge(DateTime birthDate)
 	{
-		birthDate = DateTimeHelperService.ToLocal(birthDate,_userTimeZoneId);
 		var today = DateTime.Today;
 		var age = today.Year - birthDate.Year;
 
@@ -811,8 +817,11 @@
 				_haveError = true;
 				_errorMessage = response.ErrorMessage;
 			}
-			else
+			else{
 				_userSettingInfoViewModel = response.Data;
+				_userSettingInfoViewModel.BirthDate = ToLocalTime(_userSettingInfoViewModel.BirthDate);
+
+			}
 		}
 		catch (Exception ex)
 		{
@@ -831,6 +840,12 @@
 			if (response.IsSuccess)
 			{
 				_userPostsModel = response.Data;
+				if(_userPostsModel?.UserPosts.Count != 0){
+					foreach (var post in _userPostsModel.UserPosts)
+					{
+						post.PostCreatedDate = ToLocalTime(post.PostCreatedDate);
+					}
+				}
 				_totalPages = (int)Math.Ceiling((double)_userPostsModel.TotalCount / _size);
 			}
 			else
@@ -1068,5 +1083,9 @@
 	}
 	private void EditPost(int postId){
 		NavigationManager.NavigateTo($"/posts/edit/{postId}");
+	}
+	private DateTime ToLocalTime(DateTime date)
+	{
+		return DateTimeHelperService.ToLocal(date, _userTimeZoneId);
 	}
 }

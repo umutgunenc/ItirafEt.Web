@@ -81,6 +81,13 @@ namespace ItirafEt.Api.Services
 
             if (comments == null || comments.Count == 0)
                 return ApiResponses<List<CommentsViewModel>>.Fail("Henüz Yorum Yok. İlk yorumu siz yapın!");
+            foreach (var comment in comments)
+            {
+                if(comment.CommentReplies != null && comment.CommentReplies.Count > 0)
+                    comment.AnyReplies = true;
+                else
+                    comment.AnyReplies = false;
+            }
             return ApiResponses<List<CommentsViewModel>>.Success(comments);
         }
 
@@ -103,7 +110,7 @@ namespace ItirafEt.Api.Services
                 ParentCommentId = null,
                 IsActive = true,
                 DeviceInfo = model.DeviceInfo,
-                IpAddress = model.IpAddress
+                IpAddress = model.IpAddress,
             };
 
             _context.Comments.Add(comment);
@@ -112,9 +119,10 @@ namespace ItirafEt.Api.Services
 
             model.CreatedDate = comment.CreatedDate;
             model.Id = comment.Id;
+            model.AnyReplies = false;
 
             model.UserName = await GetUserNameAsync(UserId);
-
+            model.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(UserId);
 
             await _commentHubServices.CommentAddedOrDeletedAsync(postId, model, true);
 
@@ -159,13 +167,22 @@ namespace ItirafEt.Api.Services
             replyDto.UserName = await GetUserNameAsync(UserId);
             replyDto.ParentCommentId = commentId;
             replyDto.Id = reply.Id;
-
+            replyDto.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(UserId);
 
             await _commentHubServices.ReplyAddedOrDeletedAsync(postId, replyDto, true);
 
             return ApiResponses.Success();
 
 
+        }
+
+        private async Task<string?> GetUserProfilePhotoUrl(Guid userId)
+        {
+          return await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => u.ProfilePictureUrl)
+                .FirstOrDefaultAsync();
         }
 
         private async Task<string?> GetUserNameAsync(Guid UserId)
