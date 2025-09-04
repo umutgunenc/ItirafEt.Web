@@ -42,7 +42,9 @@ namespace ItirafEt.Api.Services
                    CreatedDate = c.CreatedDate,
                    UpdatedDate = c.UpdatedDate,
                    UserName = c.User.UserName,
+                   UserId = c.UserId,
                    CommentUserProfilPhotoUrl = c.User.ProfilePictureUrl,
+                   ShowReplies = false,
                    CommentRections = c.CommentReactions.Select(cr => new ReactionViewModel
                    {
                        Id = cr.Id,
@@ -50,7 +52,8 @@ namespace ItirafEt.Api.Services
                        ReactingUserId = cr.ReactingUserId,
                        ReactingUserUserName = cr.ReactingUser.UserName,
                        CreatedDate = cr.CreatedDate,
-                       CommentId = c.Id
+                       CommentId = c.Id,
+
                        
                    }).ToList(),
                    CommentReplies = c.Replies
@@ -63,6 +66,7 @@ namespace ItirafEt.Api.Services
                             CreatedDate = r.CreatedDate,
                             UpdatedDate = r.UpdatedDate,
                             UserName = r.User.UserName,
+                            UserId = r.UserId,
                             CommentUserProfilPhotoUrl = r.User.ProfilePictureUrl,
                             CommentRections = r.CommentReactions.Select(cr => new ReactionViewModel
                             {
@@ -120,8 +124,10 @@ namespace ItirafEt.Api.Services
             model.CreatedDate = comment.CreatedDate;
             model.Id = comment.Id;
             model.AnyReplies = false;
+            model.ShowReplies = false;
 
             model.UserName = await GetUserNameAsync(UserId);
+            model.UserId = UserId;
             model.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(UserId);
 
             await _commentHubServices.CommentAddedOrDeletedAsync(postId, model, true);
@@ -168,11 +174,11 @@ namespace ItirafEt.Api.Services
             replyDto.ParentCommentId = commentId;
             replyDto.Id = reply.Id;
             replyDto.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(UserId);
+            replyDto.UserId = UserId;
 
             await _commentHubServices.ReplyAddedOrDeletedAsync(postId, replyDto, true);
 
             return ApiResponses.Success();
-
 
         }
 

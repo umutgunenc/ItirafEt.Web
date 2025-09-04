@@ -12,6 +12,7 @@ namespace ItirafEt.Shared.ViewModels
     {
         public int Id { get; set; }
         public string? UserName { get; set; }
+        public Guid UserId { get; set; }    
 
         [Required(ErrorMessage= "Lütfen yorumunuzu yazın.")]
         public string Content { get; set; }
@@ -23,6 +24,9 @@ namespace ItirafEt.Shared.ViewModels
         public int? DislikeCount { get; set; }
         public int? ReportCount { get; set; }
         public bool AnyReplies { get; set; }
+        public bool ShowReplies { get; set; } = false;
+        public bool ShowDeleteWarning { get; set; } = false;
+        public bool IsCommentEditing { get; set; } = false;
         public string? CommentUserProfilPhotoUrl { get; set; }
 
         [JsonIgnore]

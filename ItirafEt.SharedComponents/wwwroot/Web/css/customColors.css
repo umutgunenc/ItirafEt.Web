@@ -31,11 +31,11 @@
     justify-content: center;
 }
 
-.btn-custom-circle:hover {
-    background: linear-gradient(135deg, #3a5599 0%, #121d38 100%);
-    box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
-    transform: translateY(-1px);
-}
+    .btn-custom-circle:hover {
+        background: linear-gradient(135deg, #3a5599 0%, #121d38 100%);
+        box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
+        transform: translateY(-1px);
+    }
 
 .red {
     background: linear-gradient(135deg, #e52d27 0%, #b31217 100%);
@@ -88,5 +88,26 @@
     .btn-custom-reverse:hover {
         background: linear-gradient(315deg, #3a5599 0%, #121d38 100%);
         box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
+        transform: translateY(-1px);
+    }
+
+
+.btn-custom-orange-circle {
+    background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+    color: white;
+    transition: all 0.1s ease;
+    border: none;
+    border-radius: 50% !important;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .btn-custom-orange-circle:hover {
+        background: linear-gradient(135deg, #fb8c00 0%, #d84315 100%);
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
         transform: translateY(-1px);
     }

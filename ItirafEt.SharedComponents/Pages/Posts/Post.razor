@@ -10,8 +10,6 @@
 @inject ISignalRService SignalRService
 @inject IDateTimeHelperService DateTimeHelperService
 
-
-
 <div class="col-lg-8 col mx-auto py-lg-5 px-lg-2">
 	<div class="card shadow-lg rounded-0 border-1 mb-lg-3 text-bg-light">
 		@if (_isPostHaveError)
@@ -188,7 +186,7 @@
 									</div>
 
 									<div class="my-3">
-										<button type="submit" class="btn blue col-12 text-white fw-medium" disabled="@_isApiBusy">Gönder</button>
+										<button type="submit" class="btn-custom col-12" disabled="@_isApiBusy">Gönder</button>
 									</div>
 								</EditForm>
 
@@ -202,15 +200,63 @@
 													<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
 														 class="profile-photo rounded-circle"
 														 width="40" height="40" />
-													<strong class="ms-2">@comment.UserName</strong>
+													<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
 													<small class="text-muted ms-2">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
 												</div>
-												<button class="btn btn-sm btn-link text-primary" @onclick="() => ToggleReplyBox(comment.Id)">
-													Cevapla
-												</button>
+												<div class="d-flex justify-content-end">
+													@if (comment.UserId == _currentUserId)
+													{
+														<div>
+															<button class="btn-custom-orange-circle me-2" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)">
+																<i class="bi bi-pen"></i>
+															</button>
+														</div>
+														<div>
+															<button class="btn-custom-red-circle me-2" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">
+																<i class="bi bi-trash-fill"></i>
+															</button>
+														</div>
+													}
+													<button class="btn-custom-circle" @onclick="() => ToggleReplyBox(comment.Id)">
+														<i class="bi bi-chat-right-quote"></i>
+													</button>
+												</div>
 											</div>
-											<p class="mb-1" style="white-space: pre-wrap;">@comment.Content</p>
+											@if (!comment.IsCommentEditing)
+											{
+												<p class="m-2" style="white-space: pre-wrap;">@comment.Content</p>
+											}
+											else
+											{
+												<EditForm Model="_commentModel" OnValidSubmit="async ()=> await EditCommentAsync(comment.Id)">
+													<DataAnnotationsValidator />
 
+													<div class="my-3">
+														<InputTextArea id="yorum"
+																	   class="form-control"
+																	   placeholder="Yorumunuzu düzenleyin..."
+																	   @bind-Value="comment.Content"
+																	   rows="4" />
+														<ValidationMessage For="@(() => comment.Content)" />
+													</div>
+
+													<div class="my-3">
+														<button type="submit" class="btn-custom col-12" disabled="@_isApiBusy">Değiştir</button>
+													</div>
+												</EditForm>
+											}
+											@if (comment.ShowDeleteWarning)
+											{
+												<div class="d-flex justify-content-between align-items-center" role="alert">
+													<div>
+														Yorumunuzu silmek istediğinize emin misiniz?
+													</div>
+													<div>
+														<button class="btn-custom me-2" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">Hayır</button>
+														<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(comment.Id)">Evet</button>
+													</div>
+												</div>
+											}
 											<!-- Reply input -->
 											@if (_replyToCommentId == comment.Id)
 											{
@@ -223,40 +269,108 @@
 															   placeholder="Cevabınızı yazın..."
 															   @bind="_replyModel.Content" />
 														<div class="input-group-append">
-															<button class="btn btn-sm btn-outline-primary" type="submit">
-																@* @onclick="() => AddReplyAsync(comment.Id)" *@
-																Cevapla
+															<button class="btn-custom rounded-start-0" type="submit">
+																Gönder
 															</button>
 														</div>
-
 													</div>
 													<ValidationMessage For="@(() => _replyModel.Content)" />
-
 												</EditForm>
 											}
 											<!-- Alt yorumlar (replies) -->
+											<div class="mt-2 d-flex align-items-end justify-content-between">
+												@if (comment.CommentReplies?.Any() == true)
+												{
+													<h6 class="fw-semibold"
+														@onclick="() => ShowCommentReplies(comment)"
+														style="cursor:pointer">
+														Cevaplar (@comment.CommentReplies.Count)
+														<i class="bi @(comment.ShowReplies ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+													</h6>
+												}
+												else
+												{
+													<h6 class="fw-semibold">
+														Cevaplar (0)
+													</h6>
+												}
 
-											@if (comment.CommentReplies?.Any() == true)
+											</div>
+											@if (comment.CommentReplies?.Any() == true && comment.ShowReplies)
 											{
 												<div class="ms-5">
 													@foreach (var reply in comment.CommentReplies)
 													{
-														<div class="mb-1">
-															<div class="card-text p-2">
+														<div class="mb-1 bg-light border-1">
+															<div class="card-text py-2 ps-2">
 																<div class="d-flex justify-content-between">
 																	<div>
 																		<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
 																			 class="profile-photo rounded-circle ms-2" width="40" height="40" />
-																		<strong class="ms-2">@reply.UserName</strong>
+																		<strong class="ms-2" @onclick="()=>NavigateToUserProfile(reply.UserId)" style="cursor:pointer">@reply.UserName</strong>
 																		<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
+
 																	</div>
+																	@if (reply.UserId == _currentUserId)
+																	{
+																		<div class="d-flex justify-content-end">
+
+																			<div>
+																				<button class="btn-custom-orange-circle me-2" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																					<i class="bi bi-pen"></i>
+																				</button>
+																			</div>
+																			<div>
+																				<button class="btn-custom-red-circle" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
+																					<i class="bi bi-trash-fill"></i>
+																				</button>
+																			</div>
+
+																		</div>
+																	}
 																</div>
-																<p class="mb-0" style="white-space: pre-wrap;">@reply.Content</p>
+																@if (!reply.IsCommentEditing)
+																{
+																	<p class="m-0 ms-2 mt-2" style="white-space: pre-wrap;">@reply.Content</p>
+																}
+																else
+																{
+																	<EditForm Model="_commentModel" OnValidSubmit="async ()=> await EditCommentAsync(reply.Id)">
+																		<DataAnnotationsValidator />
+
+																		<div class="my-3">
+																			<InputTextArea id="yorum"
+																						   class="form-control"
+																						   placeholder="Yorumunuzu düzenleyin..."
+																						   @bind-Value="reply.Content"
+																						   rows="4" />
+																			<ValidationMessage For="@(() => reply.Content)" />
+																		</div>
+
+																		<div class="my-3">
+																			<button type="submit" class="btn-custom col-12" disabled="@_isApiBusy">Değiştir</button>
+																		</div>
+																	</EditForm>
+																}
+																@* <p class="m-0 ms-2 mt-2" style="white-space: pre-wrap;">@reply.Content</p> *@
+																@if (reply.ShowDeleteWarning)
+																{
+																	<div class="d-flex justify-content-between align-items-center" role="alert">
+																		<div>
+																			Yorumunuzu silmek istediğinize emin misiniz?
+																		</div>
+																		<div>
+																			<button class="btn-custom me-2" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">Hayır</button>
+																			<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(reply.Id)">Evet</button>
+																		</div>
+																	</div>
+																}
 															</div>
 														</div>
 													}
 												</div>
 											}
+											<hr />
 										}
 									</div>
 								</div>
@@ -281,7 +395,7 @@
 									</div>
 
 									<div class="my-3">
-										<button type="submit" class="btn blue col-12 text-white fw-medium" disabled="@_isApiBusy">Gönder</button>
+										<button type="submit" class="blue col-12 text-white fw-medium" disabled="@_isApiBusy">Gönder</button>
 									</div>
 								</EditForm>
 							}
@@ -523,6 +637,8 @@
 	[Parameter]
 	public int postId { get; set; }
 
+	private string replyInfo = string.Empty;
+
 	private PostViewModel? _postDto = new();
 	private CommentsViewModel _commentModel = new();
 	private CommentsViewModel _replyModel = new();
@@ -566,6 +682,7 @@
 	private string? _userRoleId = null;
 	private string? _sendMessageError;
 	private string _userTimeZoneId = string.Empty;
+	private string _commentContent = string.Empty;
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -933,6 +1050,10 @@
 	private void ShowComments()
 	{
 		_showComments = !_showComments;
+	}
+	private void ShowCommentReplies(CommentsViewModel comment)
+	{
+		comment.ShowReplies = !comment.ShowReplies;
 	}
 	private void ToggleReplyBox(int commentId)
 	{
@@ -1425,6 +1546,75 @@
 	private DateTime ToLocalTime(DateTime date)
 	{
 		return DateTimeHelperService.ToLocal(date, _userTimeZoneId);
+	}
+
+	private void NavigateToUserProfile(Guid userId)
+	{
+		NavigationManager.NavigateTo($"/profile/{userId}");
+	}
+
+	private async Task DisplayCommentDeleteWarningAsync(int commentId)
+	{
+		var comment = _comments.FirstOrDefault(c => c.Id == commentId);
+
+		if (comment.Id == commentId && comment.UserId == _currentUserId)
+			comment.ShowDeleteWarning = !comment.ShowDeleteWarning;
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task DisplayReplyDeleteWarningAsync(int commentId, int replyId)
+	{
+		var replies = _comments.FirstOrDefault(c => c.Id == commentId)?.CommentReplies.ToList();
+		var reply = replies.FirstOrDefault(r => r.Id == replyId);
+
+		if (reply.Id == replyId && reply.UserId == _currentUserId)
+			reply.ShowDeleteWarning = !reply.ShowDeleteWarning;
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task DisplayCommentEditingAsync(int commentId)
+	{
+		var comment = _comments.FirstOrDefault(c => c.Id == commentId);
+
+		if (comment.Id == commentId && comment.UserId == _currentUserId)
+			comment.IsCommentEditing = !comment.IsCommentEditing;
+
+		if (comment.IsCommentEditing)
+			_commentContent = comment.Content;
+		else
+			comment.Content = _commentContent;
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task DisplayReplyEditingAsync(int commentId, int replyId)
+	{
+		var replies = _comments.FirstOrDefault(c => c.Id == commentId)?.CommentReplies.ToList();
+		var reply = replies.FirstOrDefault(r => r.Id == replyId);
+
+		if (reply.Id == replyId && reply.UserId == _currentUserId)
+			reply.IsCommentEditing = !reply.IsCommentEditing;
+
+		if (reply.IsCommentEditing)
+			_commentContent = reply.Content;
+		else
+			reply.Content = _commentContent;
+
+		await InvokeAsync(StateHasChanged);
+
+	}
+
+
+	private async Task DeleteCommentAsync(int commentId)
+	{
+
+	}
+	private async Task EditCommentAsync(int commentId)
+	{
+
+
 	}
 
 }
