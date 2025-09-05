@@ -15,5 +15,13 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/addCommentRepyl")]
         Task<ApiResponses> AddReplyCommentAsync(int postId, int commentId, Guid UserId, CommentsViewModel replyModel);
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/deleteComment")]
+        Task<ApiResponses> DeleteCommentAsync(CommentsViewModel model, Guid UserId);
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/editComment")]
+        Task<ApiResponses> EditCommentAsync( CommentsViewModel model, Guid UserId);
     }
 }

@@ -34,7 +34,7 @@ namespace ItirafEt.Api.Services
                .Include(c => c.Replies)
                    .ThenInclude(r => r.CommentReactions)
                    .ThenInclude(cr => cr.ReactingUser)
-               .Where(c => c.PostId == postId && c.IsActive && c.ParentCommentId == null)
+               .Where(c => c.PostId == postId && c.ParentCommentId == null)
                .Select(c => new CommentsViewModel
                {
                    Id = c.Id,
@@ -45,6 +45,7 @@ namespace ItirafEt.Api.Services
                    UserId = c.UserId,
                    CommentUserProfilPhotoUrl = c.User.ProfilePictureUrl,
                    ShowReplies = false,
+                   IsActive = c.IsActive,
                    CommentRections = c.CommentReactions.Select(cr => new ReactionViewModel
                    {
                        Id = cr.Id,
@@ -54,10 +55,9 @@ namespace ItirafEt.Api.Services
                        CreatedDate = cr.CreatedDate,
                        CommentId = c.Id,
 
-                       
+
                    }).ToList(),
                    CommentReplies = c.Replies
-                        .Where(r => r.IsActive)
                         .Select(r => new CommentsViewModel
                         {
                             Id = r.Id,
@@ -68,6 +68,7 @@ namespace ItirafEt.Api.Services
                             UserName = r.User.UserName,
                             UserId = r.UserId,
                             CommentUserProfilPhotoUrl = r.User.ProfilePictureUrl,
+                            IsActive = r.IsActive,
                             CommentRections = r.CommentReactions.Select(cr => new ReactionViewModel
                             {
                                 Id = cr.Id,
@@ -87,7 +88,7 @@ namespace ItirafEt.Api.Services
                 return ApiResponses<List<CommentsViewModel>>.Fail("Henüz Yorum Yok. İlk yorumu siz yapın!");
             foreach (var comment in comments)
             {
-                if(comment.CommentReplies != null && comment.CommentReplies.Count > 0)
+                if (comment.CommentReplies != null && comment.CommentReplies.Count > 0)
                     comment.AnyReplies = true;
                 else
                     comment.AnyReplies = false;
@@ -95,7 +96,7 @@ namespace ItirafEt.Api.Services
             return ApiResponses<List<CommentsViewModel>>.Success(comments);
         }
 
-        public async Task<ApiResponses> AddCommentAsync(int postId, Guid UserId, CommentsViewModel model)
+        public async Task<ApiResponses> AddCommentAsync(int postId, Guid userId, CommentsViewModel model)
         {
             if (string.IsNullOrEmpty(model.Content))
                 return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
@@ -109,7 +110,7 @@ namespace ItirafEt.Api.Services
             {
                 Content = model.Content,
                 CreatedDate = DateTime.UtcNow,
-                UserId = UserId,
+                UserId = userId,
                 PostId = postId,
                 ParentCommentId = null,
                 IsActive = true,
@@ -125,18 +126,18 @@ namespace ItirafEt.Api.Services
             model.Id = comment.Id;
             model.AnyReplies = false;
             model.ShowReplies = false;
+            model.IsActive = true;
+            model.UserName = await GetUserNameAsync(userId);
+            model.UserId = userId;
+            model.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(userId);
 
-            model.UserName = await GetUserNameAsync(UserId);
-            model.UserId = UserId;
-            model.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(UserId);
-
-            await _commentHubServices.CommentAddedOrDeletedAsync(postId, model, true);
+            await _commentHubServices.CommentAddedOrEditedAsync(postId, model, true);
 
             return ApiResponses.Success();
 
         }
 
-        public async Task<ApiResponses> AddCommentReplyAsync(int postId, int commentId, Guid UserId, CommentsViewModel replyDto)
+        public async Task<ApiResponses> AddCommentReplyAsync(int postId, int commentId, Guid userId, CommentsViewModel replyDto)
         {
             if (string.IsNullOrEmpty(replyDto.Content))
                 return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
@@ -151,13 +152,13 @@ namespace ItirafEt.Api.Services
                 .AnyAsync(c => c.Id == commentId && c.IsActive);
 
             if (!didHaveCommentComment)
-                return ApiResponses.Fail("Cevaplamak istediğiniz yorum bulunamadı.");
+                return ApiResponses.Fail("Cevaplamak istediğiniz yorum silindiği için, bu yoruma cevap yazamazsınız.");
 
             var reply = new Comment
             {
                 Content = replyDto.Content,
                 CreatedDate = DateTime.UtcNow,
-                UserId = UserId,
+                UserId = userId,
                 PostId = postId,
                 ParentCommentId = commentId,
                 IsActive = true,
@@ -170,13 +171,13 @@ namespace ItirafEt.Api.Services
             await _context.SaveChangesAsync();
 
             replyDto.CreatedDate = reply.CreatedDate;
-            replyDto.UserName = await GetUserNameAsync(UserId);
+            replyDto.UserName = await GetUserNameAsync(userId);
             replyDto.ParentCommentId = commentId;
             replyDto.Id = reply.Id;
-            replyDto.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(UserId);
-            replyDto.UserId = UserId;
-
-            await _commentHubServices.ReplyAddedOrDeletedAsync(postId, replyDto, true);
+            replyDto.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(userId);
+            replyDto.UserId = userId;
+            replyDto.IsActive = true;
+            await _commentHubServices.ReplyAddedOrEditedAsync(postId, replyDto, true);
 
             return ApiResponses.Success();
 
@@ -184,20 +185,118 @@ namespace ItirafEt.Api.Services
 
         private async Task<string?> GetUserProfilePhotoUrl(Guid userId)
         {
-          return await _context.Users
-                .AsNoTracking()
-                .Where(u => u.Id == userId)
-                .Select(u => u.ProfilePictureUrl)
-                .FirstOrDefaultAsync();
+            return await _context.Users
+                  .AsNoTracking()
+                  .Where(u => u.Id == userId)
+                  .Select(u => u.ProfilePictureUrl)
+                  .FirstOrDefaultAsync();
         }
 
-        private async Task<string?> GetUserNameAsync(Guid UserId)
+        private async Task<string?> GetUserNameAsync(Guid userId)
         {
             return await _context.Users
                 .AsNoTracking()
-                .Where(u => u.Id == UserId)
+                .Where(u => u.Id == userId)
                 .Select(u => u.UserName)
                 .FirstOrDefaultAsync();
+        }
+
+
+        public async Task<ApiResponses> DeleteCommentAsync(CommentsViewModel commentModel, Guid userId)
+        {
+            var comment = await _context.Comments
+                .Where(c => c.Id == commentModel.Id && c.IsActive)
+                .FirstOrDefaultAsync();
+            if (comment == null)
+                return ApiResponses.Fail("Yorum bulunamadı veya silinmiş.");
+
+
+            CommentHistory commentHistory = new();
+            commentHistory.CommentId = comment.Id;
+            commentHistory.CreatedDate = comment.CreatedDate;
+            commentHistory.DeviceInfo = comment.DeviceInfo;
+            commentHistory.IpAddress = comment.IpAddress;
+            commentHistory.OperationDate = DateTime.UtcNow;
+            commentHistory.OperationByUserId = userId;
+            commentHistory.ParentCommentId = comment.ParentCommentId;
+            commentHistory.Content = comment.Content;
+
+            _context.CommentHistories.Add(commentHistory);
+
+
+            if (userId == comment.UserId)
+                comment.Content = "Bu yorum, sahibi tarafından silinmiştir.";
+            else
+                comment.Content = "Bu yorum, site yönetimi tarafından silinmiştir.";
+
+            comment.IsActive = false;
+            comment.UpdatedDate = commentHistory.OperationDate;
+            await _context.SaveChangesAsync();
+
+            commentModel.UpdatedDate = commentHistory.OperationDate;
+            commentModel.IsActive = false;
+            commentModel.Content = comment.Content;
+            commentModel.ShowDeleteWarning = false;
+            commentModel.IsCommentEditing = false;
+
+            if (comment.ParentCommentId == null)
+                await _commentHubServices.CommentAddedOrEditedAsync(comment.PostId, commentModel, false);
+            else
+            {
+                commentModel.ParentCommentId = commentHistory.ParentCommentId;
+                await _commentHubServices.ReplyAddedOrEditedAsync(comment.PostId, commentModel, false);
+            }
+
+            return ApiResponses.Success();
+
+        }
+
+        public async Task<ApiResponses> EditCommentAsync(CommentsViewModel commentModel, Guid userId)
+        {
+            var comment = await _context.Comments
+                .Where(c => c.Id == commentModel.Id && c.IsActive && c.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            if (comment == null)
+                return ApiResponses.Fail("Yorum bulunamadı veya silinmiş.");
+
+            commentModel.Content = commentModel.Content.Trim();
+
+            if (string.IsNullOrEmpty(commentModel.Content))
+                return ApiResponses.Fail("Lütfen yorum alanını doldurduktan sonra tekrar deneyin.");
+
+            CommentHistory commentHistory = new();
+            commentHistory.CommentId = comment.Id;
+            commentHistory.CreatedDate = comment.CreatedDate;
+            commentHistory.DeviceInfo = comment.DeviceInfo;
+            commentHistory.IpAddress = comment.IpAddress;
+            commentHistory.OperationDate = DateTime.UtcNow;
+            commentHistory.OperationByUserId = userId;
+            commentHistory.ParentCommentId = comment.ParentCommentId;
+            commentHistory.Content = comment.Content;
+
+            await _context.CommentHistories.AddAsync(commentHistory);
+
+            comment.Content = commentModel.Content;
+            comment.UpdatedDate = DateTime.UtcNow;
+
+            _context.Comments.Update(comment);
+
+            await _context.SaveChangesAsync();
+
+            commentModel.UpdatedDate = comment.UpdatedDate;
+            commentModel.ShowDeleteWarning = false;
+            commentModel.IsCommentEditing = false;
+
+            if (comment.ParentCommentId == null)
+                await _commentHubServices.CommentAddedOrEditedAsync(comment.PostId, commentModel, false);
+            else
+            {
+                commentModel.ParentCommentId = comment.ParentCommentId;
+                await _commentHubServices.ReplyAddedOrEditedAsync(comment.PostId, commentModel, false);
+            }
+            return ApiResponses.Success();
+
         }
     }
 }

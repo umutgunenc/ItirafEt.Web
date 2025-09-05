@@ -28,6 +28,7 @@ namespace ItirafEt.Shared.ViewModels
         public bool ShowDeleteWarning { get; set; } = false;
         public bool IsCommentEditing { get; set; } = false;
         public string? CommentUserProfilPhotoUrl { get; set; }
+        public bool IsActive { get; set; }
 
         [JsonIgnore]
         public string DeviceInfo{ get; set; }

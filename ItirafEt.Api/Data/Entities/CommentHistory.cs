@@ -14,12 +14,14 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(CommentId))]
         public virtual Comment Comment { get; set; }
 
+
         [Required]
         [MaxLength(4096)]
         public string Content { get; set; }
 
         [Required]
         public DateTime CreatedDate { get; set; }
+
 
         [Required]
         [MaxLength(45)]
