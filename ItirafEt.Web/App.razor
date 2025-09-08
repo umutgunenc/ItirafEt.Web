@@ -1,4 +1,6 @@
 ﻿@using ItirafEt.SharedComponents.Components.Layout
+@inject NavigationManager NavigationManager
+@inject AuthStateProvider AuthStateProvider
 
 
 <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new []{typeof(ItirafEt.SharedComponents.Auth.AuthStateProvider).Assembly}">
@@ -6,15 +8,16 @@
 		<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
 			@* RouteView AuthorizeRouteView oldu *@
 			<NotAuthorized>
+
 				<main class="flex-fill d-flex align-items-center justify-content-center bg-light" style="min-height: calc(100vh - 56px); width: 100%;">
-					<div class="card shadow-sm" >
+					<div class="card shadow-sm">
 						<div class="card-body text-center">
 							<i class="bi bi-lock-fill" style="font-size: 3rem; color: #dc3545;"></i>
 							<h1 class="card-title mt-3">Erişim Reddedildi</h1>
 							<p class="card-text">
 								Bu sayfaya erişim yetkiniz yok. Lütfen gerekli yetkiye sahip olduğunuzdan emin olun.
 							</p>
-							<a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+							<a @onclick="NavigateToLogin" class="btn btn-primary">Ana Sayfaya Dön</a>
 						</div>
 					</div>
 				</main>
@@ -23,7 +26,7 @@
 		<FocusOnNavigate RouteData="@routeData" Selector="h1" />
 	</Found>
 	<NotFound>
-@* 		<PageTitle>Not found</PageTitle>
+		@* 		<PageTitle>Not found</PageTitle>
 		<LayoutView Layout="@typeof(MainLayout)">
 			<p role="alert">Sorry, there's nothing at this address.</p>
 		</LayoutView> *@
@@ -37,7 +40,7 @@
 						<p class="card-text">
 							Aradığınız sayfa bulunamadı veya mevcut değil. Belki bir harf hatası yaptınız ya da sayfa taşınmış olabilir.
 						</p>
-						<a href="/" class="btn btn-warning text-white">Ana Sayfaya Dön</a>
+						<a @onclick="NavigateToLogin" class="btn btn-warning text-white">Ana Sayfaya Dön</a>
 					</div>
 				</div>
 			</main>
@@ -45,11 +48,21 @@
 	</NotFound>
 </Router>
 
-@inject AuthStateProvider AuthStateProvider
 
 @code {
+
+	private string _returnUrl = string.Empty;
 	protected override async Task OnInitializedAsync()
 	{
 		await AuthStateProvider.InitializeAsync();
+
+	}
+
+	private void NavigateToLogin()
+	{
+		if (!String.IsNullOrEmpty(_returnUrl))
+			NavigationManager.NavigateTo($"/auth/login?returnUrl={_returnUrl}", true);
+		else
+			NavigationManager.NavigateTo($"/auth/login", true);
 	}
 }

@@ -57,14 +57,14 @@ else
 											<img src="@(string.IsNullOrEmpty(_userProfileViewModel.ProfilePictureUrl)
                 ? "/anonymousIcon.png"
                 : _userProfileViewModel.ProfilePictureUrl)"
-												 alt="Profil Resmi"
-												 class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
-												 width="200"
-												 height="200"
-												 @onmouseover="() => _isHovering = true"
-												 @onmouseout="() => _isHovering = false"
-												 @onclick:preventDefault="true"
-												 @onclick:stopPropagation="true" />
+											alt="Profil Resmi"
+											class="profile-photo rounded-circle @( _isHovering ? "hovered" : "" )"
+											width="200"
+											height="200"
+											@onmouseover="() => _isHovering = true"
+											@onmouseout="() => _isHovering = false"
+											@onclick:preventDefault="true"
+											@onclick:stopPropagation="true" />
 										</div>
 									</div>
 									<div class="my-3">
@@ -106,34 +106,34 @@ else
 											<div class="">
 												<div class="btn-group btn-group-sm w-100 flex-nowrap p-3" role="group" aria-label="Sıralama Seçenekleri">
 													<input type="radio"
-														   class="btn-check"
-														   name="orderOptions"
-														   id="orderByDate"
-														   autocomplete="off"
-														   @onchange="() => SetOrder(true, false, false)"
-														   checked="@_isDateOrdered" />
+													class="btn-check"
+													name="orderOptions"
+													id="orderByDate"
+													autocomplete="off"
+													@onchange="() => SetOrder(true, false, false)"
+													checked="@_isDateOrdered" />
 													<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
 														<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
 														<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
 													</label>
 													<input type="radio"
-														   class="btn-check"
-														   name="orderOptions"
-														   id="orderByView"
-														   autocomplete="off"
-														   @onchange="() => SetOrder(false, true, false)"
-														   checked="@_isCountOrdered" />
+													class="btn-check"
+													name="orderOptions"
+													id="orderByView"
+													autocomplete="off"
+													@onchange="() => SetOrder(false, true, false)"
+													checked="@_isCountOrdered" />
 													<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
 														<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
 														<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
 													</label>
 													<input type="radio"
-														   class="btn-check"
-														   name="orderOptions"
-														   id="orderByLike"
-														   autocomplete="off"
-														   @onchange="() => SetOrder(false, false, true)"
-														   checked="@_isLikeOrdered" />
+													class="btn-check"
+													name="orderOptions"
+													id="orderByLike"
+													autocomplete="off"
+													@onchange="() => SetOrder(false, false, true)"
+													checked="@_isLikeOrdered" />
 													<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
 														<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
 														<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
@@ -145,18 +145,20 @@ else
 
 														<div class="p-3 card shadow-hover text-bg-light" role="button" @onclick="@(() => NavigateToPost(post.PostId))">
 															<div class="d-flex justify-content-end pb-3">
-																<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
+																<small class="text-muted">
+																	@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm") @(post.PostUpdatedDate != null ? post.PostUpdatedDate.Value.ToString(" - dd MMM yyyy HH:mm") : "")
+																</small>
 															</div>
 															<h5 class="text-start pb-3">@post.PostTitle</h5>
 															<p class="text-start text-secondary pb-4">@post.PostContentReview</p>
 															<div class="d-flex justify-content-between align-items-center">
 																<div class="d-flex align-items-center">
 																	<img src="@(string.IsNullOrEmpty(_userProfileViewModel.ProfilePictureUrl)? "/anonymousIcon.png" : _userProfileViewModel.ProfilePictureUrl)"
-																		 alt="Profil Resmi"
-																		 class="profile-photo rounded-circle me-2"
-																		 style="width:48px;height:48px; cursor:default;"
-																		 @onclick:preventDefault="true"
-																		 @onclick:stopPropagation="true">
+																	alt="Profil Resmi"
+																	class="profile-photo rounded-circle me-2"
+																	style="width:48px;height:48px; cursor:default;"
+																	@onclick:preventDefault="true"
+																	@onclick:stopPropagation="true">
 																	<span class="text-dark fw-medium">@_userProfileViewModel.UserName</span>
 																</div>
 																<div class="d-flex gap-3">
@@ -175,15 +177,15 @@ else
 												<div class="p-3 pt-0">
 													<ul class="pagination justify-content-end mb-0">
 														<li class="page-item"
-															hidden="@( _currentPage == 1 )"
-															style="cursor:pointer">
+														hidden="@( _currentPage == 1 )"
+														style="cursor:pointer">
 															<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
 														</li>
 														@foreach (var p in GetPageNumbers())
 														{
 															<li class="page-item @(p == _currentPage ? "disabled" : "")"
-																style="@(p != _currentPage ? "cursor: pointer;" : "")"
-																@onclick=" async () =>
+															style="@(p != _currentPage ? "cursor: pointer;" : "")"
+															@onclick=" async () =>
 																	{
 																		if (p != _currentPage)
 																		{
@@ -194,9 +196,9 @@ else
 															</li>
 														}
 														<li class="page-item"
-															hidden="@( _currentPage == _totalPages )"
-															@onclick="() => GoToPageAsync(_totalPages)"
-															style="cursor:pointer">
+														hidden="@( _currentPage == _totalPages )"
+														@onclick="() => GoToPageAsync(_totalPages)"
+														style="cursor:pointer">
 															<a class="page-link mb-0">Son</a>
 														</li>
 													</ul>
@@ -291,6 +293,8 @@ else
 						foreach (var post in _userPostsViewModel.UserPosts)
 						{
 							post.PostCreatedDate = ToLocal(post.PostCreatedDate);
+							if(post.PostUpdatedDate.HasValue)
+								post.PostUpdatedDate = ToLocal(post.PostUpdatedDate.Value);
 						}
 					}
 					_totalPages = (int)Math.Ceiling((double)_userPostsViewModel.TotalCount / _size);
@@ -393,10 +397,13 @@ else
 			{
 				_haveError = false;
 				_userPostsViewModel = userPostsResponse.Data;
-				if (_userPostsViewModel?.UserPosts?.Count != 0){
+				if (_userPostsViewModel?.UserPosts?.Count != 0)
+				{
 					foreach (var post in _userPostsViewModel.UserPosts)
 					{
 						post.PostCreatedDate = ToLocal(post.PostCreatedDate);
+						if (post.PostUpdatedDate.HasValue)
+							post.PostUpdatedDate = ToLocal(post.PostUpdatedDate.Value);
 					}
 				}
 				_totalPages = (int)Math.Ceiling((double)_userPostsViewModel.TotalCount / _size);

@@ -12,11 +12,11 @@ namespace ItirafEt.Shared.ViewModels
         public bool HasNextPage { get; set; }
         public int TotalCount { get; set; }
         public string UserName { get; set; }
-        public string? UserProfilePicture { get; set; } 
+        public string? UserProfilePicture { get; set; }
         public List<ListOfUserPost>? UserPosts { get; set; } = new List<ListOfUserPost>();
     }
 
-    public class  ListOfUserPost
+    public class ListOfUserPost
     {
         public int PostId { get; set; }
         public string PostTitle { get; set; }
@@ -24,6 +24,7 @@ namespace ItirafEt.Shared.ViewModels
         public int PostViewCount { get; set; }
         public int PostLikeCount { get; set; }
         public DateTime PostCreatedDate { get; set; }
+        public DateTime? PostUpdatedDate { get; set; }
         public bool IsDeletedByUser { get; set; }
         public bool IsDeletedByAdmin { get; set; }
     }

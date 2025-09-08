@@ -88,11 +88,18 @@
 	private bool _isBusy;
 	private bool _showPassword;
 	private string? _errorMessage;
+	private string? _returnUrl;
+
 
 	protected override void OnInitialized()
 	{
 		if (AuthStateProvider.IsLoggedIn)
 			NavigationManager.NavigateTo("/", replace: true);
+
+		var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+		// var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+		// if (query.TryGetValue("returnUrl", out var returnUrl))
+		// 	_returnUrl = returnUrl;
 
 	}
 
@@ -114,7 +121,7 @@
 
 			var loggedInUser = authResponse.User;
 			await AuthStateProvider.SetLoginAsync(loggedInUser);
-			NavigationManager.NavigateTo("/");
+			NavigationManager.NavigateTo(_returnUrl ?? "/");
 		}
 		catch (Exception ex)
 		{

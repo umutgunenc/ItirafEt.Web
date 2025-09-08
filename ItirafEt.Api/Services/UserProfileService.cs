@@ -77,6 +77,7 @@ namespace ItirafEt.Api.Services
                     PostViewCount = _context.UserReadPosts.Count(ur => ur.PostId == p.Id),
                     IsDeletedByAdmin = p.IsDeletedByAdmin,
                     IsDeletedByUser = p.IsDeletedByUser,
+                    PostUpdatedDate = p.UpdatedDate
                 })
                 .ToListAsync();
 
@@ -134,6 +135,8 @@ namespace ItirafEt.Api.Services
                     PostViewCount = _context.UserReadPosts.Count(ur => ur.PostId == p.Id),
                     IsDeletedByAdmin = p.IsDeletedByAdmin,
                     IsDeletedByUser = p.IsDeletedByUser,
+                    PostUpdatedDate = p.UpdatedDate
+
                 })
                 .ToListAsync();
 
@@ -189,6 +192,7 @@ namespace ItirafEt.Api.Services
                     PostViewCount = _context.UserReadPosts.Count(ur => ur.PostId == p.Id),
                     IsDeletedByAdmin = p.IsDeletedByAdmin,
                     IsDeletedByUser = p.IsDeletedByUser,
+                    PostUpdatedDate = p.UpdatedDate
                 })
                 .ToListAsync();
 
