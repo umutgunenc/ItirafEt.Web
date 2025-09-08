@@ -196,35 +196,35 @@
 										<!-- Yorum listesi -->
 										@foreach (var comment in _comments)
 										{
-												<div>
-													<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
-													class="profile-photo rounded-circle"
-													width="40" height="40" />
-													<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
+											<div>
+												<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
+												class="profile-photo rounded-circle"
+												width="40" height="40" />
+												<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
 
-												</div>
-												<small class="text-muted">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(comment.UpdatedDate != null ? $"- {comment.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "")</small>
-												
+											</div>
+											<small class="text-muted" style="font-size:12px;">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(comment.UpdatedDate != null ? $"- {comment.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "")</small>
+
 											@if (!comment.IsCommentEditing)
 											{
 												<p class="m-0 my-2 @(!comment.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@comment.Content</p>
 											}
 											else
 											{
-												<EditForm Model="_commentModel" OnValidSubmit="async ()=> await EditCommentAsync(comment.Id)">
+												<EditForm Model="comment" OnValidSubmit="async ()=> await EditCommentAsync(comment.Id)">
 													<DataAnnotationsValidator />
 
 													<div class="my-3">
-														<InputTextArea id="yorum"
-														class="form-control"
+														<InputTextArea class="form-control"
 														placeholder="Yorumunuzu düzenleyin..."
 														@bind-Value="comment.Content"
 														rows="4" />
 														<ValidationMessage For="@(() => comment.Content)" />
 													</div>
 
-													<div class="my-3">
-														<button type="submit" class="btn-custom col-12" disabled="@_isApiBusy">Değiştir</button>
+													<div class="d-flex justify-content-start my-3 gap-2">
+														<button type="submit" class="btn-custom" disabled="@_isApiBusy">Değiştir</button>
+														<button type="button" class="btn-custom-red" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)"  disabled="@_isApiBusy">İptal</button>
 													</div>
 												</EditForm>
 											}
@@ -256,15 +256,16 @@
 											</div>
 											@if (comment.ShowDeleteWarning)
 											{
-												<div class="d-flex justify-content-between align-items-center" role="alert">
+												<div role="alert">
 													<div>
 														Yorumunuzu silmek istediğinize emin misiniz?
 													</div>
-													<div>
-														<button class="btn-custom me-2" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">Hayır</button>
+													<div class="d-flex justify-content-start my-1 gap-2">
+														<button class="btn-custom" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">Hayır</button>
 														<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(comment.Id)">Evet</button>
 													</div>
 												</div>
+
 											}
 											<!-- Reply input -->
 											@if (_replyToCommentId == comment.Id)
@@ -315,64 +316,63 @@
 																<div class="d-flex justify-content-between">
 																	<div>
 																		<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
-																		class="profile-photo rounded-circle ms-2" width="40" height="40" />
+																		class="profile-photo rounded-circle" width="40" height="40" />
 																		<strong class="ms-2" @onclick="()=>NavigateToUserProfile(reply.UserId)" style="cursor:pointer">@reply.UserName</strong>
-																		<small class="text-muted ms-2">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(reply.UpdatedDate != null ? $"- {reply.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "")</small>
-
 																	</div>
-																	@if (reply.IsActive && (reply.UserId == _currentUserId || adminRoles.Contains(_userRoleId)))
-																	{
-																		<div class="d-flex justify-content-end">
-																			@if (reply.UserId == _currentUserId && comment.IsActive)
-																			{
-																				<div>
-																					<button class="btn-custom-orange-circle me-2" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
-																						<i class="bi bi-pen"></i>
-																					</button>
-																				</div>
-																			}
-
-																			<div>
-																				<button class="btn-custom-red-circle" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
-																					<i class="bi bi-trash-fill"></i>
-																				</button>
-																			</div>
-
-																		</div>
-																	}
 																</div>
+																<small class="text-muted" style="font-size:12px;">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(reply.UpdatedDate != null ? $"- {reply.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "") </small>
 																@if (!reply.IsCommentEditing)
 																{
-																	<p class="m-0 ms-2 mt-2 @(!reply.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@reply.Content</p>
+																	<p class="m-0 mt-2  @(!reply.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@reply.Content</p>
 																}
 																else
 																{
-																	<EditForm Model="_commentModel" OnValidSubmit="async ()=> await EditCommentAsync(reply.Id)">
+																	<EditForm Model="reply" OnValidSubmit="async ()=> await EditCommentAsync(reply.Id)">
 																		<DataAnnotationsValidator />
 
 																		<div class="my-3">
-																			<InputTextArea id="yorum"
-																			class="form-control"
+																			<InputTextArea class="form-control"
 																			placeholder="Yorumunuzu düzenleyin..."
 																			@bind-Value="reply.Content"
 																			rows="4" />
 																			<ValidationMessage For="@(() => reply.Content)" />
 																		</div>
 
-																		<div class="my-3">
-																			<button type="submit" class="btn-custom col-12" disabled="@_isApiBusy">Değiştir</button>
+																		<div class="d-flex justify-content-start my-3 gap-2">
+																			<button type="submit" class="btn-custom" disabled="@_isApiBusy">Değiştir</button>
+																			<button type="button" class="btn-custom-red" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)" disabled="@_isApiBusy">İptal</button>
 																		</div>
 																	</EditForm>
+																}
+																@if (reply.IsActive && (reply.UserId == _currentUserId || adminRoles.Contains(_userRoleId)))
+																{
+																	<div class="d-flex justify-content-start">
+																		@if (reply.UserId == _currentUserId && comment.IsActive)
+																		{
+																			<div>
+																				<button class="btn-custom-orange-circle me-2" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																					<i class="bi bi-pen"></i>
+																				</button>
+																			</div>
+																		}
+
+																		<div>
+																			<button class="btn-custom-red-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
+																				<i class="bi bi-trash-fill"></i>
+																			</button>
+																		</div>
+
+																	</div>
 																}
 																@* <p class="m-0 ms-2 mt-2" style="white-space: pre-wrap;">@reply.Content</p> *@
 																@if (reply.ShowDeleteWarning)
 																{
-																	<div class="d-flex justify-content-between align-items-center" role="alert">
+																	<div class="" role="alert">
 																		<div>
 																			Yorumunuzu silmek istediğinize emin misiniz?
 																		</div>
-																		<div>
-																			<button class="btn-custom me-2" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">Hayır</button>
+																		<div class="d-flex justify-content-start my-1 gap-2">
+																			<button class="btn-custom" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">Hayır</button>
 																			<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(reply.Id)">Evet</button>
 																		</div>
 																	</div>
@@ -1677,6 +1677,7 @@
 			await InvokeAsync(StateHasChanged);
 		}
 	}
+
 	private async Task EditCommentAsync(int commentId)
 	{
 		if (_isApiBusy)
@@ -1715,10 +1716,6 @@
 		finally
 		{
 			_isApiBusy = false;
-			// if (isReply)
-			// 	await DisplayReplyEditingAsync(model.ParentCommentId.Value, model.Id);
-			// else
-			// 	await DisplayCommentEditingAsync(model.Id);
 			await InvokeAsync(StateHasChanged);
 		}
 

@@ -1,4 +1,5 @@
 ﻿using ItirafEt.Api.Data;
+using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,9 +8,12 @@ namespace ItirafEt.Api.Services
     public class BanUserService
     {
         private readonly dbContext _context;
-        public BanUserService(dbContext context)
+        private readonly BanUserHubService _banUserHubService;
+
+        public BanUserService(dbContext context, BanUserHubService banUserHubService)
         {
             _context = context;
+            _banUserHubService = banUserHubService;
         }
 
         public async Task<ApiResponses<List<BanUserViewModel>>> GetAllUsers()
@@ -37,13 +41,13 @@ namespace ItirafEt.Api.Services
             if (user == null)
                 return ApiResponses.Fail("Kullanıcı bulunamadı.");
 
-            if(user.Id == AdminastorUserId)
+            if (user.Id == AdminastorUserId)
                 return ApiResponses.Fail("Kendinizi banlayamazsınız.");
 
-            if(user.UserName.ToUpper() != model.UserName.ToUpper())
+            if (user.UserName.ToUpper() != model.UserName.ToUpper())
                 return ApiResponses.Fail("Kullanıcı adını değiştirmezsiniz.");
 
-            if(model.BannedDateUntil != null && model.BannedDateUntil <= DateTime.UtcNow && model.IsBanned)
+            if (model.BannedDateUntil != null && model.BannedDateUntil <= DateTime.UtcNow && model.IsBanned)
                 return ApiResponses.Fail("Ban bitiş tarihi geçmiş bir tarih olamaz.");
 
             if (model.BannedDateUntil == null && model.IsBanned)
@@ -51,7 +55,7 @@ namespace ItirafEt.Api.Services
 
             user.AdminastorUserId = AdminastorUserId;
             user.IsBanned = model.IsBanned;
-            if(model.IsBanned)
+            if (model.IsBanned)
                 user.BannedDateUntil = model.BannedDateUntil;
             else
                 user.BannedDateUntil = null;
@@ -59,6 +63,10 @@ namespace ItirafEt.Api.Services
             user.BannedDate = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+
+            if (user.IsBanned)
+                await _banUserHubService.UserBannedAsync(user.Id);
+
             return ApiResponses.Success();
         }
     }

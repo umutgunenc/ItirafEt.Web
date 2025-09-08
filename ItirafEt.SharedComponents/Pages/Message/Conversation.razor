@@ -12,8 +12,6 @@
 @implements IAsyncDisposable
 
 
-<span>TimeZoneId @_userTimeZoneId</span>
-
 @if (_isLoading)
 {
 	<div class="d-flex justify-content-center align-items-center"
@@ -581,7 +579,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 
 
 		await _hubConnection.StartAsync();
-		await _hubConnection.SendAsync("JoinMessageGroup", ConversationId);
+		await _hubConnection.SendAsync("JoinBanUserGroup", ConversationId);
 	}
 
 	private async Task CanUserReadMessageAsync(Guid conversationId, Guid userId)

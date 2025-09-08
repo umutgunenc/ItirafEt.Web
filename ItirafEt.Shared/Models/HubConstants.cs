@@ -13,6 +13,7 @@ namespace ItirafEt.Shared.Models
         public const string CommentHub = "/commenthub";
         public const string PostViewHub = "/postviewhub";
         public const string MessageHub = "/messagehub";
+        public const string BanUserHub = "/banuserhub";
 
         public enum HubType
         {
@@ -20,7 +21,8 @@ namespace ItirafEt.Shared.Models
             Reaction,
             Comment,
             PostView,
-            Message
+            Message,
+            BanUser
         }
 
         public static string GetHubUrl(HubType hubType)
@@ -32,6 +34,7 @@ namespace ItirafEt.Shared.Models
                 HubType.Comment => CommentHub,
                 HubType.PostView => PostViewHub,
                 HubType.Message => MessageHub,
+                HubType.BanUser => BanUserHub,
                 _ => throw new ArgumentOutOfRangeException(nameof(hubType), hubType, null)
             };
         }

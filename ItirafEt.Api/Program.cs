@@ -128,6 +128,7 @@ builder.Services.AddTransient<CategoryHubService>();
 builder.Services.AddTransient<CommentHubService>();
 builder.Services.AddTransient<PostViewHubService>();
 builder.Services.AddTransient<MessageHubService>();
+builder.Services.AddTransient<BanUserHubService>();
 
 
 var app = builder.Build();
@@ -168,6 +169,7 @@ app.MapHub<ReactionHub>(HubConstants.ReactionHub);
 app.MapHub<CommentHub>(HubConstants.CommentHub);
 app.MapHub<PostViewHub>(HubConstants.PostViewHub);
 app.MapHub<MessageHub>(HubConstants.MessageHub);
+app.MapHub<BanUserHub>(HubConstants.BanUserHub);
 
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();

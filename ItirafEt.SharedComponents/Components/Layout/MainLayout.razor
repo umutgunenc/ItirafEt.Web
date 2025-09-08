@@ -1,28 +1,54 @@
-﻿@inherits LayoutComponentBase
+﻿@using ItirafEt.Shared.Models
+@inherits LayoutComponentBase
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
+@inject ISignalRService SignalRServiceBase
 
 
 <div class="page bg-secondary-subtle container-fluid p-0">
 	<NavMenu />
-		<div class="position-relative flex-grow-1" style="min-height: calc(100vh - 56px);">
-			@if (AuthStateProvider.IsInitializing)
-			{
-				<p>Initializing State ... </p>
-			}
-			else
-			{
-				@Body
-			}
-		</div>
+	<div class="position-relative flex-grow-1" style="min-height: calc(100vh - 56px);">
+		@if (AuthStateProvider.IsInitializing)
+		{
+			<p>Initializing State ... </p>
+		}
+		else
+		{
+			@Body
+		}
+	</div>
 </div>
 
 
 @code {
 
+	private HubConnection? _userBanHubConnection;
+
+
 	protected override async Task OnInitializedAsync()
 	{
 		while (AuthStateProvider.IsInitializing)
 			await Task.Delay(500);
+
+		await StartUserBanHubConnection();
+	}
+
+	private async Task StartUserBanHubConnection()
+	{
+		if (_userBanHubConnection is null)
+		{ 
+			_userBanHubConnection = SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.BanUser);
+			_userBanHubConnection?.On<Guid>("UserBannedAsync", async (bannedUserId) =>
+			{
+				if (AuthStateProvider?.User?.id == bannedUserId.ToString()){
+					await AuthStateProvider.SetLogoutAsync();
+					NavigationManager.NavigateTo("/", replace: true);
+				}
+
+			});
+		}
+
+		await _userBanHubConnection.StartAsync();
+		await _userBanHubConnection.SendAsync("JoinBanUserGroup", AuthStateProvider?.User?.id);
 	}
 }

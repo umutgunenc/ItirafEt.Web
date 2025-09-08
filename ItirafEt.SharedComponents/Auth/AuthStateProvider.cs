@@ -45,7 +45,6 @@ namespace ItirafEt.SharedComponents.Auth
             User = null;
             SetAuthStateTask();
             NotifyAuthenticationStateChanged(_authStateTask);
-            //await _jSRuntime.InvokeVoidAsync("localStorage.removeItem", UserDataKey);
             await _storageService.ClearItemsAsync();
             _tokenCheckTimer?.Dispose();
 
