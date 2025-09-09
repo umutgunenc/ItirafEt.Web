@@ -7,6 +7,7 @@ using ItirafEt.Shared;
 using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -186,5 +187,86 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses.Success();
         }
+
+        public async Task<ApiResponses> CreatePasswordResetTokenAsync(ForgotPaswordViewModel model)
+        {
+            
+            var user = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserName == model.UserNameOrEmailAdres || u.Email == model.UserNameOrEmailAdres);
+
+
+            if(user == null)
+                return ApiResponses.Fail("Kullanıcı bulunamadı.");
+
+            if (user.IsDeleted)
+                return ApiResponses.Fail("Hesabınız aktif durumda değil.");
+
+            var token = PasswordResetTokenHelperService.GenerateRawToken();
+            var tokenHash = PasswordResetTokenHelperService.HashToken(token);
+
+            var passwordResetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                TokenHash = tokenHash,
+                ExpTime = DateTime.UtcNow.AddMinutes(30),
+                IsUsed = false,
+                DeviceInfo = model.DeviceInfo,
+                IpAddress = model.IpAddress
+            };
+
+            return ApiResponses.Success();
+                        
+        }
+
+        public async Task<ApiResponses> ChangeUserPasswordAsync(ChangeUserPasswordViewModel model ) { 
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == model.UserId);
+
+            if (user == null)
+                return ApiResponses.Fail("Kullanıcı bulunamadı.");
+            if (user.IsDeleted)
+                return ApiResponses.Fail("Hesabınız aktif durumda değil.");
+
+            if (model.NewPassword != model.NewPasswordConfirm)
+                return ApiResponses.Fail("Şifreler eşleşmiyor.");
+            if (model.NewPassword.Length < 8)
+                return ApiResponses.Fail("Şifre en az 8 karakter uzunluğunda olmalıdır.");
+            if (model.NewPassword.Length > 64)
+                return ApiResponses.Fail("Şifre en fazla 64 karakter uzunluğunda olmalıdır.");
+            if (!model.NewPassword.Any(char.IsUpper))
+                return ApiResponses.Fail("Şifre en az 1 büyük harf içermelidir.");
+            if (!model.NewPassword.Any(char.IsLower))
+                return ApiResponses.Fail("Şifre en az 1 küçük harf içermelidir.");
+            if (!model.NewPassword.Any(char.IsDigit))
+                return ApiResponses.Fail("Şifre en az 1 rakam içermelidir.");
+            if (!model.NewPassword.Any(ch => !char.IsLetterOrDigit(ch)))
+                return ApiResponses.Fail("Şifre en az 1 özel karakter içermelidir.");
+
+            var passwordResetToken = await _context.PasswordResetTokens
+                .Where(prt=>prt.UserId == model.UserId && !prt.IsUsed)
+                .OrderByDescending(prt => prt.Id)
+                .FirstOrDefaultAsync();
+
+            if (passwordResetToken == null )
+                return ApiResponses.Fail("Şifre sıfırlama talebiniz bulunamadı. Lütfen yeniden 'Şifremi Unuttum' sayfasından talepte bulunun.");
+
+            if (passwordResetToken.ExpTime < DateTime.UtcNow)
+                return ApiResponses.Fail("Şifre sıfırlama linkiniz süresi dolmuş. Lütfen yeni bir talep oluşturun.");
+
+            bool isTokenValid = PasswordResetTokenHelperService.VerifyToken(model.Token, passwordResetToken.TokenHash);
+
+            if (!isTokenValid)
+                return ApiResponses.Fail("Şifre sıfırlama linkiniz geçersiz. Lütfen tekrar talep oluşturun.");
+
+            passwordResetToken.IsUsed = true;
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return ApiResponses.Success();
+
+        }
+
     }
 }

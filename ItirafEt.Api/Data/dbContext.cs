@@ -34,6 +34,7 @@ namespace ItirafEt.Api.Data
         public DbSet<MessageReaction> MessageReactions { get; set; }
         public DbSet<MessageReport> MessageReports { get; set; }
         public DbSet<UserReadPost> UserReadPosts { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

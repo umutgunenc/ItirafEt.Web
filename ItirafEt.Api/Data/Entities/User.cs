@@ -20,6 +20,7 @@ namespace ItirafEt.Api.Data.Entities
             BlockedUsers = new HashSet<UserBlock>();
             BlockedByUsers = new HashSet<UserBlock>();
             ReadPosts = new HashSet<UserReadPost>();
+            PasswordResetTokens = new HashSet<PasswordResetToken>();
         }
         [Key]
         public Guid Id { get; set; }
@@ -89,6 +90,7 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<Message> SentMessages { get; set; }
         public virtual ICollection<UserBlock> BlockedUsers { get; set; } // Bu kullanıcı kimi engelledi
         public virtual ICollection<UserBlock> BlockedByUsers { get; set; } // Bu kullanıcı kim tarafından engellendi
-        public virtual ICollection<UserReadPost> ReadPosts { get; set; } 
+        public virtual ICollection<UserReadPost> ReadPosts { get; set; }
+        public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; } 
     }
 }
