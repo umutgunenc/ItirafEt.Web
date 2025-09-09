@@ -365,3 +365,8 @@ FodyWeavers.xsd
 # Ignore sensitive configuration files
 appsettings.json
 appsettings.Development.json
+
+git rm --cached appsettings.json
+git rm --cached appsettings.Development.json
+git commit -m "Stop tracking sensitive appsettings files"
+git push
