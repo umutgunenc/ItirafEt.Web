@@ -230,12 +230,28 @@ namespace ItirafEt.Api.Services
                 return ApiResponses.Fail("Başlık en az 10 karakter olmalıdır.");
             if (model.Title.Trim().Length > 256)
                 return ApiResponses.Fail("Başlık en fazla 256 karakter olmalıdır.");
+
+            var oldPost = new PostHistory()
+            {
+                PostId = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                UpdatedDate = DateTime.UtcNow,
+                IpAddress = model.IpAddress,
+                DeviceInfo = model.DeviceInfo,
+                IsActive = true,
+                OperationByUserId = post.UserId
+            };
+
             post.Title = model.Title.ToUpper();
             post.Content = model.Content;
             post.UpdatedDate = DateTime.UtcNow;
             post.CategoryId = model.CategoryId;
             post.IpAddress = model.IpAddress;
             post.DeviceInfo = model.DeviceInfo;
+            await _context.SaveChangesAsync();
+
+            _context.PostHistories.Add(oldPost);
             await _context.SaveChangesAsync();
             return ApiResponses.Success();
         }

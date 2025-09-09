@@ -24,9 +24,6 @@ namespace ItirafEt.Api.Data.Entities
         public string Content { get; set; }
 
         [Required]
-        public DateTime CreatedDate { get; set; }
-
-        [Required]
         public bool IsActive { get; set; }
 
         [Required]

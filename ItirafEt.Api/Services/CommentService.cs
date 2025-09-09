@@ -213,12 +213,10 @@ namespace ItirafEt.Api.Services
 
             CommentHistory commentHistory = new();
             commentHistory.CommentId = comment.Id;
-            commentHistory.CreatedDate = comment.CreatedDate;
             commentHistory.DeviceInfo = comment.DeviceInfo;
             commentHistory.IpAddress = comment.IpAddress;
             commentHistory.OperationDate = DateTime.UtcNow;
             commentHistory.OperationByUserId = userId;
-            commentHistory.ParentCommentId = comment.ParentCommentId;
             commentHistory.Content = comment.Content;
 
             _context.CommentHistories.Add(commentHistory);
@@ -243,7 +241,7 @@ namespace ItirafEt.Api.Services
                 await _commentHubServices.CommentAddedOrEditedAsync(comment.PostId, commentModel, false);
             else
             {
-                commentModel.ParentCommentId = commentHistory.ParentCommentId;
+                commentModel.ParentCommentId = commentModel.ParentCommentId;
                 await _commentHubServices.ReplyAddedOrEditedAsync(comment.PostId, commentModel, false);
             }
 
@@ -267,12 +265,10 @@ namespace ItirafEt.Api.Services
 
             CommentHistory commentHistory = new();
             commentHistory.CommentId = comment.Id;
-            commentHistory.CreatedDate = comment.CreatedDate;
             commentHistory.DeviceInfo = comment.DeviceInfo;
             commentHistory.IpAddress = comment.IpAddress;
             commentHistory.OperationDate = DateTime.UtcNow;
             commentHistory.OperationByUserId = userId;
-            commentHistory.ParentCommentId = comment.ParentCommentId;
             commentHistory.Content = comment.Content;
 
             await _context.CommentHistories.AddAsync(commentHistory);

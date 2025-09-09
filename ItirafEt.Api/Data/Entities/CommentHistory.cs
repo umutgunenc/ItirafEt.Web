@@ -20,10 +20,6 @@ namespace ItirafEt.Api.Data.Entities
         public string Content { get; set; }
 
         [Required]
-        public DateTime CreatedDate { get; set; }
-
-
-        [Required]
         [MaxLength(45)]
         public string IpAddress { get; set; }
 
@@ -39,10 +35,6 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(OperationByUserId))]
         public virtual User User { get; set; }
 
-        public int? ParentCommentId { get; set; }
-
-        [ForeignKey(nameof(ParentCommentId))]
-        public virtual Comment ParentComment { get; set; }
     }
 
 }
