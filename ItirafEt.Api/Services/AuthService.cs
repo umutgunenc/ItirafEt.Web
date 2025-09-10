@@ -7,7 +7,7 @@ using ItirafEt.Shared;
 using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,12 +18,14 @@ namespace ItirafEt.Api.Services
         private readonly dbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IConfiguration _configuration;
+        private readonly IEmailSender _emailSender;
 
-        public AuthService(dbContext context, IPasswordHasher<User> passwordHasher, IConfiguration configuration)
+        public AuthService(dbContext context, IPasswordHasher<User> passwordHasher, IConfiguration configuration, IEmailSender emailSender)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _configuration = configuration;
+            _emailSender = emailSender;
         }
         public async Task<AuthResponse> LoggingAsync(LoginViewModel model)
         {
@@ -44,7 +46,7 @@ namespace ItirafEt.Api.Services
                 .FirstOrDefaultAsync();
 
             if (user == null)
-                return new AuthResponse(default,"Kullanıcı Adı veya Şifre Hatalı");
+                return new AuthResponse(default, "Kullanıcı Adı veya Şifre Hatalı");
 
             if (user.IsDeleted)
                 return new AuthResponse(default, "Hesabınız aktif durumda değil.");
@@ -58,7 +60,7 @@ namespace ItirafEt.Api.Services
                 return new AuthResponse(default, "Kullanıcı Adı veya Şifre Hatalı");
 
             var jwtToken = GenearteJwtToken(user);
-            var loggedInUser = new LoggedInUser(user.Id.ToString(),user.UserName,user.RoleName.ToString(), jwtToken);
+            var loggedInUser = new LoggedInUser(user.Id.ToString(), user.UserName, user.RoleName.ToString(), jwtToken);
             return new AuthResponse(loggedInUser);
 
         }
@@ -66,13 +68,13 @@ namespace ItirafEt.Api.Services
         public async Task<ApiResponses> RegisterAsync(RegisterViewModel model)
         {
             var isUserNameNotValid = await _context.Users.AnyAsync(u => u.UserName.ToUpper() == model.UserName.ToUpper());
-            if(isUserNameNotValid)
+            if (isUserNameNotValid)
                 return ApiResponses.Fail("Bu kullanıcı adı zaten kullanılıyor.");
             var isEmailNotValid = await _context.Users.AnyAsync(u => u.Email.ToUpper() == model.Email.ToUpper());
             if (isEmailNotValid)
                 return ApiResponses.Fail("Bu e-posta adresi zaten kullanılıyor.");
 
-           var isModelValid = CheckRegisterModel(model);
+            var isModelValid = CheckRegisterModel(model);
             if (!isModelValid.IsSuccess)
                 return isModelValid;
 
@@ -169,16 +171,16 @@ namespace ItirafEt.Api.Services
             if (!dto.isTermsAccepted)
                 return ApiResponses.Fail("Kullanım Koşulları ve Gizlilik Politikasını kabul etmelisiniz.");
 
-            if(dto.BirthDate > DateTime.UtcNow.AddYears(-18))
+            if (dto.BirthDate > DateTime.UtcNow.AddYears(-18))
                 return ApiResponses.Fail("18 yaşından küçük olamazsınız.");
 
             if (dto.BirthDate < DateTime.UtcNow.AddYears(-100))
                 return ApiResponses.Fail("100 yaşından büyük olamazsınız.");
-            
-            if(dto.BirthDate == null)
+
+            if (dto.BirthDate == null)
                 return ApiResponses.Fail("Doğum tarihi boş olamaz.");
 
-            if(dto.GenderId == null)
+            if (dto.GenderId == null)
                 return ApiResponses.Fail("Lütfen Cinsiyet Seçiniz.");
 
             if (dto.GenderId != (int)GenderEnum.Male && dto.GenderId != (int)GenderEnum.Female)
@@ -190,13 +192,12 @@ namespace ItirafEt.Api.Services
 
         public async Task<ApiResponses> CreatePasswordResetTokenAsync(ForgotPaswordViewModel model)
         {
-            
+            model.UserNameOrEmailAdres = model.UserNameOrEmailAdres.Trim();
             var user = await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.UserName == model.UserNameOrEmailAdres || u.Email == model.UserNameOrEmailAdres);
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == model.UserNameOrEmailAdres.ToLower() || u.Email.ToLower() == model.UserNameOrEmailAdres.ToLower());
 
-
-            if(user == null)
+            if (user == null)
                 return ApiResponses.Fail("Kullanıcı bulunamadı.");
 
             if (user.IsDeleted)
@@ -215,20 +216,71 @@ namespace ItirafEt.Api.Services
                 IpAddress = model.IpAddress
             };
 
+            var baseUrl = _configuration["Jwt:Issuer"];
+            var resetLink = $"{baseUrl}/reset-password?userId={user.Id}&token={token}";
+            try
+            {
+                await _emailSender.SendEmailAsync(
+                user.Email,
+                "🔑 Şifre Sıfırlama Talebi",
+                $@"
+    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+        <h2 style='color: #333;'>Merhaba {user.UserName},</h2>
+        <p style='font-size: 14px; color: #555;'>
+            Şifrenizi sıfırlamak için aşağıdaki butona tıklayın. 
+            Bu bağlantı yalnızca <strong>30 dakika</strong> boyunca geçerlidir.
+        </p>
+
+        <p style='text-align: center; margin: 30px 0;'>
+            <a href='{resetLink}' 
+               style='
+                   display:inline-block;
+                   background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+                   color: #fff;
+                   border-radius: 8px;
+                   padding: 12px 24px;
+                   text-decoration: none;
+                   font-size: 16px;
+                   font-weight: bold;
+                   transition: all 0.2s ease;
+                   box-shadow: 0 4px 10px rgba(24, 119, 242, 0.25);
+               '>
+                Şifremi Sıfırla
+            </a>
+        </p>
+
+        <p style='font-size: 13px; color: #999;'>
+            Eğer bu talebi siz oluşturmadıysanız, lütfen bu e-postayı dikkate almayın.
+        </p>
+
+        <hr style='margin: 20px 0;'/>
+        <p style='font-size: 12px; color: #aaa; text-align: center;'>
+            © {DateTime.UtcNow.Year} ItirafEt Ekibi
+        </p>
+    </div>"
+            );
+            }
+            catch (Exception ex)
+            {
+                return ApiResponses.Fail(ex.Message);
+            }
+
+
+
+            await _context.PasswordResetTokens.AddAsync(passwordResetToken);
+            await _context.SaveChangesAsync();
             return ApiResponses.Success();
-                        
+
         }
 
-        public async Task<ApiResponses> ChangeUserPasswordAsync(ChangeUserPasswordViewModel model ) { 
+        public async Task<ApiResponses> ChangeUserPasswordAsync(ChangeUserPasswordViewModel model)
+        {
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == model.UserId);
 
             if (user == null)
                 return ApiResponses.Fail("Kullanıcı bulunamadı.");
-            if (user.IsDeleted)
-                return ApiResponses.Fail("Hesabınız aktif durumda değil.");
-
             if (model.NewPassword != model.NewPasswordConfirm)
                 return ApiResponses.Fail("Şifreler eşleşmiyor.");
             if (model.NewPassword.Length < 8)
@@ -245,11 +297,11 @@ namespace ItirafEt.Api.Services
                 return ApiResponses.Fail("Şifre en az 1 özel karakter içermelidir.");
 
             var passwordResetToken = await _context.PasswordResetTokens
-                .Where(prt=>prt.UserId == model.UserId && !prt.IsUsed)
+                .Where(prt => prt.UserId == model.UserId && !prt.IsUsed)
                 .OrderByDescending(prt => prt.Id)
                 .FirstOrDefaultAsync();
 
-            if (passwordResetToken == null )
+            if (passwordResetToken == null)
                 return ApiResponses.Fail("Şifre sıfırlama talebiniz bulunamadı. Lütfen yeniden 'Şifremi Unuttum' sayfasından talepte bulunun.");
 
             if (passwordResetToken.ExpTime < DateTime.UtcNow)

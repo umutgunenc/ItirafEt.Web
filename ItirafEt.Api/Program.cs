@@ -2,6 +2,7 @@ using System.Text;
 using ItirafEt.Api.BackgorunServices;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.EmailServices;
 using ItirafEt.Api.EndPoints;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
@@ -9,6 +10,7 @@ using ItirafEt.Api.Services;
 using ItirafEt.Shared.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
@@ -111,6 +113,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+
 builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<CategoryService>();
 builder.Services.AddTransient<BanUserService>();
@@ -129,6 +134,8 @@ builder.Services.AddTransient<CommentHubService>();
 builder.Services.AddTransient<PostViewHubService>();
 builder.Services.AddTransient<MessageHubService>();
 builder.Services.AddTransient<BanUserHubService>();
+
+
 
 
 var app = builder.Build();

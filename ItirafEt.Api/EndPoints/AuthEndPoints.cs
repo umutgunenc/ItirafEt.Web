@@ -13,6 +13,19 @@ namespace ItirafEt.Api.EndPoints
             app.MapPost("/api/auth/register", async (RegisterViewModel model, AuthService authService) =>
                 Results.Ok(await authService.RegisterAsync(model)));
 
+            app.MapPost("/api/auth/forgotPassword", async (ForgotPaswordViewModel model, HttpContext context, AuthService authService) =>
+            {
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString();
+                var userAgent = context.Request.Headers["User-Agent"].ToString();
+
+                model.IpAddress = ipAddress;
+                model.DeviceInfo = userAgent;
+
+                return Results.Ok(await authService.CreatePasswordResetTokenAsync(model));
+            });
+
+            app.MapPost("/api/auth/changeUserPassword", async (ChangeUserPasswordViewModel model, AuthService authService) =>
+                Results.Ok(await authService.ChangeUserPasswordAsync(model)));
             return app;
         }
     }

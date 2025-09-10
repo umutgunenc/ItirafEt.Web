@@ -17,7 +17,7 @@ namespace ItirafEt.Shared.ViewModels
         public string NewPassword { get; set; }
 
         [Required(ErrorMessage = "Yeni Şifrenizi Tekrar Giriniz")]
-        [Compare("Password", ErrorMessage = "Şifreler eşleşmiyor.")]
+        [Compare("NewPassword", ErrorMessage = "Şifreler eşleşmiyor.")]
         public string NewPasswordConfirm { get; set; }
         public string Token { get; set; }
 

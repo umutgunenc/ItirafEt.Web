@@ -1,6 +1,7 @@
 ﻿using ItirafEt.Api.Data;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.ViewModels;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Services
@@ -9,11 +10,13 @@ namespace ItirafEt.Api.Services
     {
         private readonly dbContext _context;
         private readonly BanUserHubService _banUserHubService;
+        private readonly IEmailSender _emailSender;
 
-        public BanUserService(dbContext context, BanUserHubService banUserHubService)
+        public BanUserService(dbContext context, BanUserHubService banUserHubService, IEmailSender emailSender = null)
         {
             _context = context;
             _banUserHubService = banUserHubService;
+            _emailSender = emailSender;
         }
 
         public async Task<ApiResponses<List<BanUserViewModel>>> GetAllUsers()

@@ -1,4 +1,5 @@
 ﻿using ItirafEt.Shared.ViewModels;
+using ItirafEt.SharedComponents.Pages.Auth;
 using Refit;
 
 namespace ItirafEt.SharedComponents.Apis 
@@ -12,5 +13,14 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Post("/api/auth/register")]
         Task<ApiResponses> RegisterAsync(RegisterViewModel model);
+
+        [Post("/api/auth/forgotPassword")]
+        Task<ApiResponses> ForgotPasswordAsync(ForgotPaswordViewModel model);
+
+
+        [Post("/api/auth/changeUserPassword")]
+        Task<ApiResponses> ChangeUserPasswordAsync(ChangeUserPasswordViewModel model);
+
+
     }
 }
