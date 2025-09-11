@@ -1,5 +1,6 @@
 using System.Text;
 using ItirafEt.Api.BackgorunServices;
+using ItirafEt.Api.BackgorunServices.RabbitMQ;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.EmailServices;
@@ -113,7 +114,19 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
+// RabbitMQ Producer
+builder.Services.AddSingleton<EmailSenderProducer>(sp =>
+{
+    var producer = new EmailSenderProducer(sp.GetRequiredService<IConfiguration>());
+    producer.InitAsync().GetAwaiter().GetResult(); // InitAsync direkt startup'ta çaðýrýlýyor
+    return producer;
+});
+
+// RabbitMQ Consumer (background service)
+builder.Services.AddHostedService<EmailSenderConsumer>();
 
 
 builder.Services.AddTransient<AuthService>();

@@ -1,8 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ItirafEt.Api.BackgorunServices.RabbitMQ;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.EmailServices;
 using ItirafEt.Shared;
 using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.ViewModels;
@@ -18,14 +20,14 @@ namespace ItirafEt.Api.Services
         private readonly dbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IConfiguration _configuration;
-        private readonly IEmailSender _emailSender;
+        private readonly EmailSenderProducer _emailSenderProducer;
 
-        public AuthService(dbContext context, IPasswordHasher<User> passwordHasher, IConfiguration configuration, IEmailSender emailSender)
+        public AuthService(dbContext context, IPasswordHasher<User> passwordHasher, IConfiguration configuration, IEmailSender emailSender, EmailSenderProducer emailSenderProducer)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _configuration = configuration;
-            _emailSender = emailSender;
+            _emailSenderProducer = emailSenderProducer;
         }
         public async Task<AuthResponse> LoggingAsync(LoginViewModel model)
         {
@@ -94,6 +96,8 @@ namespace ItirafEt.Api.Services
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
+
+            await _emailSenderProducer.PublishAsync(EmailTypes.Welcome, EmailCreateFactory.CreateEmail(EmailTypes.Welcome, user));
             return ApiResponses.Success();
 
 
@@ -218,57 +222,13 @@ namespace ItirafEt.Api.Services
 
             var baseUrl = _configuration["Jwt:Issuer"];
             var resetLink = $"{baseUrl}/reset-password?userId={user.Id}&token={token}";
-            try
-            {
-                await _emailSender.SendEmailAsync(
-                user.Email,
-                "🔑 Şifre Sıfırlama Talebi",
-                $@"
-    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
-        <h2 style='color: #333;'>Merhaba {user.UserName},</h2>
-        <p style='font-size: 14px; color: #555;'>
-            Şifrenizi sıfırlamak için aşağıdaki butona tıklayın. 
-            Bu bağlantı yalnızca <strong>30 dakika</strong> boyunca geçerlidir.
-        </p>
-
-        <p style='text-align: center; margin: 30px 0;'>
-            <a href='{resetLink}' 
-               style='
-                   display:inline-block;
-                   background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
-                   color: #fff;
-                   border-radius: 8px;
-                   padding: 12px 24px;
-                   text-decoration: none;
-                   font-size: 16px;
-                   font-weight: bold;
-                   transition: all 0.2s ease;
-                   box-shadow: 0 4px 10px rgba(24, 119, 242, 0.25);
-               '>
-                Şifremi Sıfırla
-            </a>
-        </p>
-
-        <p style='font-size: 13px; color: #999;'>
-            Eğer bu talebi siz oluşturmadıysanız, lütfen bu e-postayı dikkate almayın.
-        </p>
-
-        <hr style='margin: 20px 0;'/>
-        <p style='font-size: 12px; color: #aaa; text-align: center;'>
-            © {DateTime.UtcNow.Year} ItirafEt Ekibi
-        </p>
-    </div>"
-            );
-            }
-            catch (Exception ex)
-            {
-                return ApiResponses.Fail(ex.Message);
-            }
-
-
 
             await _context.PasswordResetTokens.AddAsync(passwordResetToken);
             await _context.SaveChangesAsync();
+
+
+            await _emailSenderProducer.PublishAsync(EmailTypes.Reset, EmailCreateFactory.CreateEmail(EmailTypes.Reset,user,resetLink));
+
             return ApiResponses.Success();
 
         }

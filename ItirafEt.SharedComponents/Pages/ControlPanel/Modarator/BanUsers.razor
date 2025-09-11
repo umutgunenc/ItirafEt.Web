@@ -1,7 +1,7 @@
 ﻿@page "/admin/banUsers"
 @inject AuthStateProvider AuthStateProvider
 @inject IBanUserApi BanUserApi
-@inject IDateTimeHelperService DateTimeHelperService
+@* @inject IDateTimeHelperService DateTimeHelperService *@
 
 
 <div class="px-lg-5 py-5">
@@ -126,9 +126,7 @@
 		_isBusy = true;
 		try
 		{
-			user.BannedDateUntil = user.BannedDateUntil.HasValue
-				? ToUTC(user.BannedDateUntil.Value, await GetUserTimeZoneId())
-				: null;
+
 			var response = await BanUserApi.BanUserAsync(user, _adminId);
 			if (response.IsSuccess)
 			{
@@ -218,13 +216,13 @@
 
 	}
 
-	private async Task<string> GetUserTimeZoneId()
-	{
-		return await DateTimeHelperService.GetUserTimeZoneIdAsync();
-	}
+	// private async Task<string> GetUserTimeZoneId()
+	// {
+	// 	return await DateTimeHelperService.GetUserTimeZoneIdAsync();
+	// }
 
-	private DateTime ToUTC(DateTime date, string timeZoneId)
-	{
-		return DateTimeHelperService.ToUtc(date, timeZoneId);
-	}
+	// private DateTime ToUTC(DateTime date, string timeZoneId)
+	// {
+	// 	return DateTimeHelperService.ToUtc(date, timeZoneId);
+	// }
 }

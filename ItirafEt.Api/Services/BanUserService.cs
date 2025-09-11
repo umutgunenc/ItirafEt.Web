@@ -1,4 +1,6 @@
-﻿using ItirafEt.Api.Data;
+﻿using ItirafEt.Api.BackgorunServices.RabbitMQ;
+using ItirafEt.Api.Data;
+using ItirafEt.Api.EmailServices;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -10,13 +12,13 @@ namespace ItirafEt.Api.Services
     {
         private readonly dbContext _context;
         private readonly BanUserHubService _banUserHubService;
-        private readonly IEmailSender _emailSender;
+        private readonly EmailSenderProducer _emailSenderProducer;
 
-        public BanUserService(dbContext context, BanUserHubService banUserHubService, IEmailSender emailSender = null)
+        public BanUserService(dbContext context, BanUserHubService banUserHubService, IEmailSender emailSender = null, EmailSenderProducer emailSenderProducer = null)
         {
             _context = context;
             _banUserHubService = banUserHubService;
-            _emailSender = emailSender;
+            _emailSenderProducer = emailSenderProducer;
         }
 
         public async Task<ApiResponses<List<BanUserViewModel>>> GetAllUsers()
@@ -64,11 +66,14 @@ namespace ItirafEt.Api.Services
                 user.BannedDateUntil = null;
 
             user.BannedDate = DateTime.UtcNow;
+
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
             if (user.IsBanned)
                 await _banUserHubService.UserBannedAsync(user.Id);
+
+            await _emailSenderProducer.PublishAsync(EmailTypes.Ban,EmailCreateFactory.CreateEmail(EmailTypes.Ban, user));
 
             return ApiResponses.Success();
         }
