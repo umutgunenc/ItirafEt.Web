@@ -14,11 +14,11 @@ namespace ItirafEt.Api.BackgorunServices
 
             var jobUnbanUser = JobBuilder.Create<UnbanUserServiceJob>().Build();
 
-            DateTime now = DateTime.UtcNow;
-            DateTime scheduledTime = new DateTime(now.Year, now.Month, now.Day, 00, 00, 05);
+            DateTime scheduledDate = DateTime.UtcNow.AddDays(1);
+            DateTime scheduledTime = new DateTime(scheduledDate.Year, scheduledDate.Month, scheduledDate.Day, 00, 00, 05);
 
-            var unbanUser = TriggerBuilder.Create()
-                .StartAt(scheduledTime.ToLocalTime())
+            var unbanUserTrigger = TriggerBuilder.Create()
+                .StartAt(scheduledTime)
                 //.StartNow()
                 .WithSimpleSchedule(x => x
                     //.WithIntervalInMinutes(1)
@@ -26,7 +26,14 @@ namespace ItirafEt.Api.BackgorunServices
                     .RepeatForever())
                 .Build();
 
-            await scheduler.ScheduleJob(jobUnbanUser, unbanUser);
+            //var unbanUserTrigger = TriggerBuilder.Create()
+            //    .StartNow() // hemen başlat
+            //    .WithSimpleSchedule(x => x
+            //        .WithIntervalInMinutes(1) // her 1 dakikada bir
+            //        .RepeatForever())          // sonsuz tekrar
+            //    .Build();
+
+            await scheduler.ScheduleJob(jobUnbanUser, unbanUserTrigger);
 
         }
     }
