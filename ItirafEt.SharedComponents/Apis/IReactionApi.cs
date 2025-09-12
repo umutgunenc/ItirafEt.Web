@@ -11,11 +11,11 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Post("/api/likePost")]
-        Task<ApiResponses> LikePostAsync(int postId, Guid UserId);
+        Task<ApiResponses> LikePostAsync(int postId, Guid userId);
 
         [Headers("Authorization: Bearer")]
         [Post("/api/dislikePost")]
-        Task<ApiResponses> DislikePostAsync(int postId, Guid UserId);
+        Task<ApiResponses> DislikePostAsync(int postId, Guid userId);
 
         [Get("/api/getPostLikeCount")]
         Task<ApiResponses<int>> GetPostLikeCountAsync(int postId);
@@ -25,6 +25,15 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Get("/api/getUserReactionTypeId")]
-        Task<ApiResponses<int?>> GetUserReactionTypeIdAsync(int postId, Guid? UserId);
+        Task<ApiResponses<int?>> GetUserReactionTypeIdAsync(int postId, Guid? userId);
+
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/likeComment")]
+        Task<ApiResponses> LikeCommentAsync(int commentId, Guid userId);
+
+        [Headers("Authorization: Bearer")]
+        [Post("/api/dislikeComment")]
+        Task<ApiResponses> DislikeCommentAsync(int commentId, Guid userId);
     }
 }

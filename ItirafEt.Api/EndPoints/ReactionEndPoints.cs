@@ -1,4 +1,5 @@
-﻿using ItirafEt.Api.Services;
+﻿using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.Services;
 using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.Builder;
 
@@ -14,34 +15,38 @@ namespace ItirafEt.Api.EndPoints
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser)))
                     .RequireCors("AllowSpecificOrigin");
 
-
-            app.MapPost("/api/likePost", async (int postId, Guid UserId, ReactionService reactionService) =>
-                Results.Ok(await reactionService.LikePostAsync(postId, UserId)))
+            app.MapPost("/api/likePost", async (int postId, Guid userId, ReactionService reactionService) =>
+                Results.Ok(await reactionService.LikePostAsync(postId, userId)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
                     .RequireCors("AllowSpecificOrigin");
 
-
-            app.MapPost("/api/dislikePost", async (int postId, Guid UserId, ReactionService reactionService) =>
-                Results.Ok(await reactionService.DislikePostAsync(postId, UserId)))
+            app.MapPost("/api/dislikePost", async (int postId, Guid userId, ReactionService reactionService) =>
+                Results.Ok(await reactionService.DislikePostAsync(postId, userId)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
                     .RequireCors("AllowSpecificOrigin");
-
 
             app.MapGet("/api/getPostLikeCount", async (ReactionService reactionService, int postId) =>
                 Results.Ok(await reactionService.GetPostLikeCountAsync(postId)))
                     .RequireCors("AllowSpecificOrigin");
 
-
             app.MapGet("/api/getPostDislikeCount", async (ReactionService reactionService, int postId) =>
                 Results.Ok(await reactionService.GetPostDislikeCountAsync(postId)))
                     .RequireCors("AllowSpecificOrigin");
 
-
-            app.MapGet("/api/getUserReactionTypeId", async (ReactionService reactionService, int postId, Guid? UserId) =>
-                Results.Ok(await reactionService.GetUserReactionTypeIdAsync(postId, UserId)))
+            app.MapGet("/api/getUserReactionTypeId", async (ReactionService reactionService, int postId, Guid? userId) =>
+                Results.Ok(await reactionService.GetUserReactionTypeIdAsync(postId, userId)))
                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
                     .RequireCors("AllowSpecificOrigin");
 
+            app.MapPost("/api/dislikeComment", async (int commentId, Guid userId, ReactionService reactionService) =>
+                Results.Ok(await reactionService.DislikeCommentAsync(commentId, userId)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                .RequireCors("AllowSpecificOrigin");
+
+            app.MapPost("/api/likeComment", async (int commentId, Guid userId, ReactionService reactionService) =>
+                Results.Ok(await reactionService.LikeCommentAsync(commentId, userId)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                .RequireCors("AllowSpecificOrigin");
 
             return app;
         }

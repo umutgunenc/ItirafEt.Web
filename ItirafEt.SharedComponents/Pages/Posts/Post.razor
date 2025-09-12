@@ -36,44 +36,44 @@
 					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
 					<p class="card-text text-break"
-					style="text-align: justify;
+					   style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 						@_postDto.Content
 					</p>
 
-					<div class="d-flex flex-column flex-md-row justify-content-between">
-						<!-- Desktop Left (md+) -->
-						<div class="d-none d-md-flex gap-4 align-items-start order-md-1">
-							<!-- Beğeni -->
-							<div class="d-flex flex-column align-items-center">
-								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+					<div class="d-flex flex-column flex-lg-row justify-content-between">
+
+						<!-- Web (lg-) -->
+						<div class="d-none d-lg-flex gap-2 align-items-start">
+							<div class="d-flex align-items-center  gap-2 ">
+								<button class="@($"btn-like{(_isAlreadyLiked ? " liked" :"")}")" style="height:30px; width:30px" @onclick="LikePostAsync">
+									<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
+								</button>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
 							</div>
-							<!-- Beğenmeme -->
-							<div class="d-flex flex-column align-items-center">
-								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+							<div class="d-flex align-items-center  gap-2 ">
+								<button class="@($"btn-dislike{(_isAlreadyDisliked ? " disliked" :"")}")" style="height:30px; width:30px" @onclick="DislikePostAsync">
+									<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
+								</button>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
 							</div>
-							<!-- Şikayet -->
 							@if (!_isPostOwner)
 							{
-								<div class="d-flex flex-column align-items-center">
-									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="ReportPost"></i>
-									<span class="text-muted small">Şikayet</span>
+								<div class="d-flex align-items-center" @onclick="ReportPost">
+									<button class="btn-report" style="height:30px; width:30px">
+										<i class="bi bi-exclamation-circle" style="height:25px;"></i>
+									</button>
 								</div>
 							}
 						</div>
 
 						<!-- Right Section (Always) -->
-						<div class="order-md-2 mb-2 mb-md-0 text-end">
+						<div class="order-lg-2 mb-2 mb-lg-0 text-end">
 							<!-- Tarih -->
 							<div class="text-muted small">
 								@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
@@ -88,31 +88,31 @@
 							</div>
 						</div>
 
-						<!-- Mobile Bottom (md-) -->
-						<div class="d-flex d-md-none justify-content-end gap-4 mt-2 order-3">
+						<!-- Mobile (lg-) -->
+						<div class="d-flex d-lg-none justify-content-end gap-2 mt-2 order-3">
 							<!-- Beğeni -->
-							<div class="d-flex flex-column align-items-center">
-								<i class="@( $"bi bi-hand-thumbs-up{(_isAlreadyLiked ? "-fill":"")} fs-5 text-primary" )"
-								style="cursor:pointer" @onclick="LikePostAsync"></i>
+							<div class="d-flex align-items-center gap-2 ">
+								<button class="btn-like" style="height:30px; width:30px" @onclick="LikePostAsync">
+									<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
+								</button>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 									@_likeCount
 								</span>
 							</div>
-							<!-- Beğenmeme -->
-							<div class="d-flex flex-column align-items-center">
-								<i class="@( $"bi bi-hand-thumbs-down{(_isAlreadyDisliked ? "-fill":"")} fs-5 text-danger" )"
-								style="cursor:pointer" @onclick="DislikePostAsync"></i>
+							<div class="d-flex align-items-center  gap-2 ">
+								<button class="btn-dislike" style="height:30px; width:30px" @onclick="DislikePostAsync">
+									<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
+								</button>
 								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 									@_dislikeCount
 								</span>
 							</div>
-							<!-- Şikayet -->
 							@if (!_isPostOwner)
 							{
-								<div class="d-flex flex-column align-items-center">
-									<i class="bi bi-exclamation-circle fs-5 text-danger"
-									style="cursor:pointer" @onclick="ReportPost"></i>
-									<span class="text-muted small">Şikayet</span>
+								<div class="d-flex align-items-center" @onclick="ReportPost">
+									<button class="btn-report" style="height:30px; width:30px">
+										<i class="bi bi-exclamation-circle" style="height:25px;"></i>
+									</button>
 								</div>
 							}
 						</div>
@@ -125,8 +125,8 @@
 						<div class="d-flex align-items-center gap-3">
 							<!-- Profil Fotoğrafı -->
 							<img src="@(string.IsNullOrEmpty(_postDto.UserProfileImageUrl)? "/anonymousIcon.png" : _postDto.UserProfileImageUrl)"
-							class="profile-photo rounded-circle"
-							width="56" height="56">
+								 class="profile-photo rounded-circle"
+								 width="56" height="56">
 
 							<!-- Kullanıcı Bilgileri -->
 							<div class="d-flex flex-column">
@@ -179,10 +179,10 @@
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -198,8 +198,8 @@
 										{
 											<div>
 												<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
-												class="profile-photo rounded-circle"
-												width="40" height="40" />
+													 class="profile-photo rounded-circle"
+													 width="40" height="40" />
 												<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
 
 											</div>
@@ -216,32 +216,84 @@
 
 													<div class="my-3">
 														<InputTextArea class="form-control"
-														placeholder="Yorumunuzu düzenleyin..."
-														@bind-Value="comment.Content"
-														rows="4" />
+																	   placeholder="Yorumunuzu düzenleyin..."
+																	   @bind-Value="comment.Content"
+																	   rows="4" />
 														<ValidationMessage For="@(() => comment.Content)" />
 													</div>
 
 													<div class="d-flex justify-content-start my-3 gap-2">
 														<button type="submit" class="btn-custom" disabled="@_isApiBusy">Değiştir</button>
-														<button type="button" class="btn-custom-red" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)"  disabled="@_isApiBusy">İptal</button>
+														<button type="button" class="btn-custom-red" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" disabled="@_isApiBusy">İptal</button>
 													</div>
 												</EditForm>
 											}
-											<div class="d-flex justify-content-start m-0 my-1">
+											<div class="d-flex justify-content-start m-0 my-1 gap-2">
+
+												@if (comment.IsActive)
+												{
+													<div class="d-flex gap-2 align-items-start">
+														<div class="d-flex align-items-center  gap-2 ">
+															@if (comment.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
+															{
+																<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
+																	<i class="bi bi-heart-fill" style="height:20px;"></i>
+																</button>
+															}
+															else
+															{
+																<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
+																	<i class="bi bi-heart" style="height:20px;"></i>
+																</button>
+															}
+
+															<span class="text-muted small" style="cursor:pointer">@comment.LikeCount</span>
+														</div>
+
+														<div class="d-flex align-items-center  gap-2 ">
+
+															@if (comment.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+															{
+
+																<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
+																	<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
+																</button>
+															}
+															else
+															{
+
+																<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
+																	<i class="bi bi-heartbreak" style="height:20px;"></i>
+																</button>
+															}
+															<span class="text-muted small" style="cursor:pointer">@comment.DislikeCount</span>
+														</div>
+
+														@if (comment.UserId != _currentUserId)
+														{
+															<div class="d-flex align-items-center">
+																<button class="btn-report" style="height:30px; width:30px">
+																	<i class="bi bi-exclamation-circle"></i>
+																</button>
+															</div>
+														}
+													</div>
+												}
+
+
 												@if (comment.IsActive && (comment.UserId == _currentUserId || adminRoles.Contains(_userRoleId)))
 												{
 													@if (comment.UserId == _currentUserId)
 													{
 														<div>
-															<button class="btn-custom-orange-circle me-2" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" style="height:30px; width:30px">
+															<button class="btn-custom-orange-circle" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" style="height:30px; width:30px">
 																<i class="bi bi-pen"></i>
 															</button>
 														</div>
 													}
 
 													<div>
-														<button class="btn-custom-red-circle me-2" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)" style="height:30px; width:30px">
+														<button class="btn-custom-red-circle" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)" style="height:30px; width:30px">
 															<i class="bi bi-trash-fill"></i>
 														</button>
 													</div>
@@ -249,7 +301,7 @@
 												@if (comment.IsActive)
 												{
 													<button class="btn-custom-circle" @onclick="() => ToggleReplyBox(comment.Id)" style="height:30px; width:30px">
-														<i class="bi bi-chat-right-quote"></i>
+														<i class="bi bi-chat-right-quote" style="height:20px;"></i>
 													</button>
 												}
 
@@ -271,13 +323,13 @@
 											@if (_replyToCommentId == comment.Id)
 											{
 												<EditForm Model="_replyModel"
-												OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+														  OnValidSubmit="()=>AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
 													<div class="input-group mb-2">
 														<input type="text"
-														class="form-control form-control-sm"
-														placeholder="Cevabınızı yazın..."
-														@bind="_replyModel.Content" />
+															   class="form-control form-control-sm"
+															   placeholder="Cevabınızı yazın..."
+															   @bind="_replyModel.Content" />
 														<div class="input-group-append">
 															<button class="btn-custom rounded-start-0" type="submit">
 																Gönder
@@ -292,8 +344,8 @@
 												@if (comment.CommentReplies?.Any() == true)
 												{
 													<h6 class="fw-semibold"
-													@onclick="() => ShowCommentReplies(comment)"
-													style="cursor:pointer">
+														@onclick="() => ShowCommentReplies(comment)"
+														style="cursor:pointer">
 														Cevaplar (@comment.CommentReplies.Count)
 														<i class="bi @(comment.ShowReplies ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
 													</h6>
@@ -316,7 +368,7 @@
 																<div class="d-flex justify-content-between">
 																	<div>
 																		<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
-																		class="profile-photo rounded-circle" width="40" height="40" />
+																			 class="profile-photo rounded-circle" width="40" height="40" />
 																		<strong class="ms-2" @onclick="()=>NavigateToUserProfile(reply.UserId)" style="cursor:pointer">@reply.UserName</strong>
 																	</div>
 																</div>
@@ -332,9 +384,9 @@
 
 																		<div class="my-3">
 																			<InputTextArea class="form-control"
-																			placeholder="Yorumunuzu düzenleyin..."
-																			@bind-Value="reply.Content"
-																			rows="4" />
+																						   placeholder="Yorumunuzu düzenleyin..."
+																						   @bind-Value="reply.Content"
+																						   rows="4" />
 																			<ValidationMessage For="@(() => reply.Content)" />
 																		</div>
 
@@ -346,11 +398,53 @@
 																}
 																@if (reply.IsActive && (reply.UserId == _currentUserId || adminRoles.Contains(_userRoleId)))
 																{
-																	<div class="d-flex justify-content-start">
+																	<div class="d-flex justify-content-start gap-2">
+
+																		<div class="d-flex align-items-center  gap-2 ">
+																			@if (reply.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
+																			{
+																				<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
+																					<i class="bi bi-heart-fill" style="height:20px;"></i>
+																				</button>
+																			}
+																			else
+																			{
+																				<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
+																					<i class="bi bi-heart" style="height:20px;"></i>
+																				</button>
+																			}
+																			<span class="text-muted small" style="cursor:pointer">@reply.LikeCount</span>
+																		</div>
+
+																		<div class="d-flex align-items-center  gap-2 ">
+																			@if (comment.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+																			{
+																				<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
+																					<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
+																				</button>
+																			}
+																			else
+																			{
+																				<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
+																					<i class="bi bi-heartbreak" style="height:20px;"></i>
+																				</button>
+																			}
+																			<span class="text-muted small" style="cursor:pointer">@reply.DislikeCount</span>
+																		</div>
+
+																		@if (comment.UserId != _currentUserId)
+																		{
+																			<div class="d-flex align-items-center">
+																				<button class="btn-report" style="height:30px; width:30px">
+																					<i class="bi bi-exclamation-circle"></i>
+																				</button>
+																			</div>
+																		}
+
 																		@if (reply.UserId == _currentUserId && comment.IsActive)
 																		{
 																			<div>
-																				<button class="btn-custom-orange-circle me-2" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																				<button class="btn-custom-orange-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
 																					<i class="bi bi-pen"></i>
 																				</button>
 																			</div>
@@ -364,7 +458,7 @@
 
 																	</div>
 																}
-																@* <p class="m-0 ms-2 mt-2" style="white-space: pre-wrap;">@reply.Content</p> *@
+
 																@if (reply.ShowDeleteWarning)
 																{
 																	<div class="" role="alert">
@@ -394,15 +488,15 @@
 								</div>
 
 								<EditForm Model="_commentModel"
-								OnValidSubmit="AddCommentAsync">
+										  OnValidSubmit="AddCommentAsync">
 									<DataAnnotationsValidator />
 
 									<div class="mb-3">
 										<InputTextArea id="yorum"
-										class="form-control"
-										placeholder="Yorum yazın..."
-										@bind-Value="_commentModel.Content"
-										rows="4" />
+													   class="form-control"
+													   placeholder="Yorum yazın..."
+													   @bind-Value="_commentModel.Content"
+													   rows="4" />
 										<ValidationMessage For="@(() => _commentModel.Content)" />
 									</div>
 
@@ -427,9 +521,9 @@
 
 <ModalComponent @ref="_likesModel" Title="Beğeneler" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>
-		@if (_reactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like))
+		@if (_postReactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like))
 		{
-			@foreach (var reaction in _reactions.OrderByDescending(x => x.CreatedDate))
+			@foreach (var reaction in _postReactions.OrderByDescending(x => x.CreatedDate))
 			{
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
 				{
@@ -439,8 +533,8 @@
 							<div class="d-flex align-items-center gap-2 gap-md-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-								class="profile-photo rounded-circle"
-								width="56" height="56">
+									 class="profile-photo rounded-circle"
+									 width="56" height="56">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -497,9 +591,9 @@
 
 <ModalComponent @ref="_dislikeModel" Title="Beğenmeyenler" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>
-		@if (_reactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike))
+		@if (_postReactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike))
 		{
-			@foreach (var reaction in _reactions.OrderByDescending(x => x.CreatedDate))
+			@foreach (var reaction in _postReactions.OrderByDescending(x => x.CreatedDate))
 			{
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
 				{
@@ -509,8 +603,8 @@
 							<div class="d-flex align-items-center gap-2 gap-sm-4">
 								<!-- Profil Fotoğrafı -->
 								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-								class="profile-photo rounded-circle"
-								width="56" height="56">
+									 class="profile-photo rounded-circle"
+									 width="56" height="56">
 								<div class="d-flex flex-column">
 									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
 										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
@@ -583,9 +677,9 @@
 						<div class="d-flex align-items-center gap-2 gap-sm-4">
 							<!-- Profil Fotoğrafı -->
 							<img src="@(string.IsNullOrEmpty(viewer.PostViewerUserProfileImageUrl)? "/anonymousIcon.png" : viewer.PostViewerUserProfileImageUrl)"
-							class="profile-photo rounded-circle"
-							width="56" height="56"
-							style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+								 class="profile-photo rounded-circle"
+								 width="56" height="56"
+								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 							<div class="d-flex flex-column">
 								<div class="d-flex align-items-center gap-1 gap-md-3 mb-2">
 									<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(viewer.PostViewerUserId)">@viewer.PostViewerUserName</h5>
@@ -646,6 +740,7 @@
 </ModalComponent>
 
 @code {
+
 	[Parameter]
 	public int postId { get; set; }
 
@@ -654,7 +749,7 @@
 	private CommentsViewModel _commentModel = new();
 	private CommentsViewModel _replyModel = new();
 	private List<CommentsViewModel>? _comments = new();
-	private List<ReactionViewModel> _reactions = new();
+	private List<ReactionViewModel> _postReactions = new();
 	private List<PostViewersViewModel>? _viewers = new();
 	private ConversationViewModel? _conversationDto = new();
 	private HubConnection? _reactionHubConnection;
@@ -706,7 +801,7 @@
 		ResetPage();
 		CheckUserLoggedIn();
 		GetUserRoleId();
-		IsUserPostOwner();
+
 		try
 		{
 			_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
@@ -716,6 +811,7 @@
 			_userTimeZoneId = "UTC";
 		}
 		await StartTasksWithUserRoleAsync();
+		UserPostOwner();
 
 		await StartReactionHubConnectionAsync();
 		await StartPostViewHubConnectionAsync();
@@ -750,18 +846,19 @@
 
 		if (!allowedRoles.Contains(_userRoleId))
 		{
-			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", (oldReactionId, newReactionId, userId) =>
+			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", async (oldReactionId, newReactionId, userId) =>
 			{
 				UpdateReactions(oldReactionId, newReactionId, userId);
-				StateHasChanged();
+				await InvokeAsync(StateHasChanged);
 			});
 		}
 		else
 		{
-			_reactionHubConnection.On<ReactionViewModel, bool>("PostLikedOrDislikedAsync", (reaction, isReactionUpdated) =>
+			_reactionHubConnection.On<ReactionViewModel, bool>("PostLikedOrDislikedAsync", async (reaction, isReactionUpdated) =>
 			{
 				UpdateReactions(reaction, isReactionUpdated);
-				StateHasChanged();
+				await InvokeAsync(StateHasChanged);
+
 			});
 		}
 
@@ -776,7 +873,7 @@
 
 		if (allowedRoles.Contains(_userRoleId))
 		{
-			_postViewHubConnection.On<int, PostViewersViewModel>("PostViewedAsync", (postId, postViewerDto) =>
+			_postViewHubConnection.On<int, PostViewersViewModel>("PostViewedAsync", async (postId, postViewerDto) =>
 			{
 				if (_viewers == null)
 					_viewers = new List<PostViewersViewModel>();
@@ -784,15 +881,16 @@
 				_viewers.Add(postViewerDto);
 				_postViewCount = _viewers.Count;
 
-				StateHasChanged();
+				await InvokeAsync(StateHasChanged);
+
 			});
 		}
 		else
 		{
-			_postViewHubConnection.On<int>("PostViewedAnonymousAsync", postId =>
+			_postViewHubConnection.On<int>("PostViewedAnonymousAsync", async (postId) =>
 			{
 				_postViewCount++;
-				StateHasChanged();
+				await InvokeAsync(StateHasChanged);
 			});
 		}
 
@@ -879,14 +977,14 @@
 		{
 			var postTask = PostApi.GetPostByIdAsync(postId);
 			var commentsTask = CommentApi.GetPostCommentsAsync(postId);
-			var reactionsTask = ReactionApi.GetPostReactionsAsync(postId);
+			var postReactionsTask = ReactionApi.GetPostReactionsAsync(postId);
 			var viewersTask = PostViewApi.GetPostsViewersAsync(postId);
 
-			await Task.WhenAll(postTask, commentsTask, reactionsTask, viewersTask);
+			await Task.WhenAll(postTask, commentsTask, postReactionsTask, viewersTask);
 
 			GetPost(postTask.Result);
 			GetComments(commentsTask.Result);
-			GetReactions(reactionsTask.Result);
+			GetPostReactions(postReactionsTask.Result);
 			GetPostViewers(viewersTask.Result);
 
 		}
@@ -921,18 +1019,18 @@
 		else
 			_userRoleId = null;
 	}
-	private void IsUserPostOwner()
-	{
 
+	private void UserPostOwner()
+	{
 		if (_postDto == null)
 			return;
 		if (_userRoleId == null)
-			return;
+			_isPostOwner = false;
 
 		if (Guid.TryParse(AuthStateProvider.User?.id, out Guid parsedId))
 		{
 			_currentUserId = parsedId;
-			_isPostOwner = _postDto.UserId == _currentUserId;
+			_isPostOwner = _postDto.UserId.ToString().Equals(_currentUserId.ToString(), StringComparison.OrdinalIgnoreCase);
 		}
 		else
 			_isPostOwner = false;
@@ -1124,13 +1222,13 @@
 	}
 	private void UpdatePostReactionCounts()
 	{
-		_likeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? 0;
-		_dislikeCount = _reactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? 0;
+		_likeCount = _postReactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? 0;
+		_dislikeCount = _postReactions?.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? 0;
 	}
 	private void UpdatePostReactionButtons()
 	{
-		_isAlreadyLiked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
-		_isAlreadyDisliked = _reactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
+		_isAlreadyLiked = _postReactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
+		_isAlreadyDisliked = _postReactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 	}
 	private void UpdateReactions(ReactionViewModel reaction, bool? isReactionUpdated)
 	{
@@ -1138,12 +1236,12 @@
 
 		if (isReactionUpdated == true)
 		{
-			var index = _reactions?.FindIndex(r => r.ReactingUserId == reaction.ReactingUserId) ?? -1;
-			if (index >= 0 && _reactions != null)
-				_reactions[index] = reaction;
+			var index = _postReactions?.FindIndex(r => r.ReactingUserId == reaction.ReactingUserId) ?? -1;
+			if (index >= 0 && _postReactions != null)
+				_postReactions[index] = reaction;
 		}
 		else
-			_reactions?.Add(reaction);
+			_postReactions?.Add(reaction);
 
 		UpdatePostReactionCounts();
 		UpdatePostReactionButtons();
@@ -1275,7 +1373,7 @@
 			_errorMessage = ex.Message;
 		}
 	}
-	private void GetReactions(ApiResponses<List<ReactionViewModel>> response)
+	private void GetPostReactions(ApiResponses<List<ReactionViewModel>> response)
 	{
 		if (_isPostHaveError)
 			return;
@@ -1283,11 +1381,11 @@
 		{
 			if (response.IsSuccess)
 			{
-				_reactions = response.Data;
+				_postReactions = response.Data;
 
-				if (_reactions?.Count != 0)
+				if (_postReactions?.Count != 0)
 				{
-					foreach (var reaction in _reactions)
+					foreach (var reaction in _postReactions)
 					{
 						reaction.CreatedDate = ToLocalTime(reaction.CreatedDate);
 					}
@@ -1299,7 +1397,7 @@
 			}
 			else
 			{
-				_reactions = null;
+				_postReactions = null;
 				_errorMessage = response.ErrorMessage;
 				_isPostHaveError = true;
 			}
@@ -1712,6 +1810,73 @@
 		{
 			_isPostHaveError = true;
 			_errorMessage = ex.Message;
+		}
+		finally
+		{
+			_isApiBusy = false;
+			await InvokeAsync(StateHasChanged);
+		}
+
+	}
+
+	private async Task LikeCommentAsync(int commentId)
+	{
+
+		if (_isApiBusy)
+			return;
+		_isApiBusy = true;
+		if (!_isUserLoggedIn)
+		{
+			_isApiBusy = false;
+			NavigateToLogin();
+			return;
+		}
+		try
+		{
+			var result = await ReactionApi.LikeCommentAsync(commentId, (Guid)_currentUserId);
+			if (!result.IsSuccess)
+			{
+				_isCommentsHaveError = true;
+				_commentErrorMessage = result.ErrorMessage;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isCommentsHaveError = true;
+			_commentErrorMessage = ex.Message;
+		}
+		finally
+		{
+			_isApiBusy = false;
+			await InvokeAsync(StateHasChanged);
+
+		}
+	}
+
+	private async Task DislikeCommentAsync(int commentId)
+	{
+		if (_isApiBusy)
+			return;
+		_isApiBusy = true;
+		if (!_isUserLoggedIn)
+		{
+			_isApiBusy = false;
+			NavigateToLogin();
+			return;
+		}
+		try
+		{
+			var result = await ReactionApi.DislikeCommentAsync(commentId, (Guid)_currentUserId);
+			if (!result.IsSuccess)
+			{
+				_isCommentsHaveError = true;
+				_commentErrorMessage = result.ErrorMessage;
+			}
+		}
+		catch (Exception ex)
+		{
+			_isCommentsHaveError = true;
+			_commentErrorMessage = ex.Message;
 		}
 		finally
 		{

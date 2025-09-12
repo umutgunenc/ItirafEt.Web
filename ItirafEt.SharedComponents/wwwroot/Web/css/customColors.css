@@ -127,3 +127,106 @@
     padding: 8px 16px;
     border: none;
 }
+
+
+/* =====  ===== */
+/* =====  ===== */
+/* =====  ===== */
+
+
+/* Ortak button ayarları */
+ .btn-report {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    transition: all 0.1s ease;
+    cursor: pointer;
+}
+
+
+.btn-like, .btn-dislike {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    transition: all 0.1s ease;
+    cursor: pointer;
+    background-color: white; /* normal buton beyaz */
+}
+
+    /* ===== LIKE ===== */
+    .btn-like i {
+        color: transparent; /* icon içi boş (outline) */
+        -webkit-background-clip: text;
+        background-clip: text;
+        background-image: linear-gradient(135deg, #e52d27 0%, #b31217 100%);
+        transition: all 0.4s ease;
+    }
+
+    .btn-like:hover {
+        background: linear-gradient(135deg, #e52d27 0%, #b31217 100%);
+        box-shadow: 0 4px 15px rgba(224, 24, 24, 0.3);
+        transform: translateY(-1px);
+    }
+
+        .btn-like:hover i {
+            color: white; /* kalp doluyor gibi olacak */
+        }
+
+    /* aktif / liked durumu */
+    .btn-like.liked {
+        background: linear-gradient(135deg, #e52d27 0%, #b31217 100%);
+    }
+
+        .btn-like.liked i {
+            color: white;
+        }
+
+    /* ===== DISLIKE ===== */
+    .btn-dislike i {
+        color: transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+        background-image: linear-gradient(135deg, #333 0%, #111 100%);
+        transition: all 0.4s ease;
+    }
+
+    .btn-dislike:hover {
+        background: linear-gradient(135deg, #333 0%, #111 100%);
+        box-shadow: 0 4px 15px rgba(50, 50, 50, 0.3);
+        transform: translateY(-1px);
+    }
+
+        .btn-dislike:hover i {
+            color: white;
+        }
+
+    .btn-dislike.disliked {
+        background: linear-gradient(135deg, #333 0%, #111 100%);
+    }
+
+        .btn-dislike.disliked i {
+            color: white;
+        }
+
+
+/* ===== REPORT BUTON ===== */
+.btn-report {
+    background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+    color: white;
+}
+
+    .btn-report:hover {
+        background: linear-gradient(135deg, #fb8c00 0%, #d84315 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    }

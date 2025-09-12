@@ -28,11 +28,25 @@ namespace ItirafEt.Api.HubServices
                 .SendAsync("UpdatePostLikeCountAsync", postId, likeCount);
         }
 
-        public async Task PostLikedOrDislikedAnonymousAsync(int postId, int? oldReactionTypeId, int newReactionTypeId, Guid UserId)
+        public async Task PostLikedOrDislikedAnonymousAsync(int postId, int? oldReactionTypeId, int newReactionTypeId, Guid userId)
         {
             await _hubContext.Clients
                 .Group($"post-{postId}")
-                .SendAsync("PostLikedOrDislikedAnonymousAsync", oldReactionTypeId, newReactionTypeId, UserId);
+                .SendAsync("PostLikedOrDislikedAnonymousAsync", oldReactionTypeId, newReactionTypeId, userId);
+        }
+
+        public async Task CommentLikedOrDislikedAnonymousAsync(int postId, int commentId, int? oldReactionTypeId, int newReactionTypeId, Guid userId)
+        {
+            await _hubContext.Clients
+                .Group($"postCommentReactionGroup-{postId}")
+                .SendAsync("CommentLikedOrDislikedAnonymousAsync", commentId, oldReactionTypeId, newReactionTypeId, userId);
+        }
+
+        public async Task CommentLikedOrDislikedAsync(int postId, int commentId, ReactionViewModel reactionModel, bool isUpdated)
+        {
+            await _hubContext.Clients
+                .Group($"postCommentReactionGroup-{postId}")
+                .SendAsync("CommentLikedOrDislikedAsync", commentId, reactionModel, isUpdated);
         }
 
     }

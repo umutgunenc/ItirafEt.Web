@@ -2,6 +2,7 @@
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
+using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,8 @@ namespace ItirafEt.Api.Services
 
 
                    }).ToList(),
+                   LikeCount = c.CommentReactions.Count(cr => cr.ReactionId == (int)ReactionTypeEnum.Like),
+                   DislikeCount = c.CommentReactions.Count(cr => cr.ReactionId == (int)ReactionTypeEnum.Dislike),
                    CommentReplies = c.Replies
                         .Select(r => new CommentsViewModel
                         {
@@ -78,7 +81,9 @@ namespace ItirafEt.Api.Services
                                 CreatedDate = cr.CreatedDate,
                                 CommentId = r.Id
 
-                            }).ToList()
+                            }).ToList(),
+                            LikeCount = r.CommentReactions.Count(cr => cr.ReactionId == (int)ReactionTypeEnum.Like),
+                            DislikeCount = r.CommentReactions.Count(cr => cr.ReactionId == (int)ReactionTypeEnum.Dislike),
 
                         }).ToList()
                }).ToListAsync();
