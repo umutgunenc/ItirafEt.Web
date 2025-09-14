@@ -16,6 +16,10 @@ using Refit;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+// TODO
+// tarayýcaki konsola loglari yazdýmak için canlýya alýnca degistirilecek
+builder.Logging.SetMinimumLevel(LogLevel.Trace);
+
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 

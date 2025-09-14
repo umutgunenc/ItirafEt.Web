@@ -135,6 +135,8 @@ namespace ItirafEt.Api.Services
             model.UserName = await GetUserNameAsync(userId);
             model.UserId = userId;
             model.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(userId);
+            model.LikeCount = 0;
+            model.DislikeCount = 0;
 
             await _commentHubServices.CommentAddedOrEditedAsync(postId, model, true);
 
@@ -182,6 +184,8 @@ namespace ItirafEt.Api.Services
             replyDto.CommentUserProfilPhotoUrl = await GetUserProfilePhotoUrl(userId);
             replyDto.UserId = userId;
             replyDto.IsActive = true;
+            replyDto.LikeCount = 0;
+            replyDto.DislikeCount = 0;
             await _commentHubServices.ReplyAddedOrEditedAsync(postId, replyDto, true);
 
             return ApiResponses.Success();

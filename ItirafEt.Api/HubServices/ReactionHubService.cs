@@ -14,10 +14,10 @@ namespace ItirafEt.Api.HubServices
         {
             _hubContext = hubContext;
         }
-        public async Task PostLikedOrDislikedAsync(int postId, ReactionViewModel reactionModel, bool isUpdated)
+        public async Task PostLikedOrDislikedAsync(ReactionViewModel reactionModel, bool isUpdated)
         {
             await _hubContext.Clients
-                .Group($"post-{postId}")
+                .Group($"post-{reactionModel.PostId}")
                 .SendAsync("PostLikedOrDislikedAsync", reactionModel, isUpdated);
         }
 
@@ -28,25 +28,25 @@ namespace ItirafEt.Api.HubServices
                 .SendAsync("UpdatePostLikeCountAsync", postId, likeCount);
         }
 
-        public async Task PostLikedOrDislikedAnonymousAsync(int postId, int? oldReactionTypeId, int newReactionTypeId, Guid userId)
+        public async Task PostLikedOrDislikedAnonymousAsync(int postId, int? oldReactionTypeId, int newReactionTypeId)
         {
             await _hubContext.Clients
                 .Group($"post-{postId}")
-                .SendAsync("PostLikedOrDislikedAnonymousAsync", oldReactionTypeId, newReactionTypeId, userId);
+                .SendAsync("PostLikedOrDislikedAnonymousAsync", oldReactionTypeId, newReactionTypeId);
         }
 
-        public async Task CommentLikedOrDislikedAnonymousAsync(int postId, int commentId, int? oldReactionTypeId, int newReactionTypeId, Guid userId)
+        public async Task CommentLikedOrDislikedAnonymousAsync(int postId, int commentId, int? oldReactionTypeId, int newReactionTypeId)
         {
             await _hubContext.Clients
-                .Group($"postCommentReactionGroup-{postId}")
-                .SendAsync("CommentLikedOrDislikedAnonymousAsync", commentId, oldReactionTypeId, newReactionTypeId, userId);
+                .Group($"post-{postId}")
+                .SendAsync("CommentLikedOrDislikedAnonymousAsync", commentId, oldReactionTypeId, newReactionTypeId);
         }
 
-        public async Task CommentLikedOrDislikedAsync(int postId, int commentId, ReactionViewModel reactionModel, bool isUpdated)
+        public async Task CommentLikedOrDislikedAsync(ReactionViewModel reactionModel, bool isUpdated)
         {
             await _hubContext.Clients
-                .Group($"postCommentReactionGroup-{postId}")
-                .SendAsync("CommentLikedOrDislikedAsync", commentId, reactionModel, isUpdated);
+                .Group($"post-{reactionModel.PostId}")
+                .SendAsync("CommentLikedOrDislikedAsync", reactionModel, isUpdated);
         }
 
     }

@@ -99,9 +99,9 @@ namespace ItirafEt.Api.Services
 
                 var reactionModel = ReactionToPostReactionModel(reaction);
 
-                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionModel, true);
+                await _reactionHubService.PostLikedOrDislikedAsync(reactionModel, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
-                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId, userId);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId);
 
                 return ApiResponses.Success();
 
@@ -123,9 +123,9 @@ namespace ItirafEt.Api.Services
 
                 var reactionDto = ReactionToPostReactionModel(reaction);
 
-                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
+                await _reactionHubService.PostLikedOrDislikedAsync(reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
-                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, null, reaction.ReactionTypeId, userId);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, null, reaction.ReactionTypeId);
 
                 return ApiResponses.Success();
 
@@ -164,9 +164,9 @@ namespace ItirafEt.Api.Services
                 _context.PostReaction.Update(reaction);
                 await _context.SaveChangesAsync();
                 var reactionDto = ReactionToPostReactionModel(reaction);
-                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, true);
+                await _reactionHubService.PostLikedOrDislikedAsync(reactionDto, true);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
-                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId, userId);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, oldReactionTypeId, reaction.ReactionTypeId);
 
                 return ApiResponses.Success();
 
@@ -186,9 +186,9 @@ namespace ItirafEt.Api.Services
 
                 reaction.ReactingUser = await GetReactingUserAsync(userId);
                 var reactionDto = ReactionToPostReactionModel(reaction);
-                await _reactionHubService.PostLikedOrDislikedAsync(postId, reactionDto, false);
+                await _reactionHubService.PostLikedOrDislikedAsync(reactionDto, false);
                 await _reactionHubService.UpdatePostLikeCountAsync(post.CategoryId, postId, likeCount);
-                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, null, reaction.ReactionTypeId, userId);
+                await _reactionHubService.PostLikedOrDislikedAnonymousAsync(postId, null, reaction.ReactionTypeId);
 
                 return ApiResponses.Success();
 
@@ -271,10 +271,10 @@ namespace ItirafEt.Api.Services
                 _context.CommentReactions.Update(reaction);
                 await _context.SaveChangesAsync();
 
-                var reactionModel = ReactionToCommentReactionModel(reaction);
+                var reactionModel = ReactionToCommentReactionModel(reaction, comment.PostId);
 
-                await _reactionHubService.CommentLikedOrDislikedAsync(comment.PostId, commentId, reactionModel, true);
-                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, oldReactionTypeId, reaction.ReactionId, userId);
+                await _reactionHubService.CommentLikedOrDislikedAsync(reactionModel, true);
+                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, oldReactionTypeId, reaction.ReactionId);
 
                 return ApiResponses.Success();
 
@@ -286,7 +286,8 @@ namespace ItirafEt.Api.Services
                     CommentId = commentId,
                     ReactingUserId = userId,
                     ReactionId = (int)ReactionTypeEnum.Like,
-                    CreatedDate = DateTime.UtcNow
+                    CreatedDate = DateTime.UtcNow,
+
                 };
                 await _context.CommentReactions.AddAsync(reaction);
                 likeCount++;
@@ -294,10 +295,10 @@ namespace ItirafEt.Api.Services
                 await _context.SaveChangesAsync();
                 reaction.ReactingUser = await GetReactingUserAsync(userId);
 
-                var reactionDto = ReactionToCommentReactionModel(reaction);
+                var reactionDto = ReactionToCommentReactionModel(reaction, comment.PostId);
 
-                await _reactionHubService.CommentLikedOrDislikedAsync(comment.PostId, commentId, reactionDto, false);
-                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, null, reaction.ReactionId, userId);
+                await _reactionHubService.CommentLikedOrDislikedAsync(reactionDto, false);
+                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, null, reaction.ReactionId);
 
                 return ApiResponses.Success();
             }
@@ -333,9 +334,9 @@ namespace ItirafEt.Api.Services
 
                 _context.CommentReactions.Update(reaction);
                 await _context.SaveChangesAsync();
-                var reactionDto = ReactionToCommentReactionModel(reaction);
-                await _reactionHubService.CommentLikedOrDislikedAsync(comment.PostId, commentId, reactionDto, true);
-                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, oldReactionTypeId, reaction.ReactionId, userId);
+                var reactionDto = ReactionToCommentReactionModel(reaction, comment.PostId);
+                await _reactionHubService.CommentLikedOrDislikedAsync(reactionDto, true);
+                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, oldReactionTypeId, reaction.ReactionId);
 
                 return ApiResponses.Success();
 
@@ -354,9 +355,9 @@ namespace ItirafEt.Api.Services
                 await _context.SaveChangesAsync();
 
                 reaction.ReactingUser = await GetReactingUserAsync(userId);
-                var reactionDto = ReactionToCommentReactionModel(reaction);
-                await _reactionHubService.CommentLikedOrDislikedAsync(comment.PostId, commentId, reactionDto, false);
-                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, null, reaction.ReactionId, userId);
+                var reactionDto = ReactionToCommentReactionModel(reaction, comment.PostId);
+                await _reactionHubService.CommentLikedOrDislikedAsync(reactionDto, false);
+                await _reactionHubService.CommentLikedOrDislikedAnonymousAsync(comment.PostId, commentId, null, reaction.ReactionId);
 
                 return ApiResponses.Success();
 
@@ -376,7 +377,7 @@ namespace ItirafEt.Api.Services
                 .Include(c => c.ReactingUser)
                 .FirstOrDefaultAsync(c => c.CommentId == postId && c.ReactingUserId == userId);
         }
-        private ReactionViewModel ReactionToCommentReactionModel(CommentReaction reaction)
+        private ReactionViewModel ReactionToCommentReactionModel(CommentReaction reaction, int postId)
         {
             return new ReactionViewModel
             {
@@ -387,6 +388,7 @@ namespace ItirafEt.Api.Services
                 ReactingUserProfileImageUrl = reaction.ReactingUser.ProfilePictureUrl,
                 ReactingUserAge = DateTime.UtcNow.Year - reaction.ReactingUser.BirthDate.Year,
                 CreatedDate = reaction.CreatedDate,
+                PostId = postId
             };
         }
     }

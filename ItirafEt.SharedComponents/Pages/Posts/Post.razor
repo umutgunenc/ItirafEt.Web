@@ -11,6 +11,7 @@
 @inject IDateTimeHelperService DateTimeHelperService
 
 
+
 <div class="col-lg-8 col mx-auto py-lg-5 px-lg-2">
 	<div class="card shadow-lg rounded-0 border-1 mb-lg-3 text-bg-light">
 		@if (_isPostHaveError)
@@ -166,7 +167,8 @@
 
 					<div class="mt-4">
 						<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
-							Yorumlar @($"({_comments?.Count ?? 0})")
+							Yorumlar @($"({_comments?.Count ?? 0})") 														<i class="bi @(_showComments ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+
 						</h6>
 					</div>
 					@if (_showComments)
@@ -396,7 +398,7 @@
 																		</div>
 																	</EditForm>
 																}
-																@if (reply.IsActive && (reply.UserId == _currentUserId || adminRoles.Contains(_userRoleId)))
+																@if (reply.IsActive)
 																{
 																	<div class="d-flex justify-content-start gap-2">
 
@@ -417,7 +419,7 @@
 																		</div>
 
 																		<div class="d-flex align-items-center  gap-2 ">
-																			@if (comment.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+																			@if (reply.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
 																			{
 																				<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
 																					<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
@@ -440,21 +442,22 @@
 																				</button>
 																			</div>
 																		}
-
-																		@if (reply.UserId == _currentUserId && comment.IsActive)
+																		@if (reply.UserId == _currentUserId && comment.IsActive || adminRoles.Contains(_userRoleId))
 																		{
 																			<div>
 																				<button class="btn-custom-orange-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
 																					<i class="bi bi-pen"></i>
 																				</button>
 																			</div>
+
+																			<div>
+																				<button class="btn-custom-red-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
+																					<i class="bi bi-trash-fill"></i>
+																				</button>
+																			</div>
 																		}
 
-																		<div>
-																			<button class="btn-custom-red-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
-																				<i class="bi bi-trash-fill"></i>
-																			</button>
-																		</div>
+
 
 																	</div>
 																}
@@ -846,9 +849,15 @@
 
 		if (!allowedRoles.Contains(_userRoleId))
 		{
-			_reactionHubConnection.On<int?, int, Guid>("PostLikedOrDislikedAnonymousAsync", async (oldReactionId, newReactionId, userId) =>
+			_reactionHubConnection.On<int?, int>("PostLikedOrDislikedAnonymousAsync", async (oldReactionId, newReactionId) =>
 			{
-				UpdateReactions(oldReactionId, newReactionId, userId);
+				UpdatePostReactions(oldReactionId, newReactionId);
+				await InvokeAsync(StateHasChanged);
+			});
+
+			_reactionHubConnection.On<int, int?, int>("CommentLikedOrDislikedAnonymousAsync", async (commentId, oldReactionId, newReactionId) =>
+			{
+				UpdateCommentReactions(commentId, oldReactionId, newReactionId);
 				await InvokeAsync(StateHasChanged);
 			});
 		}
@@ -856,9 +865,14 @@
 		{
 			_reactionHubConnection.On<ReactionViewModel, bool>("PostLikedOrDislikedAsync", async (reaction, isReactionUpdated) =>
 			{
-				UpdateReactions(reaction, isReactionUpdated);
+				UpdatePostReactions(reaction, isReactionUpdated);
 				await InvokeAsync(StateHasChanged);
+			});
 
+			_reactionHubConnection.On<ReactionViewModel, bool>("CommentLikedOrDislikedAsync", async (reaction, isReactionUpdated) =>
+			{
+				UpdateCommentReactions(reaction, isReactionUpdated);
+				await InvokeAsync(StateHasChanged);
 			});
 		}
 
@@ -1230,7 +1244,7 @@
 		_isAlreadyLiked = _postReactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Like) ?? false;
 		_isAlreadyDisliked = _postReactions?.Any(r => r.ReactingUserId == _currentUserId && r.ReactionTypeId == (int)ReactionTypeEnum.Dislike) ?? false;
 	}
-	private void UpdateReactions(ReactionViewModel reaction, bool? isReactionUpdated)
+	private void UpdatePostReactions(ReactionViewModel reaction, bool? isReactionUpdated)
 	{
 		reaction.CreatedDate = ToLocalTime(reaction.CreatedDate);
 
@@ -1247,10 +1261,11 @@
 		UpdatePostReactionButtons();
 	}
 
-	private void UpdateReactions(int? oldReactionId, int newReactionId, Guid UserId)
+	private void UpdatePostReactions(int? oldReactionId, int newReactionId)
 	{
 		var oldLikeCount = _likeCount;
 		var oldDislikeCount = _dislikeCount;
+
 		if (oldReactionId == null || oldReactionId == (int)ReactionTypeEnum.Cancelled)
 		{
 			if (newReactionId == (int)ReactionTypeEnum.Like)
@@ -1280,26 +1295,165 @@
 		}
 
 
-		if (_currentUserId == UserId)
+		// if (_currentUserId == UserId)
+		// {
+		// 	if (newReactionId == (int)ReactionTypeEnum.Like)
+		// 	{
+		// 		_isAlreadyLiked = true;
+		// 		_isAlreadyDisliked = false;
+		// 	}
+		// 	else if (newReactionId == (int)ReactionTypeEnum.Dislike)
+		// 	{
+		// 		_isAlreadyLiked = false;
+		// 		_isAlreadyDisliked = true;
+		// 	}
+		// 	else
+		// 	{
+		// 		_isAlreadyLiked = false;
+		// 		_isAlreadyDisliked = false;
+		// 	}
+
+		// }
+	}
+
+
+	private void UpdateCommentReactions(ReactionViewModel reaction, bool? isReactionUpdated)
+	{
+		reaction.CreatedDate = ToLocalTime(reaction.CreatedDate);
+
+		var targetComment = _comments.FirstOrDefault(c => c.Id == reaction.CommentId);
+		if (targetComment == null)
 		{
-			if (newReactionId == (int)ReactionTypeEnum.Like)
+			foreach (var c in _comments)
 			{
-				_isAlreadyLiked = true;
-				_isAlreadyDisliked = false;
+				if (c.CommentReplies == null) continue;
+
+				targetComment = c.CommentReplies.FirstOrDefault(r => r.Id == reaction.CommentId);
+				if (targetComment != null)
+					break;
 			}
-			else if (newReactionId == (int)ReactionTypeEnum.Dislike)
+		}
+
+		if (targetComment == null)
+			return;
+
+		if (targetComment.CommentRections == null)
+			targetComment.CommentRections = new List<ReactionViewModel>();
+
+		if (isReactionUpdated == true)
+		{
+			var existingReaction = targetComment.CommentRections
+				.FirstOrDefault(r => r.ReactingUserId == reaction.ReactingUserId);
+
+			if (existingReaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
 			{
-				_isAlreadyLiked = false;
-				_isAlreadyDisliked = true;
+				if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
+					targetComment.DislikeCount++;
+
+				targetComment.LikeCount--;
+
+			}
+			else if (existingReaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
+			{
+
+				if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
+					targetComment.LikeCount++;
+
+				targetComment.DislikeCount--;
 			}
 			else
 			{
-				_isAlreadyLiked = false;
-				_isAlreadyDisliked = false;
+				if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
+					targetComment.LikeCount++;
+				else
+					targetComment.DislikeCount++;
 			}
 
+			var index = targetComment.CommentRections.IndexOf(existingReaction);
+			targetComment.CommentRections[index] = reaction;
+
+		}
+		else
+		{
+			targetComment.CommentRections.Add(reaction);
+
+			if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
+				targetComment.LikeCount++;
+			else
+				targetComment.DislikeCount++;
+
+		}
+
+	}
+
+	private void UpdateCommentReactions(int commentId, int? oldReactionId, int newReactionId)
+	{
+
+		var targetComment = _comments.FirstOrDefault(c => c.Id == commentId);
+		if (targetComment == null)
+		{
+			foreach (var c in _comments)
+			{
+				if (c.CommentReplies == null)
+					continue;
+				targetComment = c.CommentReplies.FirstOrDefault(cr => cr.Id == commentId);
+				if (targetComment != null)
+					break;
+			}
+		}
+
+		if (targetComment == null)
+			return;
+
+		var likeCount = targetComment?.LikeCount ?? 0;
+		var dislikeCount = targetComment?.DislikeCount ?? 0;
+
+		if (oldReactionId is null)
+		{
+			if (newReactionId == (int)ReactionTypeEnum.Like)
+				likeCount++;
+			else
+				dislikeCount++;
+		}
+		else
+		{
+			if (oldReactionId == (int)ReactionTypeEnum.Cancelled)
+			{
+				if (newReactionId == (int)ReactionTypeEnum.Like)
+					likeCount++;
+				else
+					dislikeCount++;
+			}
+			else if (oldReactionId == (int)ReactionTypeEnum.Like)
+			{
+				if (newReactionId == (int)ReactionTypeEnum.Dislike)
+					dislikeCount++;
+
+				likeCount--;
+			}
+			else if (oldReactionId == (int)ReactionTypeEnum.Dislike)
+			{
+				if (newReactionId == (int)ReactionTypeEnum.Like)
+					likeCount++;
+
+				dislikeCount--;
+			}
+		}
+
+		targetComment.LikeCount = likeCount;
+		targetComment.DislikeCount = dislikeCount;
+	}
+
+	private void UpdateCommentReactionCount(int? commentId)
+	{
+		var comment = _comments.FirstOrDefault(c => c.Id == commentId);
+		if (comment != null && comment.CommentRections != null)
+		{
+			comment.LikeCount = comment.CommentRections.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like);
+			comment.DislikeCount = comment.CommentRections.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike);
 		}
 	}
+
 
 	private string GetUserGenderName(int genderId)
 	{
@@ -1654,6 +1808,11 @@
 				_isCommentsHaveError = true;
 				_commentErrorMessage = result.ErrorMessage;
 			}
+
+			var comment = _comments.FirstOrDefault(c => c.Id == parentCommentId);
+			if (comment is not null)
+				comment.ShowReplies = true;
+
 		}
 		catch (Exception ex)
 		{
