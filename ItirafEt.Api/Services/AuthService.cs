@@ -29,26 +29,33 @@ namespace ItirafEt.Api.Services
             _configuration = configuration;
             _emailSenderProducer = emailSenderProducer;
         }
-        public async Task<AuthResponse> LoggingAsync(LoginViewModel model)
+        public async Task<AuthResponse> LoginAsync(LoginViewModel model)
         {
+            model.EmailOrUserName = model.EmailOrUserName.Trim();
+
             var user = await _context.Users
                 .AsNoTracking()
-                .Where(u => u.UserName == model.UserName)
+                .Where(u => u.Email.ToLower() == model.EmailOrUserName.ToLower() || u.UserName.ToLower() == model.EmailOrUserName.ToLower())
                 .Select(u => new User
                 {
                     Id = u.Id,
                     UserName = u.UserName,
+                    Email = u.Email,
                     PasswordHash = u.PasswordHash,
                     IsDeleted = u.IsDeleted,
                     IsBanned = u.IsBanned,
                     IsTermOfUse = u.IsTermOfUse,
                     RoleName = u.RoleName,
                     BannedDateUntil = u.BannedDateUntil,
+                    UserLoginAttempts = u.UserLoginAttempts
+                        .OrderByDescending(ula => ula.AttemptDate)
+                        .Take(5)
+                        .ToList()
                 })
                 .FirstOrDefaultAsync();
 
             if (user == null)
-                return new AuthResponse(default, "Kullanıcı Adı veya Şifre Hatalı");
+                return new AuthResponse(default, "Girdiğiniz kullanıcı adı, e-posta veya şifre hatalı.");
 
             if (user.IsDeleted)
                 return new AuthResponse(default, "Hesabınız aktif durumda değil.");
@@ -56,19 +63,66 @@ namespace ItirafEt.Api.Services
             if (user.IsBanned)
                 return new AuthResponse(default, $"Hesabınız {user.BannedDateUntil?.ToString("dd/MM/yyyy")} tarihine kadar banlanmıştır.");
 
+            if (user.UserLoginAttempts.Count == 5)
+            {
+
+                var lastFiveAttempts = user.UserLoginAttempts;
+                if (lastFiveAttempts.All(la => !la.IsSuccessful))
+                {
+                    var lastFailDate = lastFiveAttempts.Max(a => a.AttemptDate);
+
+                    var lastPasswordReset = await _context.PasswordResetTokens
+                        .Where(prt => prt.UserId == user.Id && prt.IsUsed)
+                        .OrderByDescending(prt => prt.Id)
+                        .FirstOrDefaultAsync();
+
+                    if (lastPasswordReset == null || lastPasswordReset.ExpTime < lastFailDate)
+                    {
+                        await _emailSenderProducer.PublishAsync(EmailTypes.AccountBlocked, EmailCreateFactory.CreateEmail(EmailTypes.AccountBlocked, user));
+
+                        return new AuthResponse(default, "Şifrenizi üst üste 5 kere yanlış girdiğiniz için hesabınız kitlenmiştir.\n Lütfen şifremi unuttum seçeneğini kullanarak şifrenizi yenileyiniz.");
+                    }
+                }
+            }
+
             var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
 
-            if (passwordResult == PasswordVerificationResult.Failed)
-                return new AuthResponse(default, "Kullanıcı Adı veya Şifre Hatalı");
+            var loginAttempt = new UserLoginAttempt
+            {
+                UserId = user.Id,
+                AttemptDate = DateTime.UtcNow,
+                IpAddress = model.IpAddress,
+                DeviceInfo = model.DeviceInfo
+            };
 
+
+
+            if (passwordResult == PasswordVerificationResult.Failed)
+            {
+                loginAttempt.IsSuccessful = false;
+                await _context.UserLoginAttempts.AddAsync(loginAttempt);
+                await _context.SaveChangesAsync();
+                return new AuthResponse(default, "Girdiğiniz kullanıcı adı, e-posta veya şifre hatalı.");
+            }
+
+
+
+            loginAttempt.IsSuccessful = true;
             var jwtToken = GenearteJwtToken(user);
             var loggedInUser = new LoggedInUser(user.Id.ToString(), user.UserName, user.RoleName.ToString(), jwtToken);
+
+            await _context.UserLoginAttempts.AddAsync(loginAttempt);
+            await _context.SaveChangesAsync();
+
             return new AuthResponse(loggedInUser);
 
         }
 
         public async Task<ApiResponses> RegisterAsync(RegisterViewModel model)
         {
+            model.Email = model.Email.Trim();
+            model.UserName = model.UserName.Trim();
+
             var isUserNameNotValid = await _context.Users.AnyAsync(u => u.UserName.ToUpper() == model.UserName.ToUpper());
             if (isUserNameNotValid)
                 return ApiResponses.Fail("Bu kullanıcı adı zaten kullanılıyor.");
@@ -227,7 +281,7 @@ namespace ItirafEt.Api.Services
             await _context.SaveChangesAsync();
 
 
-            await _emailSenderProducer.PublishAsync(EmailTypes.Reset, EmailCreateFactory.CreateEmail(EmailTypes.Reset,user,resetLink));
+            await _emailSenderProducer.PublishAsync(EmailTypes.Reset, EmailCreateFactory.CreateEmail(EmailTypes.Reset, user, resetLink));
 
             return ApiResponses.Success();
 

@@ -47,7 +47,7 @@ namespace ItirafEt.Api.Services
                    CommentUserProfilPhotoUrl = c.User.ProfilePictureUrl,
                    ShowReplies = false,
                    IsActive = c.IsActive,
-                   CommentRections = c.CommentReactions.Select(cr => new ReactionViewModel
+                   CommentReactions = c.CommentReactions.Select(cr => new ReactionViewModel
                    {
                        Id = cr.Id,
                        ReactionTypeId = cr.ReactionId,
@@ -72,7 +72,7 @@ namespace ItirafEt.Api.Services
                             UserId = r.UserId,
                             CommentUserProfilPhotoUrl = r.User.ProfilePictureUrl,
                             IsActive = r.IsActive,
-                            CommentRections = r.CommentReactions.Select(cr => new ReactionViewModel
+                            CommentReactions = r.CommentReactions.Select(cr => new ReactionViewModel
                             {
                                 Id = cr.Id,
                                 ReactionTypeId = cr.ReactionId,

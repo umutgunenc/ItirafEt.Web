@@ -21,6 +21,7 @@ namespace ItirafEt.Api.Data.Entities
             BlockedByUsers = new HashSet<UserBlock>();
             ReadPosts = new HashSet<UserReadPost>();
             PasswordResetTokens = new HashSet<PasswordResetToken>();
+            ActivateAccountTokens = new HashSet<ActivateAccountToken>();
         }
         [Key]
         public Guid Id { get; set; }
@@ -44,12 +45,12 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public DateTime BirthDate { get; set; }
 
-        public DateTime? BannedDate { get; set; } 
-        public DateTime? BannedDateUntil { get; set; } 
+        public DateTime? BannedDate { get; set; }
+        public DateTime? BannedDateUntil { get; set; }
 
         [ForeignKey(nameof(AdminastorUserId))]
         public User AdminastorUser { get; set; }
-        public Guid? AdminastorUserId { get; set; } 
+        public Guid? AdminastorUserId { get; set; }
 
         [Required]
         public bool IsDeleted { get; set; }
@@ -74,7 +75,6 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(GenderId))]
         public virtual GenderType Gender { get; set; }
 
-
         public virtual ICollection<Post> Posts { get; set; }
         public virtual ICollection<PostHistory> PostHistories { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
@@ -91,6 +91,9 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<UserBlock> BlockedUsers { get; set; } // Bu kullanıcı kimi engelledi
         public virtual ICollection<UserBlock> BlockedByUsers { get; set; } // Bu kullanıcı kim tarafından engellendi
         public virtual ICollection<UserReadPost> ReadPosts { get; set; }
-        public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; } 
+        public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; }
+        public virtual ICollection<ActivateAccountToken> ActivateAccountTokens { get; set; }
+
+        public virtual ICollection<UserLoginAttempt> UserLoginAttempts { get; set; }
     }
 }

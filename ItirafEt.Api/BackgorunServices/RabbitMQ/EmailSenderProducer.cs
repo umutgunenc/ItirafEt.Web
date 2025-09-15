@@ -42,6 +42,9 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             await _channel.QueueBindAsync("email-service-queue", "email-exchange", EmailTypes.Welcome);
             await _channel.QueueBindAsync("email-service-queue", "email-exchange", EmailTypes.Reset);
             await _channel.QueueBindAsync("email-service-queue", "email-exchange", EmailTypes.Ban);
+            await _channel.QueueBindAsync("email-service-queue", "email-exchange", EmailTypes.ActivateAccount);
+            await _channel.QueueBindAsync("email-service-queue", "email-exchange", EmailTypes.AccountBlocked);
+
         }
 
         /// <summary>

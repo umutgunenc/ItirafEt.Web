@@ -36,7 +36,7 @@ namespace ItirafEt.Shared.ViewModels
         [JsonIgnore]
         public string IpAddress { get; set; }
         public List<CommentsViewModel>? CommentReplies { get; set; }
-        public List<ReactionViewModel>? CommentRections { get; set; }
+        public List<ReactionViewModel>? CommentReactions { get; set; }
 
     }
 }

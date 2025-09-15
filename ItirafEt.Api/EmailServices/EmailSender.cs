@@ -46,6 +46,8 @@ namespace ItirafEt.Api.EmailServices
         public const string Welcome = "welcome";
         public const string Reset = "reset";
         public const string Ban = "ban";
+        public const string ActivateAccount = "activate-account";
+        public const string AccountBlocked = "account-blocked";
     }
 
     public class EmailMessageDto
@@ -56,23 +58,25 @@ namespace ItirafEt.Api.EmailServices
     }
     public static class EmailCreateFactory
     {
-        public static EmailMessageDto CreateEmail(string emailTypes, User user, string? resetUrl = null)
+        public static EmailMessageDto CreateEmail(string emailTypes, User user, string? url = null)
         {
             return new EmailMessageDto()
             {
                 To = user.Email,
                 Subject = GetSubjectTemplate(emailTypes, user),
-                Body = GetBodyTemplate(emailTypes, user, resetUrl),
+                Body = GetBodyTemplate(emailTypes, user, url),
             };
 
         }
-        private static string GetBodyTemplate(string emailTypes, User user, string? resetUrl = null)
+        private static string GetBodyTemplate(string emailTypes, User user, string? url = null)
         {
             return emailTypes switch
             {
                 EmailTypes.Welcome => WelcomeTemplate(user),
-                EmailTypes.Reset => ResetTemplate(user, resetUrl),
+                EmailTypes.Reset => ResetTemplate(user, url),
                 EmailTypes.Ban => BanTemplate(user),
+                EmailTypes.AccountBlocked => BlockTemplate(user),
+                EmailTypes.ActivateAccount => throw new NotImplementedException("ActivateAccount email template is not implemented yet."),
                 _ => throw new ArgumentException("Invalid email type"),
             };
         }
@@ -84,6 +88,8 @@ namespace ItirafEt.Api.EmailServices
                 EmailTypes.Welcome => "Hesabınıza Hoş Geldiniz – ItirafEt",
                 EmailTypes.Reset => "🔑 Şifre Sıfırlama Talebi – ItirafEt",
                 EmailTypes.Ban => user.IsBanned ? "Hesabınız Banlanmıştır – ItirafEt" : "Hesabınızın Banı Kaldırıldı – ItirafEt",
+                EmailTypes.AccountBlocked => "⚠️ Hesabınız Güvenlik Nedeniyle Bloklandı – ItirafEt",
+                EmailTypes.ActivateAccount => "Hesabınızı Aktifleştirin – ItirafEt",
                 _ => throw new ArgumentException("Invalid email type"),
             };
         }
@@ -182,6 +188,26 @@ namespace ItirafEt.Api.EmailServices
                                     Bu süre boyunca hesabınızda oturum açamaz ve platformu kullanamazsınız.
                                 </p>"
                                             : "")}
+                    
+                        <p style='font-size: 13px; color: #555; margin-top: 20px;'>
+                            Eğer bu işlemde bir hata olduğunu düşünüyorsanız, lütfen destek ekibimizle iletişime geçin.
+                        </p>
+                    
+                        <hr style='margin: 20px 0;'/>
+                        <p style='font-size: 12px; color: #aaa; text-align: center;'>
+                            © {DateTime.UtcNow.Year} ItirafEt Ekibi
+                        </p>
+                    </div>";
+
+        private static string BlockTemplate(User user) =>
+    $@"<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                        <h2 style='color: #c0392b;'>Merhaba {user.UserName},</h2>
+                        <p style='font-size: 14px; color: #555;'>
+                           Hesabınıza üst üste 5 kere yanlış şifre girildiği için güvenlik amacıyla sisteme girişiniz engellenmiştir.
+                        </p>
+                        <p style='background: #f9f2f4; color: #a94442; border: 1px solid #ebccd1; padding: 12px; border-radius: 6px; font-size: 14px;'>
+                            Şifremi Unuttum sayfasından şifrenizi sıfırlayarak hesabınıza tekrar erişim sağlayabilirsiniz.
+                        </p>
                     
                         <p style='font-size: 13px; color: #555; margin-top: 20px;'>
                             Eğer bu işlemde bir hata olduğunu düşünüyorsanız, lütfen destek ekibimizle iletişime geçin.

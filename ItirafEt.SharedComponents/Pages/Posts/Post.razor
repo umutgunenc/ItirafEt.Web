@@ -236,7 +236,7 @@
 												{
 													<div class="d-flex gap-2 align-items-start">
 														<div class="d-flex align-items-center  gap-2 ">
-															@if (comment.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
+															@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
 															{
 																<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
 																	<i class="bi bi-heart-fill" style="height:20px;"></i>
@@ -254,7 +254,7 @@
 
 														<div class="d-flex align-items-center  gap-2 ">
 
-															@if (comment.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+															@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
 															{
 
 																<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
@@ -403,7 +403,7 @@
 																	<div class="d-flex justify-content-start gap-2">
 
 																		<div class="d-flex align-items-center  gap-2 ">
-																			@if (reply.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
+																			@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
 																			{
 																				<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
 																					<i class="bi bi-heart-fill" style="height:20px;"></i>
@@ -419,7 +419,7 @@
 																		</div>
 
 																		<div class="d-flex align-items-center  gap-2 ">
-																			@if (reply.CommentRections?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+																			@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
 																			{
 																				<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
 																					<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
@@ -1337,12 +1337,12 @@
 		if (targetComment == null)
 			return;
 
-		if (targetComment.CommentRections == null)
-			targetComment.CommentRections = new List<ReactionViewModel>();
+		if (targetComment.CommentReactions == null)
+			targetComment.CommentReactions = new List<ReactionViewModel>();
 
 		if (isReactionUpdated == true)
 		{
-			var existingReaction = targetComment.CommentRections
+			var existingReaction = targetComment.CommentReactions
 				.FirstOrDefault(r => r.ReactingUserId == reaction.ReactingUserId);
 
 			if (existingReaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
@@ -1369,13 +1369,13 @@
 					targetComment.DislikeCount++;
 			}
 
-			var index = targetComment.CommentRections.IndexOf(existingReaction);
-			targetComment.CommentRections[index] = reaction;
+			var index = targetComment.CommentReactions.IndexOf(existingReaction);
+			targetComment.CommentReactions[index] = reaction;
 
 		}
 		else
 		{
-			targetComment.CommentRections.Add(reaction);
+			targetComment.CommentReactions.Add(reaction);
 
 			if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
 				targetComment.LikeCount++;
@@ -1447,10 +1447,10 @@
 	private void UpdateCommentReactionCount(int? commentId)
 	{
 		var comment = _comments.FirstOrDefault(c => c.Id == commentId);
-		if (comment != null && comment.CommentRections != null)
+		if (comment != null && comment.CommentReactions != null)
 		{
-			comment.LikeCount = comment.CommentRections.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like);
-			comment.DislikeCount = comment.CommentRections.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike);
+			comment.LikeCount = comment.CommentReactions.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like);
+			comment.DislikeCount = comment.CommentReactions.Count(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike);
 		}
 	}
 

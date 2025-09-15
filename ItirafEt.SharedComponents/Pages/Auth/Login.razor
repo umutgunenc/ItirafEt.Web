@@ -23,9 +23,9 @@
 				<DataAnnotationsValidator />
 
 				<div class="my-3">
-					<label class="form-label">Kullanıcı Adı: </label>
-					<InputText @bind-Value="_model.UserName" class="form-control" />
-					<ValidationMessage For="()=> _model.UserName" />
+					<label class="form-label">Kullanıcı Adı veya E-Mail Adresi: </label>
+					<InputText @bind-Value="_model.EmailOrUserName" class="form-control" />
+					<ValidationMessage For="()=> _model.EmailOrUserName" />
 				</div>
 				<div class="my-3">
 					<label class="form-label">Şifre: </label>
