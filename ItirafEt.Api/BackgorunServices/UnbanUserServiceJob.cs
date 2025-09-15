@@ -71,8 +71,8 @@ namespace ItirafEt.Api.BackgorunServices
                 dbContext.Users.Update(user);
                 await emailProducer.PublishAsync(EmailTypes.Ban, EmailCreateFactory.CreateEmail(EmailTypes.Ban, user));
             }
+
             await dbContext.SaveChangesAsync();
-            Console.WriteLine($"[Quartz] {users.Count} kullanıcı ban kaldırıldı.");
         }
     }
 }

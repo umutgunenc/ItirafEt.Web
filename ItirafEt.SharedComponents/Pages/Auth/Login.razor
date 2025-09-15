@@ -1,5 +1,7 @@
 ﻿@page "/login"
 
+@using Microsoft.AspNetCore.WebUtilities
+
 @* @layout AuthLayout
  *@
 @inject IAuthApi AuthApi
@@ -100,13 +102,15 @@
 
 	protected override void OnInitialized()
 	{
-		if (AuthStateProvider.IsLoggedIn)
-			NavigationManager.NavigateTo("/", replace: true);
-
 		var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
-		// var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-		// if (query.TryGetValue("returnUrl", out var returnUrl))
-		// 	_returnUrl = returnUrl;
+		var query = QueryHelpers.ParseQuery(uri.Query);
+		if (query.TryGetValue("returnUrl", out var returnUrlValues))
+		{
+			_returnUrl = returnUrlValues;
+		}
+
+		if (AuthStateProvider.IsLoggedIn)
+			NavigationManager.NavigateTo(_returnUrl ?? "/", replace: true);
 
 	}
 
@@ -124,7 +128,6 @@
 				_errorMessage = authResponse.ErrorMessage;
 				return;
 			}
-
 
 			var loggedInUser = authResponse.User;
 			await AuthStateProvider.SetLoginAsync(loggedInUser);
