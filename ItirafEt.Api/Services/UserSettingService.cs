@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using ItirafEt.Api.BackgorunServices.RabbitMQ;
+using ItirafEt.Api.ConstStrings;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.EmailServices;

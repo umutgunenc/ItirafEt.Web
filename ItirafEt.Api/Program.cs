@@ -58,43 +58,15 @@ builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete
 
 builder.Services.AddSignalR();
 
+
 //builder.Services.AddCors(options =>
 //{
 //    options.AddDefaultPolicy(policy =>
 //    {
-//        //var allowedOriginsStr = builder.Configuration.GetValue<string>("AllowedOrigins");
-//        //var allowedOrigins = allowedOriginsStr?.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-
-//        //policy.WithOrigins(allowedOrigins)
-//        //    .AllowAnyHeader()
-//        //    .AllowAnyMethod()
-//        //    .AllowCredentials();
-
-
-//        //policy.AllowAnyOrigin()
-//        //    .AllowAnyHeader()
-//        //    .AllowAnyMethod();
-
-
-//        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
-//        options.AddDefaultPolicy(policy =>
-//            policy.WithOrigins(allowedOrigins)
-//                  .AllowAnyHeader()
-//                  .AllowAnyMethod());
-//    });
-
-//});
-
-//builder.Services.AddCors(options =>
-//{
-//    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
-
-//    options.AddDefaultPolicy(policy =>
-//    {
-//        policy.WithOrigins(allowedOrigins)
-//              .AllowAnyHeader()
-//              .AllowAnyMethod()
-//              .AllowCredentials(); // SignalR için gerekebilir
+//        policy
+//            .AllowAnyOrigin()   
+//            .AllowAnyHeader()   
+//            .AllowAnyMethod();  
 //    });
 //});
 
@@ -112,8 +84,6 @@ builder.Services.AddCors(options =>
 });
 
 
-
-
 builder.Services.AddAuthorization();
 
 
@@ -127,8 +97,16 @@ builder.Services.AddSingleton<EmailSenderProducer>(sp =>
     return producer;
 });
 
-// RabbitMQ Consumer (background service)
+builder.Services.AddSingleton<MessageSenderProducer>(sp =>
+{
+    var producer = new MessageSenderProducer(sp.GetRequiredService<IConfiguration>());
+    producer.InitAsync().GetAwaiter().GetResult();
+    return producer;
+});
+
+// RabbitMQ Consumer
 builder.Services.AddHostedService<EmailSenderConsumer>();
+builder.Services.AddHostedService<MessageSenderConsumer>();
 
 
 builder.Services.AddTransient<AuthService>();
@@ -169,8 +147,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseRouting();
+//app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
+app.UseCors();
 app.Use(async (context, next) =>
 {
     if (context.Request.Method == "OPTIONS")

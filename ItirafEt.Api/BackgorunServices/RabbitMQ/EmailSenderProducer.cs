@@ -1,8 +1,8 @@
 ﻿using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
+using ItirafEt.Api.ConstStrings;
 using ItirafEt.Api.EmailServices;
-using Microsoft.EntityFrameworkCore.Metadata;
 using RabbitMQ.Client;
 
 namespace ItirafEt.Api.BackgorunServices.RabbitMQ

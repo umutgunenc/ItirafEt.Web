@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Text;
 using System.Text.Json;
+using ItirafEt.Api.ConstStrings;
 
 namespace ItirafEt.Api.BackgorunServices.RabbitMQ
 {
@@ -22,6 +23,7 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
+
             var factory = new ConnectionFactory()
             {
                 Uri = new Uri(_configuration.GetValue<string>("RabbitMQ:Uri"))

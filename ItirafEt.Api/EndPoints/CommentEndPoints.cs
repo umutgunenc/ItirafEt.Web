@@ -11,8 +11,8 @@ namespace ItirafEt.Api.EndPoints
         {
 
             app.MapGet("/api/getPostComments", async (CommentService commentService, int postId) =>
-                Results.Ok(await commentService.GetPostCommentsAsync(postId)))
-                    .RequireCors("AllowSpecificOrigin");
+                Results.Ok(await commentService.GetPostCommentsAsync(postId)));
+                    //.RequireCors("AllowSpecificOrigin");
 
 
             app.MapPost("/api/addComment", async (int PostId, CommentsViewModel model, Guid userId, HttpContext context, CommentService commentService) =>
@@ -25,8 +25,8 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await commentService.AddCommentAsync(PostId, userId, model));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
-                .RequireCors("AllowSpecificOrigin");
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+                    //.RequireCors("AllowSpecificOrigin");
 
 
 
@@ -40,8 +40,8 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await commentService.AddCommentReplyAsync(postId, commentId, userId, model));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
-                .RequireCors("AllowSpecificOrigin");
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+                    //.RequireCors("AllowSpecificOrigin");
 
             app.MapPost("/api/deleteComment", async (CommentsViewModel model, Guid userId, HttpContext context, CommentService commentService) =>
             {
@@ -53,8 +53,8 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await commentService.DeleteCommentAsync(model, userId));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
-                .RequireCors("AllowSpecificOrigin");
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+                    //.RequireCors("AllowSpecificOrigin");
 
             app.MapPost("/api/editComment", async (CommentsViewModel model, Guid userId, HttpContext context, CommentService commentService) =>
             {
@@ -66,8 +66,8 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await commentService.EditCommentAsync(model, userId));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
-                .RequireCors("AllowSpecificOrigin");
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+                    //.RequireCors("AllowSpecificOrigin");
 
 
             return app;

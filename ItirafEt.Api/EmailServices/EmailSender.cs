@@ -3,6 +3,7 @@ using System.Net;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using ItirafEt.Api.Data.Entities;
 using Microsoft.AspNetCore.Identity;
+using ItirafEt.Api.ConstStrings;
 
 namespace ItirafEt.Api.EmailServices
 {
@@ -41,14 +42,7 @@ namespace ItirafEt.Api.EmailServices
         }
     }
 
-    public static class EmailTypes
-    {
-        public const string Welcome = "welcome";
-        public const string Reset = "reset";
-        public const string Ban = "ban";
-        public const string ActivateAccount = "activate-account";
-        public const string AccountBlocked = "account-blocked";
-    }
+
 
     public class EmailMessageDto
     {

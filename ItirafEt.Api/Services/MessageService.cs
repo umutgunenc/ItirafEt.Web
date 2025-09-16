@@ -3,10 +3,13 @@ using System.Linq;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
+using ItirafEt.Api.BackgorunServices.RabbitMQ;
+using ItirafEt.Api.ConstStrings;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
+using ItirafEt.Api.Models;
 using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.Services.ClientServices.State;
 using ItirafEt.Shared.ViewModels;
@@ -22,6 +25,7 @@ namespace ItirafEt.Api.Services
         private readonly dbContext _context;
         private readonly MessageHubService _hubService;
         private readonly IWebHostEnvironment _env;
+        private readonly MessageSenderProducer _messageSenderProducer;
 
         private readonly List<string> _allowedRoles = new()
         {
@@ -30,11 +34,12 @@ namespace ItirafEt.Api.Services
             UserRoleEnum.Moderator.ToString(),
             UserRoleEnum.SuperUser.ToString()
         };
-        public MessageService(dbContext context, MessageHubService hubService, IWebHostEnvironment env)
+        public MessageService(dbContext context, MessageHubService hubService, IWebHostEnvironment env, MessageSenderProducer messageSenderProducer = null)
         {
             _context = context;
             _hubService = hubService;
             _env = env;
+            _messageSenderProducer = messageSenderProducer;
         }
 
         public async Task<ApiResponses<bool>> CanUserReadConversationAsync(Guid conversationId, Guid userId)
@@ -155,22 +160,31 @@ namespace ItirafEt.Api.Services
                 ConversationId = message.ConversationId,
             };
 
-            await _hubService.SendMessageAsync(message.ConversationId, returnModel);
-            await _hubService.SendMessageNotificationAsync(conversationId, returnModel);
 
-            var inboxViewModel = new InboxItemViewModel
+
+            var rabbitMqMessage = new RabbitMqMessageViewModel()
             {
-                ConversationId = conversationId,
-                LastMessageDate = message.SentDate,
-                LastMessagePrewiew = message.Content,
-                SenderUserUserName = isMessageValid.Item3.UserName,
+                Id = returnModel.Id,
+                Content = returnModel.Content,
+                CreatedDate = returnModel.CreatedDate,
+                SenderId = returnModel.SenderId,
+                SenderUserName = returnModel.SenderUserName,
+                ConversationId = returnModel.ConversationId,
                 SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
-                UnreadMessageCount = 1
-
+                ReceiverId = receiverId
             };
 
-            await _hubService.NewMessageForInboxAsync(receiverId, inboxViewModel);
+            try
+            {
+                await _messageSenderProducer.PublishAsync(MessageTypes.SendMessage, rabbitMqMessage);
 
+            }
+            catch (Exception ex)
+            {
+
+                return ApiResponses<MessageViewModel>.Fail(ex.Message);
+
+            }
             return ApiResponses<MessageViewModel>.Success(returnModel);
 
         }
@@ -216,7 +230,6 @@ namespace ItirafEt.Api.Services
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
 
-
             var returnModel = new MessageViewModel
             {
                 Id = message.Id,
@@ -228,20 +241,36 @@ namespace ItirafEt.Api.Services
                 PhotoUrl = message.PhotoUrl,
             };
 
-            await _hubService.SendMessageAsync(message.ConversationId, returnModel);
-            await _hubService.SendMessageNotificationAsync(message.ConversationId, returnModel);
 
-            var inboxViewModel = new InboxItemViewModel
+            var rabbitMqMessage = new RabbitMqMessageViewModel()
             {
-                ConversationId = conversationId,
-                LastMessageDate = message.SentDate,
-                LastMessagePrewiew = message.Content,
-                SenderUserUserName = isMessageValid.Item3.UserName,
+                Id = returnModel.Id,
+                Content = returnModel.Content,
+                CreatedDate = returnModel.CreatedDate,
+                SenderId = returnModel.SenderId,
+                SenderUserName = returnModel.SenderUserName,
+                ConversationId = returnModel.ConversationId,
                 SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
-                UnreadMessageCount = 1
+                ReceiverId = receiverId,
+                PhotoUrl = returnModel.PhotoUrl
             };
 
-            await _hubService.NewMessageForInboxAsync(receiverId, inboxViewModel);
+            await _messageSenderProducer.PublishAsync(MessageTypes.SendMessage, rabbitMqMessage);
+
+            //await _hubService.SendMessageAsync(message.ConversationId, returnModel);
+            //await _hubService.SendMessageNotificationAsync(message.ConversationId, returnModel);
+
+            //var inboxViewModel = new InboxItemViewModel
+            //{
+            //    ConversationId = conversationId,
+            //    LastMessageDate = message.SentDate,
+            //    LastMessagePrewiew = message.Content,
+            //    SenderUserUserName = isMessageValid.Item3.UserName,
+            //    SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
+            //    UnreadMessageCount = 1
+            //};
+
+            //await _hubService.NewMessageForInboxAsync(receiverId, inboxViewModel);
 
             return ApiResponses<MessageViewModel>.Success(returnModel);
 
