@@ -45,5 +45,9 @@ namespace ItirafEt.SharedComponents.Apis
         [Headers("Authorization: Bearer")]
         [Post("/api/changeProfileVisibilty")]
         Task<ApiResponses> ChangeProfileVisibilty(Guid userId);
+
+        [Post("/api/userActivate")]
+        Task<ApiResponses<string>> UserActivateAsync(Guid userId, string token);
+
     }
 }

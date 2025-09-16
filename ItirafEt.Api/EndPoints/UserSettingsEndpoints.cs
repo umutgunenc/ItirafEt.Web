@@ -1,4 +1,5 @@
-﻿using ItirafEt.Api.Services;
+﻿using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.Services;
 using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -27,15 +28,29 @@ namespace ItirafEt.Api.EndPoints
                     .RequireCors("AllowSpecificOrigin");
 
 
-            app.MapPost("/api/userDeactive", async (UserSettingService userSettingService, UserDeactiveViewModel model, Guid userId) =>
-                Results.Ok(await userSettingService.UserDeactiveAsync(userId, model)))
-                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
-                    .RequireCors("AllowSpecificOrigin");
+            app.MapPost("/api/userDeactive", async (UserSettingService userSettingService, HttpContext context, UserDeactiveViewModel model, Guid userId) =>
+            {
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString();
+                var userAgent = context.Request.Headers["User-Agent"].ToString();
 
+                model.IpAddress = ipAddress;
+                model.DeviceInfo = userAgent;
+                return Results.Ok(await userSettingService.UserDeactiveAsync(userId, model));
+            })
+            .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                .RequireCors("AllowSpecificOrigin");
+
+            app.MapPost("/api/userActivate", async (UserSettingService userSettingService, HttpContext context, Guid userId, string token) =>
+            {
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString();
+                var userAgent = context.Request.Headers["User-Agent"].ToString();
+
+                return Results.Ok(await userSettingService.UserActivateAsync(userId, ipAddress, userAgent, token));
+            }).RequireCors("AllowSpecificOrigin");
 
             app.MapPost("/api/changeProfileVisibilty", async (UserSettingService userSettingService, Guid userId) =>
                 Results.Ok(await userSettingService.ChangeProfileVisibilty(userId)))
-                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof    (UserRoleEnum.SuperUser),nameof(UserRoleEnum.User)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
                     .RequireCors("AllowSpecificOrigin");
 
 

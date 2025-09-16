@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using ItirafEt.Api.BackgorunServices.RabbitMQ;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.EmailServices;
 using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -15,14 +17,19 @@ namespace ItirafEt.Api.Services
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly AuthService _authService;
         private readonly IWebHostEnvironment _env;
+        private readonly EmailSenderProducer _emailSenderProducer;
+        private readonly IConfiguration _configuration;
 
 
-        public UserSettingService(dbContext context, IPasswordHasher<User> passwordHasher, AuthService authService, IWebHostEnvironment env)
+
+        public UserSettingService(dbContext context, IPasswordHasher<User> passwordHasher, AuthService authService, IWebHostEnvironment env, EmailSenderProducer emailSenderProducer, IConfiguration configuration)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _authService = authService;
             _env = env;
+            _emailSenderProducer = emailSenderProducer;
+            _configuration = configuration;
         }
 
         public async Task<ApiResponses<UserSettingsInfoViewModel>> GetUserInfoAsync(Guid userId)
@@ -173,8 +180,55 @@ namespace ItirafEt.Api.Services
 
             user.IsDeleted = true;
             _context.Update(user);
+
+            var token = PasswordResetTokenHelperService.GenerateRawToken();
+            var tokenHash = PasswordResetTokenHelperService.HashToken(token);
+
+            var activationToken = new ActivateAccountToken
+            {
+                CreatedDate = DateTime.UtcNow,
+                CreatedDeviceInfo = model.DeviceInfo,
+                CreatedIpAddress = model.IpAddress,
+                TokenHash = tokenHash,
+                UserId = user.Id
+            };
+
+            await _context.ActivateAccountTokens.AddAsync(activationToken);
             await _context.SaveChangesAsync();
+
+            var baseUrl = _configuration["Jwt:Issuer"];
+            var activationUrl = $"{baseUrl}/activate?userId={user.Id}&token={token}";
+
+
+            await _emailSenderProducer.PublishAsync(EmailTypes.ActivateAccount, EmailCreateFactory.CreateEmail(EmailTypes.ActivateAccount, user, activationUrl));
+
             return ApiResponses.Success();
+        }
+
+        public async Task<ApiResponses<string>> UserActivateAsync(Guid userId, string? ipAdress, string? deviceInfo, string token)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return ApiResponses<string>.Fail("Kullanıcı bulunamadı.");
+
+            var activationToken = await _context.ActivateAccountTokens
+                .Where(t => t.UserId == userId && t.UsedDate == null)
+                .FirstOrDefaultAsync();
+
+            if (activationToken == null)
+                return ApiResponses<string>.Fail("İşleminiz başarısız oldu.");
+
+            user.IsDeleted = false;
+            _context.Update(user);
+            activationToken.UsedDate = DateTime.UtcNow;
+            activationToken.UsedDeviceInfo = deviceInfo;
+            activationToken.UsedIpAddress = ipAdress;
+            _context.Update(activationToken);
+            await _context.SaveChangesAsync();
+            return ApiResponses<string>.Success(user.UserName);
+
         }
 
         public async Task<ApiResponses> DeleteProfilePictureAsync(Guid userId)
@@ -268,7 +322,7 @@ namespace ItirafEt.Api.Services
             }
         }
 
-        
+
 
 
     }
