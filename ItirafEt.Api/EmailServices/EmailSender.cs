@@ -70,7 +70,8 @@ namespace ItirafEt.Api.EmailServices
                 EmailTypes.Reset => ResetTemplate(user, url),
                 EmailTypes.Ban => BanTemplate(user),
                 EmailTypes.AccountBlocked => BlockTemplate(user),
-                EmailTypes.ActivateAccount => ActivateAccountTemplate(user,url)
+                EmailTypes.ActivateAccount => ActivateAccountTemplate(user, url),
+                _ => throw new NotImplementedException()
             };
         }
 

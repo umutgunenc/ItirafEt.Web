@@ -15,7 +15,7 @@
 @if (_isLoading)
 {
 	<div class="d-flex justify-content-center align-items-center"
-	style="height:75vh">
+		 style="height:75vh">
 		<div class="spinner-border text-primary" role="status">
 			<span class="visually-hidden">Loading...</span>
 		</div>
@@ -37,11 +37,11 @@ else
 		<div class="chat-header d-flex align-items-center">
 			<div class="position-relative me-3">
 				<img src="@(string.IsNullOrEmpty(_conversationDto?.ResponderUser.ProfilePictureUrl) ? "/anonymousIcon.png" : _conversationDto.ResponderUser.ProfilePictureUrl)"
-				class="profile-photo rounded-circle"
-				width="56"
-				height="56"
-				style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-				alt="Profile Resmi">
+					 class="profile-photo rounded-circle"
+					 width="56"
+					 height="56"
+					 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+					 alt="Profile Resmi">
 			</div>
 			<div>
 				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto?.ResponderUser.UserName</h5>
@@ -67,8 +67,8 @@ else
 								@if (_photoCache.TryGetValue(message.PhotoUrl, out var base64Data))
 								{
 									<img src="@base64Data"
-									class="rounded"
-									style="max-width: 100%; object-fit: cover; pointer-events: none;" />
+										 class="rounded"
+										 style="max-width: 100%; object-fit: cover; pointer-events: none;" />
 								}
 								@* 								else
 								{
@@ -115,28 +115,29 @@ else
 			<div class="input-group align-items-center">
 				<!-- Mesaj Metni -->
 				<input type="text"
-				class="form-control rounded-pill"
-				placeholder="Bir mesaj yazın..."
-				@bind="_messageDto.Content"
-				@bind:event="oninput"
-				@onkeydown="HandleKeyPress" />
+					   class="form-control rounded-pill"
+					   placeholder="Bir mesaj yazın..."
+					   @bind="_messageDto.Content"
+					   @bind:event="oninput"
+					   @onkeydown="HandleKeyPress"
+					   disabled="@_isSendMessageBusy" />
 
 				<!-- Gizli file input (sadece .jpg/.jpeg/.png/.gif izinli) -->
 				<InputFile id="uploadPhoto"
-				accept=".jpg,.jpeg,.png,.gif"
-				style="display: none;"
-				OnChange="OnFileSelected" />
+						   accept=".jpg,.jpeg,.png,.gif"
+						   style="display: none;"
+						   OnChange="OnFileSelected" />
 
 				<!-- Fotoğraf Butonu: label for uploadPhoto olduğu için tıklayınca file dialog açılır -->
 				<label for="uploadPhoto"
-				class="btn-custom-circle ms-3"
-				style="cursor: pointer;">
+					   class="btn-custom-circle ms-3"
+					   style="cursor: pointer;">
 					<i class="bi bi-image text-white"></i>
 				</label>
 
 				<!-- Gönder Butonu -->
 				<button class="btn-custom-circle ms-3"
-				@onclick="() => SendMessageAsync(_messageDto)" disabled="@_isSendMessageBusy">
+						@onclick="() => SendMessageAsync(_messageDto)" disabled="@_isSendMessageBusy">
 
 					@if (_isSendMessageBusy)
 					{
@@ -220,34 +221,35 @@ else
 	</FooterContent> 
 </ModalComponent> *@
 <ModalComponent @ref="_sendPhotoModal"
-Title="Fotoğraf Gönder"
-TitleClass="d-none"
-HeaderClass="d-none my-0"
-FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
-ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
+				Title="Fotoğraf Gönder"
+				TitleClass="d-none"
+				HeaderClass="d-none my-0"
+				FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
+				ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	<ChildContent>
 		<div class="d-flex flex-column h-100">
 			<!-- Image container with dynamic sizing -->
 			<div class="flex-grow-1 d-flex justify-content-center align-items-center"
-			style="min-height:0; overflow:hidden; background-color:#030303">
+				 style="min-height:0; overflow:hidden; background-color:#030303">
 				<img src="@_previewImageUrl"
-				class="w-100"
-				style="max-height:100%; max-width:100%; object-fit:contain" />
+					 class="w-100"
+					 style="max-height:100%; max-width:100%; object-fit:contain" />
 			</div>
 
 			<!-- Fixed input area at bottom -->
 			<div class="message-input bg-light-subtle px-3 py-2">
 				<div class="input-group align-items-center">
 					<input type="text"
-					class="form-control rounded-pill"
-					placeholder="Bir mesaj yazın..."
-					@bind="_messageDto.Content"
-					@bind:event="oninput"
-					@onkeydown="HandleKeyPress" />
+						   class="form-control rounded-pill"
+						   placeholder="Bir mesaj yazın..."
+						   @bind="_messageDto.Content"
+						   @bind:event="oninput"
+						   @onkeydown="HandleKeyPress"
+						   disabled="@_isSendMessageBusy" />
 
 					<button class="btn-custom-circle ms-3"
-					@onclick="() => SendMessageWithPhotoAsync(_messageDto)"
-					disabled="@_isSendMessageBusy">
+							@onclick="() => SendMessageWithPhotoAsync(_messageDto)"
+							disabled="@_isSendMessageBusy">
 
 						@if (_isSendMessageBusy)
 						{
@@ -262,7 +264,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 					</button>
 
 					<button class="btn-custom-red-circle ms-3"
-					@onclick="_sendPhotoModal.Close">
+							@onclick="_sendPhotoModal.Close">
 						<i class="bi bi-x-lg text-white"></i>
 					</button>
 				</div>
@@ -315,6 +317,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	}
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
+
 		if (_model.Model?.Items?.Any() == true)
 		{
 			if (!_hasScrolled)
@@ -462,6 +465,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 		try
 		{
 			var response = await MessageApi.SendMessageAsync(messageDto);
+			messageDto.Content = "Mesajınız Gönderiliyor...";
 
 			if (!response.IsSuccess)
 			{
@@ -477,8 +481,9 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 		}
 		finally
 		{
-			messageDto.Content = string.Empty;
+			await Task.Delay(200);
 			_isSendMessageBusy = false;
+			messageDto.Content = string.Empty;
 		}
 	}
 	private async Task SendMessageWithPhotoAsync(CreateMessageViewModel messageDto)
@@ -500,6 +505,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 			var photoPart = new Refit.StreamPart(stream, _selectedFile.Name, _selectedFile.ContentType);
 
 			var response = await MessageApi.SendMessageWithPhotoAsync(ConversationId.ToString(), messageDto.Content, _currentUserId.ToString(), _conversationDto.ResponderUser.UserId.ToString(), photoPart);
+			messageDto.Content = "Mesajınız Gönderiliyor...";
 
 			if (!response.IsSuccess)
 			{

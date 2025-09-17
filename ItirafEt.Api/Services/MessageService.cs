@@ -25,7 +25,7 @@ namespace ItirafEt.Api.Services
         private readonly dbContext _context;
         private readonly MessageHubService _hubService;
         private readonly IWebHostEnvironment _env;
-        private readonly MessageSenderProducer _messageSenderProducer;
+        private readonly MessageSenderReaderProducer _messageSenderReaderProducer;
 
         private readonly List<string> _allowedRoles = new()
         {
@@ -34,12 +34,12 @@ namespace ItirafEt.Api.Services
             UserRoleEnum.Moderator.ToString(),
             UserRoleEnum.SuperUser.ToString()
         };
-        public MessageService(dbContext context, MessageHubService hubService, IWebHostEnvironment env, MessageSenderProducer messageSenderProducer = null)
+        public MessageService(dbContext context, MessageHubService hubService, IWebHostEnvironment env, MessageSenderReaderProducer messageSenderReaderProducer)
         {
             _context = context;
             _hubService = hubService;
             _env = env;
-            _messageSenderProducer = messageSenderProducer;
+            _messageSenderReaderProducer = messageSenderReaderProducer;
         }
 
         public async Task<ApiResponses<bool>> CanUserReadConversationAsync(Guid conversationId, Guid userId)
@@ -174,17 +174,8 @@ namespace ItirafEt.Api.Services
                 ReceiverId = receiverId
             };
 
-            try
-            {
-                await _messageSenderProducer.PublishAsync(MessageTypes.SendMessage, rabbitMqMessage);
 
-            }
-            catch (Exception ex)
-            {
-
-                return ApiResponses<MessageViewModel>.Fail(ex.Message);
-
-            }
+            await _messageSenderReaderProducer.PublishAsync(MessageTypes.SendMessage, rabbitMqMessage);
             return ApiResponses<MessageViewModel>.Success(returnModel);
 
         }
@@ -255,22 +246,7 @@ namespace ItirafEt.Api.Services
                 PhotoUrl = returnModel.PhotoUrl
             };
 
-            await _messageSenderProducer.PublishAsync(MessageTypes.SendMessage, rabbitMqMessage);
-
-            //await _hubService.SendMessageAsync(message.ConversationId, returnModel);
-            //await _hubService.SendMessageNotificationAsync(message.ConversationId, returnModel);
-
-            //var inboxViewModel = new InboxItemViewModel
-            //{
-            //    ConversationId = conversationId,
-            //    LastMessageDate = message.SentDate,
-            //    LastMessagePrewiew = message.Content,
-            //    SenderUserUserName = isMessageValid.Item3.UserName,
-            //    SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
-            //    UnreadMessageCount = 1
-            //};
-
-            //await _hubService.NewMessageForInboxAsync(receiverId, inboxViewModel);
+            await _messageSenderReaderProducer.PublishAsync(MessageTypes.SendMessage, rabbitMqMessage);
 
             return ApiResponses<MessageViewModel>.Success(returnModel);
 
@@ -343,8 +319,10 @@ namespace ItirafEt.Api.Services
 
             var readerUserId = conversation.InitiatorId == model.SenderId ? conversation.ResponderId : conversation.InitiatorId;
 
-            await _hubService.ReadMessageAsync(conversationId, model);
-            await _hubService.MessageReadByCurrentUserAsync(readerUserId, conversationId);
+            model.ConversationId = conversationId;
+            model.ReceiverId = readerUserId;
+            await _messageSenderReaderProducer.PublishAsync(MessageTypes.ReadMessage, model);
+
 
             return ApiResponses.Success();
 

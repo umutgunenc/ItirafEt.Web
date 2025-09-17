@@ -15,15 +15,15 @@ namespace ItirafEt.Api.EndPoints
             app.MapPost("/api/message/GetConversationDto", async (Guid senderUserId, Guid receiverUserId, MessageService messageService) =>
                   Results
                   .Ok(await messageService.GetConversationDtoAsync(senderUserId, receiverUserId)))
-                  .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+                  .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+            .RequireCors("AllowSpecificOrigin");
 
 
             app.MapPost("/api/message/GetConversation", async (Guid conversationId, Guid senderUserId, MessageService messageService) =>
                 Results
                 .Ok(await messageService.GetConversationAsync(conversationId, senderUserId)))
-                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+            .RequireCors("AllowSpecificOrigin");
 
 
 
@@ -37,8 +37,8 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await messageService.SendMessageAsync(model));
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+            .RequireCors("AllowSpecificOrigin");
 
 
             app.MapPost("/api/message/SendMessageWithPhoto", async ([FromServices] MessageService messageService, [FromForm] CreateMessageViewModel model, [FromServices] IWebHostEnvironment env, HttpContext httpContext) =>
@@ -59,8 +59,6 @@ namespace ItirafEt.Api.EndPoints
                     if (model.Photo.Length > 10 * 1024 * 1024)
                         return Results.Ok(ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz."));
 
-                    //var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "messages");
-                    //Directory.CreateDirectory(uploadsFolder);
 
                     var fileName = $"{Guid.NewGuid()}{ext}";
                     var safePath = Path.Combine("PrivateFiles", "messages", model.ConversationId);
@@ -68,15 +66,7 @@ namespace ItirafEt.Api.EndPoints
                     Directory.CreateDirectory(safePath);
                     using var fs = new FileStream(fullPath, FileMode.Create);
                     await model.Photo.CopyToAsync(fs);
-                    //dto.PhotoUrl = $"/{safePath}/{fileName}";
                     model.PhotoUrl = fileName;
-
-
-                    //var filePath = Path.Combine(uploadsFolder, fileName);
-                    //using var fs = new FileStream(filePath, FileMode.Create);
-                    //await dto.Photo.CopyToAsync(fs);
-
-                    //dto.PhotoUrl = $"/uploads/messages/{fileName}";
                 }
 
                 var result = await messageService.SendMessageWithPhotoAsync(model);
@@ -87,7 +77,7 @@ namespace ItirafEt.Api.EndPoints
             .Accepts<CreateMessageViewModel>("multipart/form-data")
             .Produces<ApiResponses<MessageViewModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
-            //.RequireCors("AllowSpecificOrigin");
+            .RequireCors("AllowSpecificOrigin")
             .DisableAntiforgery();
 
 
@@ -95,17 +85,15 @@ namespace ItirafEt.Api.EndPoints
             {
                 return await messageService.GetMessagePhotoAsync(filename, http.User);
 
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                    .RequireCors("AllowSpecificOrigin");
 
 
             app.MapGet("/api/message/CanUserReadConversation", async (Guid conversationId, Guid userId, MessageService messageService) =>
-            {
-                var result = await messageService.CanUserReadConversationAsync(conversationId, userId);
-                return Results.Ok(result);
-
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+                Results
+                .Ok(await messageService.CanUserReadConversationAsync(conversationId, userId)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                .RequireCors("AllowSpecificOrigin");
 
 
             //app.MapGet("/api/message/GetUserConversaions", async (Guid userId, MessageService messageService) =>
@@ -117,46 +105,31 @@ namespace ItirafEt.Api.EndPoints
 
 
             app.MapPost("/api/message/readMessage", async (Guid conversationId, MessageViewModel messageDto, MessageService messageService) =>
-            {
-                return Results.Ok(await messageService.ReadMessageAsync(conversationId, messageDto));
-
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+                Results
+                .Ok(await messageService.ReadMessageAsync(conversationId, messageDto)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                .RequireCors("AllowSpecificOrigin");
 
 
             app.MapPost("/api/message/getConversationMessages", async (GetConversationMessageViewModel model, MessageService messageService) =>
-            {
-                try
-                {
-                    return Results.Ok(await messageService.GetConversationMessagesAsync(model));
-                }
-                catch (Exception ex)
-                {
-                    // Log the actual error
-                    Console.WriteLine($"CRITICAL ERROR: {ex}");
-                    return Results.Problem(
-                        detail: ex.StackTrace,
-                        title: ex.Message,
-                        statusCode: 500
-                    );
-                }
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+                 Results
+                 .Ok(await messageService.GetConversationMessagesAsync(model)))
+                 .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                 .RequireCors("AllowSpecificOrigin");
 
 
             app.MapGet("/api/message/GetUserMessages", async (Guid userId, MessageService messageService) =>
                 Results
                 .Ok(await messageService.GetUserMessagesAsync(userId)))
-                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                .RequireCors("AllowSpecificOrigin");
 
 
             app.MapGet("/api/message/CheckUnreadMessages", async (Guid userId, MessageService messageService) =>
-            {
-                var result = await messageService.CheckUnreadMessagesAsync(userId);
-                return Results.Ok(result);
-            }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
-                    //.RequireCors("AllowSpecificOrigin");
+                Results
+                .Ok(await messageService.CheckUnreadMessagesAsync(userId)))
+                .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)))
+                .RequireCors("AllowSpecificOrigin");
 
 
             return app;

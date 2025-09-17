@@ -34,18 +34,12 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             _connection = await factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync();
 
-            await _channel.ExchangeDeclareAsync("message-send-exchange", ExchangeType.Direct, durable: true, cancellationToken: cancellationToken);
+            await _channel.ExchangeDeclareAsync("message-exchange", ExchangeType.Direct, durable: true, cancellationToken: cancellationToken);
 
-            await _channel.QueueDeclareAsync(
-                queue: "message-service-queue",
-                durable: true,
-                exclusive: false,
-                autoDelete: false);
-
-            await _channel.QueueBindAsync("message-service-queue", "message-send-exchange", MessageTypes.SendMessage);
+            await _channel.QueueDeclareAsync(MessageTypes.SendMessage, durable: true, exclusive: false, autoDelete: false);
+            await _channel.QueueBindAsync(MessageTypes.SendMessage, "message-exchange", MessageTypes.SendMessage);
 
             await base.StartAsync(cancellationToken);
-
 
         }
 
@@ -105,7 +99,7 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             };
 
             await _channel.BasicConsumeAsync(
-                queue: "message-service-queue",
+                queue: MessageTypes.SendMessage,
                 autoAck: false,
                 consumer: consumer,
                 cancellationToken: stoppingToken);

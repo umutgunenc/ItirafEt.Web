@@ -64,9 +64,9 @@ builder.Services.AddSignalR();
 //    options.AddDefaultPolicy(policy =>
 //    {
 //        policy
-//            .AllowAnyOrigin()   
-//            .AllowAnyHeader()   
-//            .AllowAnyMethod();  
+//            .AllowAnyOrigin()
+//            .AllowAnyHeader()
+//            .AllowAnyMethod();
 //    });
 //});
 
@@ -97,9 +97,9 @@ builder.Services.AddSingleton<EmailSenderProducer>(sp =>
     return producer;
 });
 
-builder.Services.AddSingleton<MessageSenderProducer>(sp =>
+builder.Services.AddSingleton<MessageSenderReaderProducer>(sp =>
 {
-    var producer = new MessageSenderProducer(sp.GetRequiredService<IConfiguration>());
+    var producer = new MessageSenderReaderProducer(sp.GetRequiredService<IConfiguration>());
     producer.InitAsync().GetAwaiter().GetResult();
     return producer;
 });
@@ -107,6 +107,7 @@ builder.Services.AddSingleton<MessageSenderProducer>(sp =>
 // RabbitMQ Consumer
 builder.Services.AddHostedService<EmailSenderConsumer>();
 builder.Services.AddHostedService<MessageSenderConsumer>();
+builder.Services.AddHostedService<MessageReaderConsumer>();
 
 
 builder.Services.AddTransient<AuthService>();
@@ -147,9 +148,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//app.UseRouting();
+app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
-app.UseCors();
+//app.UseCors();
+
+
 app.Use(async (context, next) =>
 {
     if (context.Request.Method == "OPTIONS")
