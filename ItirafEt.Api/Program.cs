@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
 
@@ -74,9 +75,9 @@ builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder =>
+        policy =>
         {
-            builder.WithOrigins("https://itirafetweb.runasp.net") // Ýstemci adresi
+            policy.WithOrigins("https://itirafetweb.runasp.net") // Ýstemci adresi
                    .AllowAnyHeader()
                    .AllowAnyMethod()
                    .AllowCredentials();
@@ -88,18 +89,24 @@ builder.Services.AddAuthorization();
 
 
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
+builder.Services.AddSingleton<RabbitMqConnection>();
 
 // RabbitMQ Producer
+//builder.Services.AddSingleton<EmailSenderProducer>();
+//builder.Services.AddSingleton<MessageSenderReaderProducer>();
+
+
+
 builder.Services.AddSingleton<EmailSenderProducer>(sp =>
 {
-    var producer = new EmailSenderProducer(sp.GetRequiredService<IConfiguration>());
+    var producer = new EmailSenderProducer(sp.GetRequiredService<IConfiguration>(),sp.GetRequiredService<RabbitMqConnection>());
     producer.InitAsync().GetAwaiter().GetResult(); // InitAsync direkt startup'ta çaðýrýlýyor
     return producer;
 });
 
 builder.Services.AddSingleton<MessageSenderReaderProducer>(sp =>
 {
-    var producer = new MessageSenderReaderProducer(sp.GetRequiredService<IConfiguration>());
+    var producer = new MessageSenderReaderProducer(sp.GetRequiredService<IConfiguration>(), sp.GetRequiredService<RabbitMqConnection>());
     producer.InitAsync().GetAwaiter().GetResult();
     return producer;
 });
@@ -192,8 +199,22 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     await BackgorundService.ScheduleJobs(services);
 }
+try
+{
+    app.Run();
+    Console.WriteLine("app running");
 
-app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine("app not running");
+    Console.WriteLine(ex.Message);
+    throw;
+}
+finally
+{
+    Console.WriteLine(" aaa");
+}
 
 static void ApplyDbMigrations(IServiceProvider serviceProvider)
 {

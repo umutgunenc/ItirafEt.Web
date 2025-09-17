@@ -4,29 +4,25 @@ using System.Text.Json;
 using ItirafEt.Api.ConstStrings;
 using ItirafEt.Api.EmailServices;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Logging;
 
 namespace ItirafEt.Api.BackgorunServices.RabbitMQ
 {
     public class EmailSenderProducer : IAsyncDisposable
     {
-        private readonly IConfiguration _configuration;
-        private IConnection? _connection;
         private IChannel? _channel;
+        private RabbitMqConnection _rabbitMqConnection;
 
-        public EmailSenderProducer(IConfiguration configuration)
+        public EmailSenderProducer(IConfiguration configuration, RabbitMqConnection rabbitMqConnection)
         {
-            _configuration = configuration;
+            _rabbitMqConnection = rabbitMqConnection;
         }
 
         public async Task InitAsync()
         {
-            var factory = new ConnectionFactory()
-            {
-                Uri = new Uri(_configuration.GetValue<string>("RabbitMQ:Uri"))
-            };
 
-            _connection = await factory.CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync();
+            var connection = await _rabbitMqConnection.GetConnectionAsync();
+            _channel = await connection.CreateChannelAsync();
 
             // Exchange 
             await _channel.ExchangeDeclareAsync("email-exchange", ExchangeType.Direct, durable: true);
@@ -78,8 +74,8 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             if (_channel != null)
                 await _channel.CloseAsync();
 
-            if (_connection != null)
-                await _connection.CloseAsync();
+            //if (connection != null)
+            //    await _connection.CloseAsync();
         }
     }
 }

@@ -66,24 +66,34 @@ namespace ItirafEt.Api.Services
 
             if (user.UserLoginAttempts.Count == 5)
             {
-
-                var lastFiveAttempts = user.UserLoginAttempts;
-                if (lastFiveAttempts.All(la => !la.IsSuccessful))
+                try
                 {
-                    var lastFailDate = lastFiveAttempts.Max(a => a.AttemptDate);
-
-                    var lastPasswordReset = await _context.PasswordResetTokens
-                        .Where(prt => prt.UserId == user.Id && prt.IsUsed)
-                        .OrderByDescending(prt => prt.Id)
-                        .FirstOrDefaultAsync();
-
-                    if (lastPasswordReset == null || lastPasswordReset.ExpTime < lastFailDate)
+                    var lastFiveAttempts = user.UserLoginAttempts;
+                    if (lastFiveAttempts.All(la => !la.IsSuccessful))
                     {
-                        await _emailSenderProducer.PublishAsync(EmailTypes.AccountBlocked, EmailCreateFactory.CreateEmail(EmailTypes.AccountBlocked, user));
+                        var lastFailDate = lastFiveAttempts.Max(a => a.AttemptDate);
 
-                        return new AuthResponse(default, "Şifrenizi üst üste 5 kere yanlış girdiğiniz için hesabınız kitlenmiştir.\n Lütfen şifremi unuttum seçeneğini kullanarak şifrenizi yenileyiniz.");
+                        var lastPasswordReset = await _context.PasswordResetTokens
+                            .Where(prt => prt.UserId == user.Id && prt.IsUsed)
+                            .OrderByDescending(prt => prt.ExpTime)
+                            .FirstOrDefaultAsync();
+
+                        if (lastPasswordReset == null || lastPasswordReset.ExpTime < lastFailDate)
+                        {
+                            await _emailSenderProducer.PublishAsync(EmailTypes.AccountBlocked, EmailCreateFactory.CreateEmail(EmailTypes.AccountBlocked, user));
+
+                            return new AuthResponse(default, "Şifrenizi üst üste 5 kere yanlış girdiğiniz için hesabınız kitlenmiştir.\n Lütfen şifremi unuttum seçeneğini kullanarak şifrenizi yenileyiniz.");
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+
+                    return new AuthResponse(default, ex.Message);
+
+                }
+
+
             }
 
             var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);

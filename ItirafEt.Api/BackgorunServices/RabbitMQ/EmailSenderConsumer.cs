@@ -10,27 +10,20 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
 {
     public class EmailSenderConsumer : BackgroundService
     {
-        private readonly IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
-        private IConnection? _connection;
         private IChannel? _channel;
+        private RabbitMqConnection _rabbitMqConnection;
 
-        public EmailSenderConsumer(IConfiguration configuration, IEmailSender emailSender)
+        public EmailSenderConsumer(IEmailSender emailSender, RabbitMqConnection rabbitMqConnection)
         {
-            _configuration = configuration;
             _emailSender = emailSender;
+            _rabbitMqConnection = rabbitMqConnection;
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-
-            var factory = new ConnectionFactory()
-            {
-                Uri = new Uri(_configuration.GetValue<string>("RabbitMQ:Uri"))
-            };
-
-            _connection = await factory.CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync();
+            var connection = await _rabbitMqConnection.GetConnectionAsync();
+            _channel = await connection.CreateChannelAsync();
 
             await _channel.ExchangeDeclareAsync("email-exchange", ExchangeType.Direct, durable: true, cancellationToken: cancellationToken);
 
@@ -88,8 +81,8 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             if (_channel != null)
                 await _channel.CloseAsync(cancellationToken);
 
-            if (_connection != null)
-                await _connection.CloseAsync(cancellationToken);
+            //if (_connection != null)
+            //    await _connection.CloseAsync(cancellationToken);
 
             await base.StopAsync(cancellationToken);
         }

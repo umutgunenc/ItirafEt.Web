@@ -12,25 +12,18 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
 {
     public class MessageSenderReaderProducer : IAsyncDisposable
     {
-
-        private readonly IConfiguration _configuration;
-        private IConnection? _connection;
+        private readonly RabbitMqConnection _rabbitMqConnection;
         private IChannel? _channel;
 
-        public MessageSenderReaderProducer(IConfiguration configuration)
+        public MessageSenderReaderProducer(IConfiguration configuration, RabbitMqConnection rabbitMqConnection)
         {
-            _configuration = configuration;
+            _rabbitMqConnection = rabbitMqConnection;
         }
 
         public async Task InitAsync()
         {
-            var factory = new ConnectionFactory()
-            {
-                Uri = new Uri(_configuration.GetValue<string>("RabbitMQ:Uri"))
-            };
-
-            _connection = await factory.CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync();
+            var connection = await _rabbitMqConnection.GetConnectionAsync();
+            _channel = await connection.CreateChannelAsync();
 
             // Exchange 
             await _channel.ExchangeDeclareAsync("message-exchange", ExchangeType.Direct, durable: true);
@@ -76,8 +69,8 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             if (_channel != null)
                 await _channel.CloseAsync();
 
-            if (_connection != null)
-                await _connection.CloseAsync();
+            //if (_connection != null)
+            //    await _connection.CloseAsync();
         }
     }
 }

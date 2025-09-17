@@ -179,8 +179,7 @@
 		var authState = await task;
 
 		if (authState.User.Identity?.IsAuthenticated == true)
-			await InitializeLogedInUserServices();
-		else
+			await InvokeAsync(async () => await InitializeLogedInUserServices());
 		{
 			_currentUserId = Guid.Empty;
 			_inboxViewModel?.Clear();
@@ -191,6 +190,8 @@
 
 	private async Task InitializeLogedInUserServices()
 	{
+		if (_currentUserId != Guid.Empty && _conversationHubConnection != null)
+			return;
 		GetUserId();
 		await GetUserConversationsAsync();
 		await StartConversationHubConnection();
@@ -200,6 +201,13 @@
 
 	private async Task LogOutAsync()
 	{
+		if (_conversationHubConnection != null)
+		{
+			await _conversationHubConnection.StopAsync();
+			await _conversationHubConnection.DisposeAsync();
+			_conversationHubConnection = null;
+		}
+
 		await AuthStateProvider.SetLogoutAsync();
 		NavigationManager.NavigateTo("/", replace: true);
 		await CollapseMenuAsync();
