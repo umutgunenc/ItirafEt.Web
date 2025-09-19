@@ -29,6 +29,8 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped(typeof(InfiniteScrollState<>));
 builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
 builder.Services.AddScoped<SignalRInboxService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
+
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthStateProvider>();

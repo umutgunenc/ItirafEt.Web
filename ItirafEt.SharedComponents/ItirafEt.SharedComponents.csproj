@@ -32,4 +32,8 @@
 		<ProjectReference Include="..\ItirafEt.Shared\ItirafEt.Shared.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\Mobil\js\" />
+	</ItemGroup>
+
 </Project>

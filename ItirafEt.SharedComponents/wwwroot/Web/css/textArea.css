@@ -1,0 +1,10 @@
+﻿.message-textarea {
+    border-radius: 16px !important;
+    resize: none;
+    overflow-y: hidden;
+    transition: all 0.2s ease;
+}
+
+.message-textare.grow {
+    border-radius: 1.5rem;  köşeleri yuvarlak kalsın 
+}

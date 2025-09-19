@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Refit;
 using ItirafEt.SharedComponents.Helpers;
+using Android.Media.Midi;
+
 
 
 #if ANDROID
@@ -50,6 +52,8 @@ namespace ItirafEt.Mobile
             builder.Services.AddScoped(typeof(InfiniteScrollState<>));
             builder.Services.AddScoped<IScrollHelper, ScrollHelper>();
             builder.Services.AddScoped<SignalRInboxService>();
+            builder.Services.AddScoped<IDeviceService, DeviceService>();
+
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddSingleton<AuthStateProvider>();
