@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Refit;
 using ItirafEt.SharedComponents.Helpers;
-using Android.Media.Midi;
 
 
 
@@ -19,6 +18,7 @@ using Android.Media.Midi;
 using Xamarin.Android.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using Android.Media.Midi;
 #elif IOS
 using Security;
 #endif
@@ -63,6 +63,7 @@ namespace ItirafEt.Mobile
 
             builder.Services.AddSingleton<IStorageService, StorageService>();
             builder.Services.AddScoped<ISignalRService, MobileSignalRService>();
+            builder.Services.AddSingleton<IDateTimeHelperService, DateTimeHelperService>();
 
             ConfigureRefit(builder.Services);
 

@@ -3,8 +3,6 @@
     resize: none;
     overflow-y: hidden;
     transition: all 0.2s ease;
+    max-height: 100px !important;
 }
 
-.message-textare.grow {
-    border-radius: 1.5rem;  köşeleri yuvarlak kalsın 
-}

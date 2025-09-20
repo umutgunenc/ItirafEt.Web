@@ -112,47 +112,51 @@ else
 
 		</div>
 
-		<div class="message-input">
-			<div class="input-group align-items-center">
-				<!-- Mesaj Metni -->
+		<div class="message-input p-2 p-lg-3">
 
+			<div class="chat-composer d-flex align-items-end">
+
+				<!-- Sol: Fotoğraf butonu -->
+				<div class="me-2">
+					<InputFile id="uploadPhoto"
+					accept=".jpg,.jpeg,.png,.gif"
+					style="display: none;"
+					OnChange="OnFileSelected" />
+
+					<label for="uploadPhoto"
+					class="btn-custom-circle"
+					style="cursor: pointer;">
+						<i class="bi bi-image text-white"></i>
+					</label>
+				</div>
 
 				<textarea id="chatInputBox"
 				@ref="_messageInput"
-				class="form-control message-textarea)"
+				class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
 				placeholder="Bir mesaj yazın..."
 				@bind="_messageDto.Content"
-				disabled="@_isSendMessageBusy" />
+				disabled="@_isSendMessageBusy"
+				rows="1" />
 
-				<!-- Gizli file input (sadece .jpg/.jpeg/.png/.gif izinli) -->
-				<InputFile id="uploadPhoto"
-				accept=".jpg,.jpeg,.png,.gif"
-				style="display: none;"
-				OnChange="OnFileSelected" />
+				<!-- Sağ: Gönder butonu -->
+				<div class="ms-2">
+					<button class="btn-custom-circle"
+					@onclick="() => SendMessageAsync(_messageDto)" disabled="@_isSendMessageBusy">
 
-				<!-- Fotoğraf Butonu: label for uploadPhoto olduğu için tıklayınca file dialog açılır -->
-				<label for="uploadPhoto"
-				class="btn-custom-circle ms-3"
-				style="cursor: pointer;">
-					<i class="bi bi-image text-white"></i>
-				</label>
-
-				<!-- Gönder Butonu -->
-				<button class="btn-custom-circle ms-3"
-				@onclick="() => SendMessageAsync(_messageDto)" disabled="@_isSendMessageBusy">
-
-					@if (_isSendMessageBusy)
-					{
-						<div class="spinner-border spinner-border-sm text-white" role="status">
-							<span class="visually-hidden">Gönderiliyor...</span>
-						</div>
-					}
-					else
-					{
-						<i class="bi bi-send-check text-white"></i>
-					}
-				</button>
+						@if (_isSendMessageBusy)
+						{
+							<div class="spinner-border spinner-border-sm text-white" role="status">
+								<span class="visually-hidden">Gönderiliyor...</span>
+							</div>
+						}
+						else
+						{
+							<i class="bi bi-send-check text-white"></i>
+						}
+					</button>
+				</div>
 			</div>
+
 			@if (_messageErrorMessage != null)
 			{
 				<div class="text-danger mx-2 my-2">
@@ -167,12 +171,6 @@ else
 			}
 		</div>
 	</div>
-
-	<p>deneme @deneme</p>
-	<p>mesaj @_messageDto.Content</p>
-	@* 
-	<p>deneme2 @_messageDto.Content</p> *@
-
 }
 
 <ModalComponent @ref="_sendPhotoModal"
@@ -255,17 +253,14 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	private Guid _currentUserId;
 	private string _userTimeZoneId = string.Empty;
 	private bool _isMobile;
-	// private bool _isGrowing;
-	// private bool _chatInputInitialized = false;
+	private bool _isGrowing;
 	private const string ChatInputId = "chatInputBox";
-	// private string deneme = "deneme";
-	// private string deneme2 = "deneme2";
+
 
 	protected override async Task OnParametersSetAsync()
 	{
 		GetCurrentUserId();
 		_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
-		_isMobile = await DeviceService.IsMobileAsync();
 		await CanUserReadMessageAsync(ConversationId, _currentUserId);
 		if (_canUserReadMessage)
 		{
@@ -293,6 +288,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 
 		if (firstRender)
 		{
+			_isMobile = await DeviceService.IsMobileAsync();
 			_dotNetRef = DotNetObjectReference.Create(this);
 			await JSRuntime.InvokeVoidAsync("chatInput.init", ChatInputId, _isMobile, _dotNetRef);
 		}
@@ -419,7 +415,6 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 			_isApiBusy = false;
 		}
 	}
-	private string deneme = "deneme";
 	private async Task SendMessageAsync(CreateMessageViewModel messageDto)
 	{
 		if (_isSendMessageBusy)
@@ -467,6 +462,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 				});
 			}
 			_messageDto.Content = string.Empty;
+			await ResizeChatTextArea();
 			await InvokeAsync(StateHasChanged);
 
 		}
@@ -513,43 +509,18 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 
 	}
 
-	// private async Task KeyPressedAsync(KeyboardEventArgs e)
-	// {
-	// 	if (e.Key == "Enter")
-	// 	{
-	// 		e.PreventDefault();
-	// 		await SendMessageAsync(_messageDto);
-	// 	}
-
-	// }
-
-
-	// private async Task HandleKeyPress(KeyboardEventArgs e)
-	// {
-
-	// 	var shouldSend = await JSRuntime.InvokeAsync<bool>(
-	// 		"chatInput.handleEnter", ChatInputId, e.Key, e.ShiftKey, _isMobile);
-
-	// 	if (shouldSend && !_isMobile)
-	// 		await SendMessageAsync(_messageDto);
-	// }
 	[JSInvokable("SendMessageFromJs")]
-
 	public async Task SendMessageFromJs(string mesaj)
 	{
 		_messageDto.Content = mesaj;
 		await SendMessageAsync(_messageDto);
 	}
 
-
-	// private async Task ResizeChatTextArea(ChangeEventArgs e)
-	// {
-	// 	await JSRuntime.InvokeVoidAsync("chatInput.resize", ChatInputId);
-	// 	_isGrowing = true;
-	// }
-
-
-
+	private async Task ResizeChatTextArea()
+	{
+		await JSRuntime.InvokeVoidAsync("chatInput.reset", ChatInputId);
+		_isGrowing = true;
+	}
 
 	private async Task OnFileSelected(InputFileChangeEventArgs e)
 	{
@@ -663,13 +634,15 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	}
 	private async Task AddMessageAsync(MessageViewModel newMessage)
 	{
-		if (_model.Model?.Items?.Count == 0 || _model.Model == null)
+		if (_model.Model == null || _model.Model.Items == null || !_model.Model.Items.Any())
 			_model.Model = new InfiniteScrollState<MessageViewModel>();
 
 		newMessage.CreatedDate = ToLocalTime(newMessage.CreatedDate);
-		_model.Model.Items.Insert(0, newMessage);
+		var tempList = _model.Model.Items.ToList();
+		tempList.Insert(0, newMessage);
+		_model.Model.Items = tempList;
 		await GetMessagePhotoAsync(newMessage);
-		StateHasChanged();
+		await InvokeAsync(StateHasChanged);
 
 		await Task.Delay(100);
 		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
