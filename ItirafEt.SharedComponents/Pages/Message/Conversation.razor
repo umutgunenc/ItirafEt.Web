@@ -16,7 +16,7 @@
 @if (_isLoading)
 {
 	<div class="d-flex justify-content-center align-items-center"
-	style="height:75vh">
+		 style="height:75vh">
 		<div class="spinner-border text-primary" role="status">
 			<span class="visually-hidden">Loading...</span>
 		</div>
@@ -38,11 +38,11 @@ else
 		<div class="chat-header d-flex align-items-center">
 			<div class="position-relative me-3">
 				<img src="@(string.IsNullOrEmpty(_conversationDto?.ResponderUser.ProfilePictureUrl) ? "/anonymousIcon.png" : _conversationDto.ResponderUser.ProfilePictureUrl)"
-				class="profile-photo rounded-circle"
-				width="56"
-				height="56"
-				style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-				alt="Profile Resmi">
+					 class="profile-photo rounded-circle"
+					 width="56"
+					 height="56"
+					 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+					 alt="Profile Resmi">
 			</div>
 			<div>
 				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto?.ResponderUser.UserName</h5>
@@ -68,8 +68,8 @@ else
 								@if (_photoCache.TryGetValue(message.PhotoUrl, out var base64Data))
 								{
 									<img src="@base64Data"
-									class="rounded"
-									style="max-width: 100%; object-fit: cover; pointer-events: none;" />
+										 class="rounded"
+										 style="max-width: 100%; object-fit: cover; pointer-events: none;" />
 								}
 								@* 								else
 								{
@@ -112,36 +112,36 @@ else
 
 		</div>
 
-		<div class="message-input p-2 p-lg-3">
+		<div class="message-input p-3">
 
 			<div class="chat-composer d-flex align-items-end">
 
 				<!-- Sol: Fotoğraf butonu -->
-				<div class="me-2">
+				<div class="me-3">
 					<InputFile id="uploadPhoto"
-					accept=".jpg,.jpeg,.png,.gif"
-					style="display: none;"
-					OnChange="OnFileSelected" />
+							   accept=".jpg,.jpeg,.png,.gif"
+							   style="display: none;"
+							   OnChange="OnFileSelected" />
 
 					<label for="uploadPhoto"
-					class="btn-custom-circle"
-					style="cursor: pointer;">
+						   class="btn-custom-circle"
+						   style="cursor: pointer;">
 						<i class="bi bi-image text-white"></i>
 					</label>
 				</div>
 
-				<textarea id="chatInputBox"
-				@ref="_messageInput"
-				class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-				placeholder="Bir mesaj yazın..."
-				@bind="_messageDto.Content"
-				disabled="@_isSendMessageBusy"
-				rows="1" />
-
+				<textarea id="@ChatInputId"
+						  @ref="_messageInput"
+						  class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
+						  placeholder="Bir mesaj yazın..."
+						  @bind="_messageDto.Content"
+						  disabled="@_isSendMessageBusy"
+						  rows="1" />
 				<!-- Sağ: Gönder butonu -->
-				<div class="ms-2">
+				<div class="ms-3">
 					<button class="btn-custom-circle"
-					@onclick="() => SendMessageAsync(_messageDto)" disabled="@_isSendMessageBusy">
+							@onclick="async () => await SendMessageAsync(_messageDto)"
+							disabled="@_isSendMessageBusy">
 
 						@if (_isSendMessageBusy)
 						{
@@ -163,45 +163,40 @@ else
 					@_messageErrorMessage
 				</div>
 			}
-			@if (_messageSuccesMessage != null)
-			{
-				<div class="text-succes mx-2 my-2">
-					@_messageSuccesMessage
-				</div>
-			}
+
 		</div>
 	</div>
 }
 
 <ModalComponent @ref="_sendPhotoModal"
-Title="Fotoğraf Gönder"
-TitleClass="d-none"
-HeaderClass="d-none my-0"
-FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
-ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
+				Title="Fotoğraf Gönder"
+				TitleClass="d-none"
+				HeaderClass="d-none my-0"
+				FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
+				ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	<ChildContent>
 		<div class="d-flex flex-column h-100">
 			<!-- Image container with dynamic sizing -->
 			<div class="flex-grow-1 d-flex justify-content-center align-items-center"
-			style="min-height:0; overflow:hidden; background-color:#030303">
+				 style="min-height:0; overflow:hidden; background-color:#030303">
 				<img src="@_previewImageUrl"
-				class="w-100"
-				style="max-height:100%; max-width:100%; object-fit:contain" />
+					 class="w-100"
+					 style="max-height:100%; max-width:100%; object-fit:contain" />
 			</div>
 
-			<!-- Fixed input area at bottom -->
+			@* 			<!-- Fixed input area at bottom -->
 			<div class="message-input bg-light-subtle px-3 py-2">
 				<div class="input-group align-items-center">
 					<input type="text"
-					class="form-control message-textare"
-					placeholder="Bir mesaj yazın..."
-					@bind="_messageDto.Content"
-					@bind:event="oninput"
-					disabled="@_isSendMessageBusy" />
+						   class="form-control message-textare"
+						   placeholder="Bir mesaj yazın..."
+						   @bind="_messageDto.Content"
+						   @bind:event="oninput"
+						   disabled="@_isSendMessageBusy" />
 
 					<button class="btn-custom-circle ms-3"
-					@onclick="() => SendMessageWithPhotoAsync(_messageDto)"
-					disabled="@_isSendMessageBusy">
+							@onclick="() => SendMessageWithPhotoAsync(_messageDto)"
+							disabled="@_isSendMessageBusy">
 
 						@if (_isSendMessageBusy)
 						{
@@ -216,10 +211,57 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 					</button>
 
 					<button class="btn-custom-red-circle ms-3"
-					@onclick="_sendPhotoModal.Close">
+							@onclick="_sendPhotoModal.Close">
 						<i class="bi bi-x-lg text-white"></i>
 					</button>
 				</div>
+			</div> *@
+
+
+
+
+			<div class="message-input p-3">
+
+				<div class="chat-composer d-flex align-items-end">
+
+					<textarea id="@ChatInputWithPhotoId"
+							  @ref="_messageInputWithPhoto"
+							  class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
+							  placeholder="Bir mesaj yazın..."
+							  @bind="_messageDto.Content"
+							  disabled="@_isSendMessageBusy"
+							  rows="1" />
+					<!-- Sağ: Gönder butonu -->
+					<div class="ms-3">
+						<button class="btn-custom-circle"
+								disabled="@_isSendMessageBusy"
+								@onclick="async () => await SendMessageWithPhotoAsync(_messageDto)">
+
+							@if (_isSendMessageBusy)
+							{
+								<div class="spinner-border spinner-border-sm text-white" role="status">
+									<span class="visually-hidden">Gönderiliyor...</span>
+								</div>
+							}
+							else
+							{
+								<i class="bi bi-send-check text-white"></i>
+							}
+						</button>
+					</div>
+					<button class="btn-custom-red-circle ms-3"
+							@onclick="_sendPhotoModal.Close">
+						<i class="bi bi-x-lg text-white"></i>
+					</button>
+				</div>
+
+				@if (_messageErrorMessage != null)
+				{
+					<div class="text-danger mx-2 my-2">
+						@_messageErrorMessage
+					</div>
+				}
+
 			</div>
 		</div>
 	</ChildContent>
@@ -231,6 +273,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	public Guid ConversationId { get; set; }
 	private ElementReference _messagesDiv;
 	private ElementReference _messageInput;
+	private ElementReference _messageInputWithPhoto;
 	private DotNetObjectReference<Conversation>? _dotNetRef;
 	private IBrowserFile? _selectedFile;
 	private string? _previewImageUrl;
@@ -242,7 +285,6 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	private HubConnection? _hubConnection;
 	private string? _errorMessage;
 	private string? _messageErrorMessage;
-	private string? _messageSuccesMessage;
 	private bool _isError = false;
 	private bool _isLoading = true;
 	private bool _canUserReadMessage = true;
@@ -253,8 +295,8 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	private Guid _currentUserId;
 	private string _userTimeZoneId = string.Empty;
 	private bool _isMobile;
-	private bool _isGrowing;
 	private const string ChatInputId = "chatInputBox";
+	private const string ChatInputWithPhotoId = "chatInputBoxWithPhoto";
 
 
 	protected override async Task OnParametersSetAsync()
@@ -291,11 +333,10 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 			_isMobile = await DeviceService.IsMobileAsync();
 			_dotNetRef = DotNetObjectReference.Create(this);
 			await JSRuntime.InvokeVoidAsync("chatInput.init", ChatInputId, _isMobile, _dotNetRef);
+			await JSRuntime.InvokeVoidAsync("chatInputWithPhoto.init", ChatInputWithPhotoId, _isMobile, _dotNetRef);
 		}
 
 	}
-
-
 
 	private async Task<string> GetMessagePhotoAsBase64Async(string fileName)
 	{
@@ -426,14 +467,18 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 
 
 		_isSendMessageBusy = true;
-		messageDto.ReceiverId = _conversationDto?.ResponderUser.UserId.ToString();
-		messageDto.SenderId = _currentUserId.ToString();
-		messageDto.ConversationId = ConversationId.ToString();
-
+		var newMessage = new CreateMessageViewModel()
+		{
+			Content = messageDto.Content,
+			SenderId = _currentUserId.ToString(),
+			ConversationId = ConversationId.ToString(),
+			ReceiverId = _conversationDto?.ResponderUser.UserId.ToString()
+		};
+		messageDto.Content = "Mesajınız Gönderiliyor...";
+		await InvokeAsync(StateHasChanged);
 		try
 		{
-			var response = await MessageApi.SendMessageAsync(messageDto);
-			messageDto.Content = "Mesajınız Gönderiliyor...";
+			var response = await MessageApi.SendMessageAsync(newMessage);
 
 			if (!response.IsSuccess)
 			{
@@ -442,7 +487,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 				return;
 			}
 			// await Task.Delay(100);
-			await InvokeAsync(StateHasChanged);
+			// await InvokeAsync(StateHasChanged);
 
 		}
 		catch (Exception ex)
@@ -452,16 +497,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 		}
 		finally
 		{
-			_isSendMessageBusy = false;
-			if (!_isMobile)
-			{
-				await InvokeAsync(async () =>
-				{
-					await Task.Delay(100); // DOM güncellensin
-					await _messageInput.FocusAsync();
-				});
-			}
-			_messageDto.Content = string.Empty;
+
 			await ResizeChatTextArea();
 			await InvokeAsync(StateHasChanged);
 
@@ -480,13 +516,15 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 		}
 
 		_isSendMessageBusy = true;
+		_messageDto.Content = "Mesajınız Gönderiliyor...";
+		await InvokeAsync(StateHasChanged);
+
 		try
 		{
 			var stream = _selectedFile.OpenReadStream(10 * 1024 * 1024); // max 10MB
 			var photoPart = new Refit.StreamPart(stream, _selectedFile.Name, _selectedFile.ContentType);
 
 			var response = await MessageApi.SendMessageWithPhotoAsync(ConversationId.ToString(), messageDto.Content, _currentUserId.ToString(), _conversationDto.ResponderUser.UserId.ToString(), photoPart);
-			messageDto.Content = "Mesajınız Gönderiliyor...";
 
 			if (!response.IsSuccess)
 			{
@@ -502,9 +540,9 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 		}
 		finally
 		{
-			messageDto.Content = string.Empty;
+			await ResizeChatPhotoTextArea();
+			await InvokeAsync(StateHasChanged);
 			_sendPhotoModal.Close();
-			_isSendMessageBusy = false;
 		}
 
 	}
@@ -516,10 +554,22 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 		await SendMessageAsync(_messageDto);
 	}
 
+
+	[JSInvokable("SendMessagemWithPhotoFromJs")]
+	public async Task SendMessagemWithPhotoFromJs(string mesaj)
+	{
+		_messageDto.Content = mesaj;
+		await SendMessageWithPhotoAsync(_messageDto);
+	}
+
 	private async Task ResizeChatTextArea()
 	{
 		await JSRuntime.InvokeVoidAsync("chatInput.reset", ChatInputId);
-		_isGrowing = true;
+	}
+
+	private async Task ResizeChatPhotoTextArea()
+	{
+		await JSRuntime.InvokeVoidAsync("chatInputWithPhoto.reset", ChatInputId);
 	}
 
 	private async Task OnFileSelected(InputFileChangeEventArgs e)
@@ -529,8 +579,8 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 
 		if (_selectedFile != null)
 		{
+			_sendPhotoModal.Open();
 			_messageErrorMessage = null;
-			_messageSuccesMessage = null;
 
 			if (_selectedFile.Size > 10 * 1024 * 1024)
 				_messageErrorMessage = "Dosya boyutu 10 MB'dan büyük olamaz.";
@@ -542,7 +592,6 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 				await _selectedFile.OpenReadStream(10 * 1024 * 1024).CopyToAsync(ms);
 				var bytes = ms.ToArray();
 				_previewImageUrl = $"data:{_selectedFile.ContentType};base64,{Convert.ToBase64String(bytes)}";
-				_sendPhotoModal.Open();
 			}
 
 			await InvokeAsync(StateHasChanged);
@@ -642,10 +691,23 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 		tempList.Insert(0, newMessage);
 		_model.Model.Items = tempList;
 		await GetMessagePhotoAsync(newMessage);
-		await InvokeAsync(StateHasChanged);
 
 		await Task.Delay(100);
 		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
+		_messageDto.Content = string.Empty;
+		_isSendMessageBusy = false;
+		await InvokeAsync(StateHasChanged);
+
+		if (!_isMobile)
+		{
+			await InvokeAsync(async () =>
+			{
+				await Task.Delay(100); // DOM güncellensin
+				await _messageInput.FocusAsync();
+			});
+		}
+		await InvokeAsync(StateHasChanged);
+
 
 	}
 	public async ValueTask DisposeAsync()
@@ -674,7 +736,9 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 					{
 						await GetMessagePhotoAsync(message);
 					}
-					_model.Model.Items.AddRange(response.Data.Items);
+					var tempList = _model.Model.Items.ToList();
+					tempList.AddRange(response.Data.Items);
+					_model.Model.Items = tempList;
 					_model.Model.NextBefore = response.Data.NextBefore;
 					_model.Model.LastId = response.Data.LastId;
 					_model.Model.HasMore = response.Data.HasMore;
