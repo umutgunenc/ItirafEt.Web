@@ -64,7 +64,9 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
                             SenderId = message.SenderId,
                             SenderUserName = message.SenderUserName,
                             ConversationId = message.ConversationId,
-                            PhotoUrl = message.PhotoUrl,
+                            PhotoId = message.PhotoId,
+                            ThumbnailId = message.ThumbnailId,
+                            SignedThumbnailUrl = message.SignedThumbnailUrl,
                         };
 
                         var inboxViewModel = new InboxItemViewModel

@@ -62,19 +62,22 @@ else
 					var fullClass = $"{baseClass} chat-message d-flex flex-column";
 
 					<div id="message-@message.Id" class="d-flex flex-column @fullClass">
-						@if (!string.IsNullOrEmpty(message.PhotoUrl))
+						@if (!string.IsNullOrEmpty(message.PhotoId))
 						{
 							<div class="message-photo mb-2">
-								@if (_photoCache.TryGetValue(message.PhotoUrl, out var base64Data))
+
+								@if (!string.IsNullOrEmpty(message.SignedThumbnailUrl))
 								{
-									<img src="@base64Data"
-										 class="rounded"
-										 style="max-width: 100%; object-fit: cover; pointer-events: none;" />
+									<img src="@($"{ApiBaseUrl.BaseUrl}/api/message/thumbnail?token={message.SignedThumbnailUrl}")"
+										 alt="Thumbnail"
+										 style="max-width:150px; border-radius:10px; cursor:pointer"
+										 @onclick="async () => await ShowFullImage(message)" />
 								}
-								@* 								else
+								else
 								{
-									<span>Default Foto Error Ekle</span>
-								} *@
+									<span>Yükleniyor...</span>
+								}
+
 							</div>
 						}
 
@@ -184,42 +187,6 @@ else
 					 style="max-height:100%; max-width:100%; object-fit:contain" />
 			</div>
 
-			@* 			<!-- Fixed input area at bottom -->
-			<div class="message-input bg-light-subtle px-3 py-2">
-				<div class="input-group align-items-center">
-					<input type="text"
-						   class="form-control message-textare"
-						   placeholder="Bir mesaj yazın..."
-						   @bind="_messageDto.Content"
-						   @bind:event="oninput"
-						   disabled="@_isSendMessageBusy" />
-
-					<button class="btn-custom-circle ms-3"
-							@onclick="() => SendMessageWithPhotoAsync(_messageDto)"
-							disabled="@_isSendMessageBusy">
-
-						@if (_isSendMessageBusy)
-						{
-							<div class="spinner-border spinner-border-sm text-white" role="status">
-								<span class="visually-hidden">Gönderiliyor...</span>
-							</div>
-						}
-						else
-						{
-							<i class="bi bi-send-check text-white"></i>
-						}
-					</button>
-
-					<button class="btn-custom-red-circle ms-3"
-							@onclick="_sendPhotoModal.Close">
-						<i class="bi bi-x-lg text-white"></i>
-					</button>
-				</div>
-			</div> *@
-
-
-
-
 			<div class="message-input p-3">
 
 				<div class="chat-composer d-flex align-items-end">
@@ -267,6 +234,33 @@ else
 	</ChildContent>
 </ModalComponent>
 
+<ModalComponent @ref="_showPhotoModal"
+				TitleClass="d-none"
+				HeaderClass="d-none my-0"
+				FooterClass="d-none"
+				ChildClass="modal-body p-0 d-flex flex-column h-100">
+	<ChildContent>
+		<div class="d-flex flex-column h-100">
+
+			<!-- Fotoğraf Alanı -->
+			<div class="flex-grow-1 d-flex justify-content-center align-items-center bg-dark"
+				 style="min-height:0; overflow:hidden;">
+				@if (!string.IsNullOrEmpty(_selectedPhotoUrl))
+				{
+					<img src="@_selectedPhotoUrl"
+						 class="w-100"
+						 style="max-height:100%; max-width:100%; object-fit:contain;"
+						 @onclick="_showPhotoModal.Close" />
+				}
+				else
+				{
+					<div class="text-white">Fotoğraf yükleniyor...</div>
+				}
+			</div>
+		</div>
+	</ChildContent>
+</ModalComponent>
+
 @code {
 
 	[Parameter]
@@ -277,8 +271,11 @@ else
 	private DotNetObjectReference<Conversation>? _dotNetRef;
 	private IBrowserFile? _selectedFile;
 	private string? _previewImageUrl;
-	private Dictionary<string, string> _photoCache = new();
+	private string? _selectedPhotoUrl;
+	private Dictionary<string, string> _thumbnails = new();
+	private Dictionary<string, string> _photos = new();
 	private ModalComponent _sendPhotoModal = new ModalComponent();
+	private ModalComponent _showPhotoModal = new ModalComponent();
 	private ConversationViewModel? _conversationDto;
 	private GetConversationMessageViewModel _model = new();
 	private CreateMessageViewModel _messageDto = new();
@@ -338,35 +335,6 @@ else
 
 	}
 
-	private async Task<string> GetMessagePhotoAsBase64Async(string fileName)
-	{
-		try
-		{
-			var stream = await MessageApi.GetPhotoAsync(fileName);
-
-			if (stream == null)
-				return string.Empty;
-
-			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream);
-			var base64 = Convert.ToBase64String(memoryStream.ToArray());
-
-			var extension = Path.GetExtension(fileName).ToLowerInvariant();
-			var mime = extension switch
-			{
-				".jpg" or ".jpeg" => "image/jpeg",
-				".png" => "image/png",
-				".gif" => "image/gif",
-				_ => "application/octet-stream"
-			};
-
-			return $"data:{mime};base64,{base64}";
-		}
-		catch
-		{
-			return string.Empty;
-		}
-	}
 	private async Task GetConversationMessagesAsync()
 	{
 		try
@@ -387,13 +355,6 @@ else
 				{
 					message.CreatedDate = ToLocalTime(message.CreatedDate);
 				}
-				if (_model?.Model?.Items != null)
-				{
-					foreach (var message in _model.Model.Items.Where(m => !string.IsNullOrEmpty(m.PhotoUrl)))
-					{
-						await GetMessagePhotoAsync(message);
-					}
-				}
 
 				_isLoading = false;
 			}
@@ -405,17 +366,7 @@ else
 			throw;
 		}
 	}
-	private async Task GetMessagePhotoAsync(MessageViewModel message)
-	{
-		if (string.IsNullOrEmpty(message.PhotoUrl) || _photoCache.ContainsKey(message.PhotoUrl))
-			return;
-		var base64 = await GetMessagePhotoAsBase64Async(message.PhotoUrl);
-		if (!string.IsNullOrEmpty(base64))
-		{
-			_photoCache[message.PhotoUrl] = base64;
-			await InvokeAsync(StateHasChanged);
-		}
-	}
+
 	private async Task ReadAllMessageAsync()
 	{
 		var items = _model.Model?.Items;
@@ -468,12 +419,12 @@ else
 
 		_isSendMessageBusy = true;
 		var newMessage = new CreateMessageViewModel()
-		{
-			Content = messageDto.Content,
-			SenderId = _currentUserId.ToString(),
-			ConversationId = ConversationId.ToString(),
-			ReceiverId = _conversationDto?.ResponderUser.UserId.ToString()
-		};
+			{
+				Content = messageDto.Content,
+				SenderId = _currentUserId.ToString(),
+				ConversationId = ConversationId.ToString(),
+				ReceiverId = _conversationDto?.ResponderUser.UserId.ToString()
+			};
 		messageDto.Content = "Mesajınız Gönderiliyor...";
 		await InvokeAsync(StateHasChanged);
 		try
@@ -516,6 +467,7 @@ else
 		}
 
 		_isSendMessageBusy = true;
+		var messageContent = messageDto.Content;
 		_messageDto.Content = "Mesajınız Gönderiliyor...";
 		await InvokeAsync(StateHasChanged);
 
@@ -524,7 +476,7 @@ else
 			var stream = _selectedFile.OpenReadStream(10 * 1024 * 1024); // max 10MB
 			var photoPart = new Refit.StreamPart(stream, _selectedFile.Name, _selectedFile.ContentType);
 
-			var response = await MessageApi.SendMessageWithPhotoAsync(ConversationId.ToString(), messageDto.Content, _currentUserId.ToString(), _conversationDto.ResponderUser.UserId.ToString(), photoPart);
+			var response = await MessageApi.SendMessageWithPhotoAsync(ConversationId.ToString(), messageContent, _currentUserId.ToString(), _conversationDto.ResponderUser.UserId.ToString(), photoPart);
 
 			if (!response.IsSuccess)
 			{
@@ -690,7 +642,7 @@ else
 		var tempList = _model.Model.Items.ToList();
 		tempList.Insert(0, newMessage);
 		_model.Model.Items = tempList;
-		await GetMessagePhotoAsync(newMessage);
+		// await GetMessagePhotoAsync(newMessage);
 
 		await Task.Delay(100);
 		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
@@ -732,10 +684,10 @@ else
 				var response = await MessageApi.GetConversationMessagesAsync(_model);
 				if (response.IsSuccess)
 				{
-					foreach (var message in response.Data.Items.Where(m => !string.IsNullOrEmpty(m.PhotoUrl)))
-					{
-						await GetMessagePhotoAsync(message);
-					}
+					// foreach (var message in response.Data.Items.Where(m => !string.IsNullOrEmpty(m.PhotoId)))
+					// {
+					// 	await GetMessagePhotoAsync(message);
+					// }
 					var tempList = _model.Model.Items.ToList();
 					tempList.AddRange(response.Data.Items);
 					_model.Model.Items = tempList;
@@ -791,6 +743,25 @@ else
 	private DateTime ToUTC(DateTime date)
 	{
 		return DateTimeHelperService.ToUtc(date, _userTimeZoneId);
+	}
+
+	private async Task ShowFullImage(MessageViewModel message)
+	{
+		try
+		{
+			var response = await MessageApi.GetSignedPhotoUrlAsync(message.PhotoId, _currentUserId);
+
+			if (response.IsSuccess){
+				_selectedPhotoUrl = $"{ApiBaseUrl.BaseUrl}/api/message/photo?token={response.Data}";
+				_showPhotoModal.Open();
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+			throw;
+		}
+				
 	}
 
 }

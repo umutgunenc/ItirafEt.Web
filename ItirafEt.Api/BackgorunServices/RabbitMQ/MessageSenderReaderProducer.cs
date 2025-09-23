@@ -1,6 +1,6 @@
 ﻿
 using ItirafEt.Api.ConstStrings;
-using ItirafEt.Api.EmailServices;
+using ItirafEt.Api.HelperServices;
 using ItirafEt.Api.Models;
 using ItirafEt.Shared.ViewModels;
 using RabbitMQ.Client;

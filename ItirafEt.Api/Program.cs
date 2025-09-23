@@ -3,7 +3,7 @@ using ItirafEt.Api.BackgorunServices;
 using ItirafEt.Api.BackgorunServices.RabbitMQ;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
-using ItirafEt.Api.EmailServices;
+using ItirafEt.Api.HelperServices;
 using ItirafEt.Api.EndPoints;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
@@ -116,6 +116,8 @@ builder.Services.AddHostedService<EmailSenderConsumer>();
 builder.Services.AddHostedService<MessageSenderConsumer>();
 builder.Services.AddHostedService<MessageReaderConsumer>();
 
+//SignedUrl Service
+builder.Services.AddSingleton<SignedUrl>();
 
 builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<CategoryService>();
@@ -155,9 +157,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseRouting();
+//app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
-//app.UseCors();
+app.UseCors();
 
 
 app.Use(async (context, next) =>

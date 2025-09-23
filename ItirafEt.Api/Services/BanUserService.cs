@@ -1,7 +1,7 @@
 ﻿using ItirafEt.Api.BackgorunServices.RabbitMQ;
 using ItirafEt.Api.ConstStrings;
 using ItirafEt.Api.Data;
-using ItirafEt.Api.EmailServices;
+using ItirafEt.Api.HelperServices;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity.UI.Services;

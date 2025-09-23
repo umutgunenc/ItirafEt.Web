@@ -1,4 +1,4 @@
-﻿using ItirafEt.Api.EmailServices;
+﻿using ItirafEt.Api.HelperServices;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using Microsoft.AspNetCore.Identity.UI.Services;

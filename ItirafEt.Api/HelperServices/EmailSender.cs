@@ -5,7 +5,7 @@ using ItirafEt.Api.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using ItirafEt.Api.ConstStrings;
 
-namespace ItirafEt.Api.EmailServices
+namespace ItirafEt.Api.HelperServices
 {
     public class EmailSender : IEmailSender
     {

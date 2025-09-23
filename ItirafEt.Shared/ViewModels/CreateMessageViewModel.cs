@@ -22,7 +22,8 @@ namespace ItirafEt.Shared.ViewModels
         [JsonIgnore]
         public string? SenderDeviceInfo { get; set; }
 
-        public string? PhotoUrl { get; set; }
+        public string? PhotoId { get; set; }
+        public string? ThumbnailId { get; set; }
 
         public IFormFile? Photo { get; set; }
     }

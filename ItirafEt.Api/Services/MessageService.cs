@@ -7,6 +7,7 @@ using ItirafEt.Api.BackgorunServices.RabbitMQ;
 using ItirafEt.Api.ConstStrings;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
+using ItirafEt.Api.HelperServices;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Api.Models;
@@ -17,15 +18,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using static System.Net.WebRequestMethods;
 
 namespace ItirafEt.Api.Services
 {
     public class MessageService
     {
         private readonly dbContext _context;
-        private readonly MessageHubService _hubService;
         private readonly IWebHostEnvironment _env;
         private readonly MessageSenderReaderProducer _messageSenderReaderProducer;
+        private readonly SignedUrl _signedUrl;
 
         private readonly List<string> _allowedRoles = new()
         {
@@ -34,12 +37,12 @@ namespace ItirafEt.Api.Services
             UserRoleEnum.Moderator.ToString(),
             UserRoleEnum.SuperUser.ToString()
         };
-        public MessageService(dbContext context, MessageHubService hubService, IWebHostEnvironment env, MessageSenderReaderProducer messageSenderReaderProducer)
+        public MessageService(dbContext context, IWebHostEnvironment env, MessageSenderReaderProducer messageSenderReaderProducer, SignedUrl signedUrl)
         {
             _context = context;
-            _hubService = hubService;
             _env = env;
             _messageSenderReaderProducer = messageSenderReaderProducer;
+            _signedUrl = signedUrl;
         }
 
         public async Task<ApiResponses<bool>> CanUserReadConversationAsync(Guid conversationId, Guid userId)
@@ -211,7 +214,8 @@ namespace ItirafEt.Api.Services
                 ConversationId = conversationId,
                 SenderId = senderId,
                 Content = model.Content,
-                PhotoUrl = model.PhotoUrl,
+                PhotoId = model.PhotoId,
+                Thumbnail = model.ThumbnailId,
                 SentDate = DateTime.UtcNow,
                 IpAddress = model.SenderIpAddress,
                 DeviceInfo = model.SenderDeviceInfo,
@@ -229,7 +233,8 @@ namespace ItirafEt.Api.Services
                 SenderId = message.SenderId,
                 SenderUserName = isMessageValid.Item3.UserName,
                 ConversationId = message.ConversationId,
-                PhotoUrl = message.PhotoUrl,
+                PhotoId = message.PhotoId,
+                ThumbnailId = message.Thumbnail
             };
 
 
@@ -243,8 +248,11 @@ namespace ItirafEt.Api.Services
                 ConversationId = returnModel.ConversationId,
                 SenderUserProfileImageUrl = isMessageValid.Item3.ProfilePictureUrl,
                 ReceiverId = receiverId,
-                PhotoUrl = returnModel.PhotoUrl
+                PhotoId = returnModel.PhotoId,
+                ThumbnailId = returnModel.ThumbnailId,
+
             };
+            rabbitMqMessage.SignedThumbnailUrl = _signedUrl.GenerateThumbnailUrl(returnModel.ThumbnailId, model.ConversationId);
 
             await _messageSenderReaderProducer.PublishAsync(MessageTypes.SendMessage, rabbitMqMessage);
 
@@ -252,40 +260,68 @@ namespace ItirafEt.Api.Services
 
         }
 
-        public async Task<IResult> GetMessagePhotoAsync(string fileName, ClaimsPrincipal user)
+        public IResult GetMessagePhoto(string token)
         {
-            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdString, out var userId))
+            var jwt = _signedUrl.ValidateToken(token);
+            if (jwt is null)
                 return Results.Unauthorized();
 
-            var message = await _context.Messages
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.PhotoUrl.EndsWith(fileName));
+            var conversationId = jwt.Claims.FirstOrDefault(c => c.Type == "conversationId")?.Value;
+            if (conversationId is null)
+                return Results.BadRequest();
 
-            if (message == null)
-                return Results.NotFound();
+            var photoId = jwt.Claims.FirstOrDefault(c => c.Type == "photoId")?.Value;
+            if (photoId is null)
+                return Results.BadRequest();
 
-            var conversation = await _context.Conversations
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ConversationId == message.ConversationId);
-
-            if (conversation == null)
-                return Results.NotFound();
-
-            if (conversation.InitiatorId != userId && conversation.ResponderId != userId)
-                return Results.Forbid();
-
-            var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", conversation.ConversationId.ToString(), message.PhotoUrl);
+            var safePhotoId = Path.GetFileName(photoId);
+            var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", conversationId, "Photo", safePhotoId);
 
             if (!System.IO.File.Exists(path))
                 return Results.NotFound();
 
-            var provider = new FileExtensionContentTypeProvider();
-            if (!provider.TryGetContentType(fileName, out string? mime))
-                mime = "application/octet-stream";
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
 
-            var bytes = await System.IO.File.ReadAllBytesAsync(path);
-            return Results.File(bytes, mime);
+            return Results.File(path, contentType);
+        }
+
+        public IResult GetMessagePhotoThumbnail(string token)
+        {
+
+            var jwt = _signedUrl.ValidateToken(token);
+            if (jwt is null)
+                return Results.Unauthorized();
+
+            var conversationId = jwt.Claims.FirstOrDefault(c => c.Type == "conversationId")?.Value;
+            if (conversationId is null)
+                return Results.BadRequest();
+
+            var thumbnailId = jwt.Claims.FirstOrDefault(c => c.Type == "thumbnailId")?.Value;
+            if (thumbnailId is null)
+                return Results.BadRequest();
+
+            var safeThumbnailId = Path.GetFileName(thumbnailId);
+            var path = Path.Combine(_env.ContentRootPath, "PrivateFiles", "messages", conversationId, "Thumbnail", safeThumbnailId);
+
+
+            if (!System.IO.File.Exists(path))
+                return Results.NotFound();
+
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
+
+            return Results.File(path, contentType);
         }
 
         public async Task<ApiResponses> ReadMessageAsync(Guid conversationId, MessageViewModel model)
@@ -392,7 +428,10 @@ namespace ItirafEt.Api.Services
                     IsRead = m.IsRead,
                     IsDeletedBySender = m.IsVisibleToInitiatorUser,
                     IsDeletedByReceiver = m.IsVisibleToResponderUser,
-                    PhotoUrl = m.PhotoUrl,
+                    PhotoId = m.PhotoId,
+                    ThumbnailId = m.Thumbnail,
+                    SenderUserName = m.Sender.UserName,
+                    SignedThumbnailUrl = m.Thumbnail != null ? _signedUrl.GenerateThumbnailUrl(m.Thumbnail, m.ConversationId.ToString()) : null,
                 })
                 .ToListAsync();
 
@@ -525,6 +564,24 @@ namespace ItirafEt.Api.Services
 
             return ApiResponses<bool>.Success(hasUnreadMessages);
 
+        }
+
+        public async Task<ApiResponses<string>> GetSignedPhotoUrlAsync(string photoId, Guid userId)
+        {
+            if (string.IsNullOrWhiteSpace(photoId))
+                return ApiResponses<string>.Fail("Fotoğraf Id boş olamaz.");
+
+            var conversationId = await _context.Messages
+                .AsNoTracking()
+                .Where(m => m.PhotoId == photoId && (m.Conversation.InitiatorId == userId || m.Conversation.ResponderId == userId))
+                .Select(m => m.ConversationId.ToString())
+                .FirstOrDefaultAsync();
+
+            if(string.IsNullOrEmpty(conversationId))
+                return ApiResponses<string>.Fail("Fotoğraf bulunamadı.");
+
+            var signedUrl = _signedUrl.GeneratePhotoUrl(photoId, conversationId);
+            return ApiResponses<string>.Success(signedUrl);
         }
     }
 }

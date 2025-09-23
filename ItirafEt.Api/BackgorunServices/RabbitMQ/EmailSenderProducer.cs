@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using ItirafEt.Api.ConstStrings;
-using ItirafEt.Api.EmailServices;
+using ItirafEt.Api.HelperServices;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Logging;
 

@@ -18,7 +18,7 @@ using Refit;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 // TODO
 // tarayýcaki konsola loglari yazdýmak için canlýya alýnca degistirilecek
-builder.Logging.SetMinimumLevel(LogLevel.Error);
+builder.Logging.SetMinimumLevel(LogLevel.Trace);
 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
@@ -44,11 +44,10 @@ builder.Services.AddSingleton<IDateTimeHelperService, DateTimeHelperService>();
 
 
 
-
-
 ConfigureRefit(builder.Services);
 
 await builder.Build().RunAsync();
+
 
 static void ConfigureRefit(IServiceCollection services)
 {
@@ -78,10 +77,10 @@ static void ConfigureRefit(IServiceCollection services)
 
     services.AddRefitClient<IMessageApi>(GetRefitSettings)
         .ConfigureHttpClient(SetHttpClient);
-    
+
     services.AddRefitClient<IUserSettingApi>(GetRefitSettings)
         .ConfigureHttpClient(SetHttpClient);
-    
+
     services.AddRefitClient<IUserProfileApi>(GetRefitSettings)
         .ConfigureHttpClient(SetHttpClient);
 

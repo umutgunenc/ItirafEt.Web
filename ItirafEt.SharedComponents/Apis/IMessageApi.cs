@@ -38,14 +38,23 @@ namespace ItirafEt.SharedComponents.Apis
         //[Get("/api/message/GetUserConversaions/")]
         //Task<ApiResponses<List<ConversationViewModel>>> GetUserConversaionsAsync(Guid userId);
 
-        [Headers("Authorization: Bearer")]
-        [Get("/api/message/photo")]
-        Task<Stream> GetPhotoAsync([Query] string filename);
+        //[Headers("Authorization: Bearer")]
+        //[Get("/api/message/photo")]
+        //Task<Stream> GetPhotoAsync([Query] string photoId, [Query] string userId);
 
+
+        //[Headers("Authorization: Bearer")]
+        //[Get("/api/message/thumbnail")]
+        //Task<Stream> GetThumbnailAsync([Query] string thumbnailId, [Query] string userId);
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/readMessage")]
         Task<ApiResponses> ReadMessageAsync(Guid ConversationId, MessageViewModel model);
+
+
+        [Headers("Authorization: Bearer")]
+        [Get("/api/message/getSignedPhotoUrl")]
+        Task<ApiResponses<string>> GetSignedPhotoUrlAsync(string photoId, Guid userId);
 
         [Headers("Authorization: Bearer")]
         [Post("/api/message/getConversationMessages")]

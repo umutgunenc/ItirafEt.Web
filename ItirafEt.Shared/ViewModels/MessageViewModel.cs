@@ -23,7 +23,10 @@ namespace ItirafEt.Shared.ViewModels
         public bool IsDeletedByReceiver { get; set; }
         public string? SenderIpAddress { get; set; }
         public string? SenderDeviceInfo { get; set; }
-        public string? PhotoUrl { get; set; }
+        public string? PhotoId { get; set; }
+        public string? ThumbnailId { get; set; }
+        public string? SignedPhotoUrl { get; set; }
+        public string? SignedThumbnailUrl { get; set; }
         public IFormFile? Photo { get; set; }
 
     }

@@ -43,7 +43,8 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(ConversationId))]
         public virtual Conversation Conversation { get; set; }
 
-        public string? PhotoUrl { get; set; }
+        public string? PhotoId { get; set; }
+        public string? Thumbnail { get; set; }
 
         public virtual ICollection<MessageReaction> MessageReactions { get; set; }
         public virtual ICollection<MessageReport> MessageReports { get; set; }

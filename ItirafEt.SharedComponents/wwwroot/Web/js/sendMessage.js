@@ -29,8 +29,7 @@
 
                     } else {
                         e.preventDefault();
-                        // Blazor tarafını çağır
-                        //DotNet.invokeMethodAsync("ItirafEt.SharedComponents", "SendMessageFromJs");
+
                         try {
                             dotNetRef.invokeMethodAsync("SendMessageFromJs", element.value);
                         } catch (error) {
