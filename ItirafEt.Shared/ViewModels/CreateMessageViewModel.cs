@@ -26,5 +26,6 @@ namespace ItirafEt.Shared.ViewModels
         public string? ThumbnailId { get; set; }
 
         public IFormFile? Photo { get; set; }
+        public IFormFile? Thumbnail { get; set; }
     }
 }

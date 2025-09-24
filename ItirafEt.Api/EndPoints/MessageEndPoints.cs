@@ -8,7 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Refit;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
 namespace ItirafEt.Api.EndPoints
@@ -46,60 +50,78 @@ namespace ItirafEt.Api.EndPoints
 
             app.MapPost("/api/message/SendMessageWithPhoto", async ([FromServices] MessageService messageService, [FromForm] CreateMessageViewModel model, [FromServices] IWebHostEnvironment env, HttpContext httpContext) =>
             {
-
                 model.SenderIpAddress = httpContext.Connection.RemoteIpAddress?.ToString();
                 model.SenderDeviceInfo = httpContext.Request.Headers["User-Agent"];
-
-
-                if (model.Photo != null)
+                try
                 {
-                    var ext = Path.GetExtension(model.Photo.FileName).ToLowerInvariant();
-                    var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                    if (!allowed.Contains(ext))
-                        return Results.Ok(ApiResponses<MessageViewModel>.Fail("Geçersiz dosya uzantısı."));
 
-
-                    if (model.Photo.Length > 10 * 1024 * 1024)
-                        return Results.Ok(ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz."));
-
-
-                    var photoFileName = $"{Guid.NewGuid()}{ext}";
-                    var photoSafePath = Path.Combine("PrivateFiles", "messages", model.ConversationId, "Photo");
-                    var photoFullPath = Path.Combine(env.ContentRootPath, photoSafePath, photoFileName);
-                    Directory.CreateDirectory(Path.Combine(env.ContentRootPath, photoSafePath));
-                    using var photoImage = await Image.LoadAsync(model.Photo.OpenReadStream());
-
-                    var encoder = new JpegEncoder()
+                    if (model.Photo != null)
                     {
-                        Quality = 75
-                    };
+                        var ext = Path.GetExtension(model.Photo.FileName).ToLowerInvariant();
+                        if (string.IsNullOrWhiteSpace(model.Photo.ContentType) || !model.Photo.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                            return Results.Ok(ApiResponses<MessageViewModel>.Fail("Geçersiz dosya türü. Sadece resim dosyaları yüklenebilir."));
 
-                    await photoImage.SaveAsync(photoFullPath, encoder);
+                        if (model.Photo.Length > 10 * 1024 * 1024)
+                            return Results.Ok(ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz."));
 
-                    var thumbnailFileName = $"{Path.GetFileNameWithoutExtension(photoFileName)}_thumb{ext}";
-                    var thumbnailSafePath = Path.Combine("PrivateFiles", "messages", model.ConversationId, "Thumbnail");
-                    var thumbnailFullPath = Path.Combine(env.ContentRootPath, thumbnailSafePath, thumbnailFileName);
-                    Directory.CreateDirectory(Path.Combine(env.ContentRootPath, thumbnailSafePath));
-                    using (var thumbnailImage = Image.Load(model.Photo.OpenReadStream()))
-                    {
-                        thumbnailImage.Mutate(x => x.Resize(new ResizeOptions
+                        var photoFileName = $"{Guid.NewGuid()}{ext}";
+                        var photoSafePath = Path.Combine("PrivateFiles", "messages", model.ConversationId, "Photo");
+                        var photoFullPath = Path.Combine(env.ContentRootPath, photoSafePath, photoFileName);
+                        Directory.CreateDirectory(Path.Combine(env.ContentRootPath, photoSafePath));
+
+                        var thumbnailFileName = $"{Path.GetFileNameWithoutExtension(photoFileName)}_thumb{ext}";
+                        var thumbnailSafePath = Path.Combine("PrivateFiles", "messages", model.ConversationId, "Thumbnail");
+                        var thumbnailFullPath = Path.Combine(env.ContentRootPath, thumbnailSafePath, thumbnailFileName);
+                        Directory.CreateDirectory(Path.Combine(env.ContentRootPath, thumbnailSafePath));
+
+
+                        using var photoImage = await Image.LoadAsync(model.Photo.OpenReadStream());
+
+
+
+                        if (ext == ".gif" || ext == "webp")
                         {
-                            Size = new Size(150, 150),
-                            Mode = ResizeMode.Max
-                        }));
-                        await thumbnailImage.SaveAsync(thumbnailFullPath);
-                    }
+                            IImageEncoder encoder = ext switch
+                            {
+                                ".gif" => new GifEncoder(),
+                                ".webp" => new WebpEncoder { Quality = 75 },
+                                _ => throw new NotSupportedException($"Unsupported image format: {ext}"),
+                            };
 
-                    model.PhotoId = photoFileName;
-                    model.ThumbnailId = thumbnailFileName;
+                            await photoImage.SaveAsync(photoFullPath, encoder);
+
+
+                            using (var thumbnailImage = Image.Load(model.Photo.OpenReadStream()))
+                            {
+                                thumbnailImage.Mutate(x => x.Resize(new ResizeOptions
+                                {
+                                    Size = new Size(150, 150),
+                                    Mode = ResizeMode.Max
+                                }));
+                                await thumbnailImage.SaveAsync(thumbnailFullPath);
+                            }
+                        }
+                        else
+                        {
+                            using var thumbnailImage = Image.Load(model.Photo.OpenReadStream());
+                            await photoImage.SaveAsync(photoFullPath);
+                            await thumbnailImage.SaveAsync(thumbnailFullPath);
+                        }
+
+
+                        model.PhotoId = photoFileName;
+                        model.ThumbnailId = thumbnailFileName;
+                    }
+                    var result = await messageService.SendMessageWithPhotoAsync(model);
+
+                    return Results.Ok(result);
+                }
+                catch (Exception ex)
+                {
+                    return Results.Ok(ApiResponses<MessageViewModel>.Fail(ex.Message));
                 }
 
-                var result = await messageService.SendMessageWithPhotoAsync(model);
-                return Results.Ok(result);
-
-
-            })
-            .Accepts<CreateMessageViewModel>("multipart/form-data")
+            }).Accepts<CreateMessageViewModel>("multipart/form-data")
             .Produces<ApiResponses<MessageViewModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .DisableAntiforgery();

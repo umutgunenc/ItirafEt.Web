@@ -197,15 +197,10 @@ namespace ItirafEt.Api.Services
                 return ApiResponses<MessageViewModel>.Fail("Fotoğraf yüklenmedi.");
 
 
-            List<string> allowedExtendions = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
+            if (string.IsNullOrWhiteSpace(model.Photo.ContentType) || !model.Photo.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                return ApiResponses<MessageViewModel>.Fail("Geçersiz dosya türü. Sadece resim dosyaları yüklenebilir.");
 
-            var extension = Path.GetExtension(model.Photo.FileName).ToLowerInvariant();
-
-            if (!allowedExtendions.Contains(extension))
-                return ApiResponses<MessageViewModel>.Fail("Geçersiz dosya uzantısı. Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir.");
-
-
-            if (model.Photo.Length > 10 * 1024 * 1024) // 5 MB limit
+            if (model.Photo.Length > 10 * 1024 * 1024)
                 return ApiResponses<MessageViewModel>.Fail("Fotoğraf boyutu 10 MB'dan büyük olamaz.");
 
 

@@ -1,6 +1,6 @@
 ﻿@page "/conversations/{ConversationId:guid}"
-@using ItirafEt.Shared.Models
-@using ItirafEt.SharedComponents.Helpers
+
+
 
 @inject NavigationManager NavigationManager
 @inject IMessageApi MessageApi
@@ -122,7 +122,7 @@ else
 				<!-- Sol: Fotoğraf butonu -->
 				<div class="me-3">
 					<InputFile id="uploadPhoto"
-							   accept=".jpg,.jpeg,.png,.gif"
+							   accept="image/*"
 							   style="display: none;"
 							   OnChange="OnFileSelected" />
 
@@ -270,6 +270,7 @@ else
 	private ElementReference _messageInputWithPhoto;
 	private DotNetObjectReference<Conversation>? _dotNetRef;
 	private IBrowserFile? _selectedFile;
+	private IBrowserFile? _selectedFileThumbnail;
 	private string? _previewImageUrl;
 	private string? _selectedPhotoUrl;
 	private Dictionary<string, string> _thumbnails = new();
@@ -416,7 +417,7 @@ else
 		if (string.IsNullOrWhiteSpace(messageDto.Content))
 			return;
 
-
+		_messageErrorMessage = null;
 		_isSendMessageBusy = true;
 		var newMessage = new CreateMessageViewModel()
 			{
@@ -434,7 +435,7 @@ else
 			if (!response.IsSuccess)
 			{
 				_isError = true;
-				_errorMessage = response.ErrorMessage;
+				_messageErrorMessage = response.ErrorMessage;
 				return;
 			}
 			// await Task.Delay(100);
@@ -473,10 +474,18 @@ else
 
 		try
 		{
-			var stream = _selectedFile.OpenReadStream(10 * 1024 * 1024); // max 10MB
-			var photoPart = new Refit.StreamPart(stream, _selectedFile.Name, _selectedFile.ContentType);
+			var streamFile = _selectedFile.OpenReadStream(_selectedFile.Size); 
+			var photoPart = new Refit.StreamPart(streamFile, _selectedFile.Name, _selectedFile.ContentType);
 
-			var response = await MessageApi.SendMessageWithPhotoAsync(ConversationId.ToString(), messageContent, _currentUserId.ToString(), _conversationDto.ResponderUser.UserId.ToString(), photoPart);
+			Refit.StreamPart? thumbPart = null;
+			if (_selectedFileThumbnail is not null)
+			{
+				var thumbFile = _selectedFileThumbnail.OpenReadStream(_selectedFileThumbnail.Size);
+				thumbPart = new Refit.StreamPart(thumbFile, _selectedFileThumbnail.Name, _selectedFileThumbnail.ContentType);
+			}
+
+
+			var response = await MessageApi.SendMessageWithPhotoAsync(ConversationId.ToString(), messageContent, _currentUserId.ToString(), _conversationDto.ResponderUser.UserId.ToString(), photoPart, thumbPart);
 
 			if (!response.IsSuccess)
 			{
@@ -494,7 +503,8 @@ else
 		{
 			await ResizeChatPhotoTextArea();
 			await InvokeAsync(StateHasChanged);
-			_sendPhotoModal.Close();
+			_selectedFile = null;
+			_selectedFileThumbnail = null;
 		}
 
 	}
@@ -526,28 +536,53 @@ else
 
 	private async Task OnFileSelected(InputFileChangeEventArgs e)
 	{
+		_selectedPhotoUrl = string.Empty;
+		var file = e.File;
 
-		_selectedFile = e.File;
+		if (file == null)
+			return;
 
-		if (_selectedFile != null)
+		if (file.Size > 10 * 1024 * 1024)
 		{
-			_sendPhotoModal.Open();
-			_messageErrorMessage = null;
-
-			if (_selectedFile.Size > 10 * 1024 * 1024)
-				_messageErrorMessage = "Dosya boyutu 10 MB'dan büyük olamaz.";
-			else if (!IsValidImageType(_selectedFile.ContentType))
-				_messageErrorMessage = "Sadece .jpg, .jpeg, .png ve .gif dosyaları yüklenebilir.";
-			else
-			{
-				using var ms = new MemoryStream();
-				await _selectedFile.OpenReadStream(10 * 1024 * 1024).CopyToAsync(ms);
-				var bytes = ms.ToArray();
-				_previewImageUrl = $"data:{_selectedFile.ContentType};base64,{Convert.ToBase64String(bytes)}";
-			}
-
+			_messageErrorMessage = "Dosya boyutu 10 MB'dan büyük olamaz.";
 			await InvokeAsync(StateHasChanged);
+			return;
 		}
+		_sendPhotoModal.Open();
+
+		var allowedExtFormats = new[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp" };
+		var ext = Path.GetExtension(file.Name).ToLowerInvariant();
+
+		if (!allowedExtFormats.Contains(ext))
+		{
+			_messageErrorMessage = "Sadece .jpg, .jpeg, .png, .bmp, .gif, .webp formatları desteklenmektedir.";
+			await InvokeAsync(StateHasChanged);
+			return;
+		}
+
+		if (ext != ".gif" && ext != ".webp")
+		{
+			// GIF ve WEBP formatları için thumbnail oluşturma
+			_selectedFileThumbnail = await file.RequestImageFileAsync("image/png", 150, 150);
+			_selectedFile = await file.RequestImageFileAsync("image/png", 1280, 1280);
+		}
+		else
+		{
+			_selectedFile = file;
+			_selectedFileThumbnail = null;
+		}
+
+
+		_messageErrorMessage = null;
+
+		using var ms = new MemoryStream();
+		await _selectedFile.OpenReadStream(_selectedFile.Size).CopyToAsync(ms);
+		// await _selectedFileThumbnail.OpenReadStream(_selectedFileThumbnail.Size).CopyToAsync(ms);
+
+		var bytes = ms.ToArray();
+		_previewImageUrl = $"data:{_selectedFile.ContentType};base64,{Convert.ToBase64String(bytes)}";
+
+		await InvokeAsync(StateHasChanged);
 
 	}
 	private async Task StartHubConnection()
@@ -642,12 +677,19 @@ else
 		var tempList = _model.Model.Items.ToList();
 		tempList.Insert(0, newMessage);
 		_model.Model.Items = tempList;
-		// await GetMessagePhotoAsync(newMessage);
 
+
+
+		await InvokeAsync(StateHasChanged);
+		_sendPhotoModal.Close();
 		await Task.Delay(100);
 		await JSRuntime.InvokeVoidAsync("chatScrollHelper.scrollToBottomIfNeeded", _messagesDiv);
+
+		_previewImageUrl = string.Empty;
 		_messageDto.Content = string.Empty;
 		_isSendMessageBusy = false;
+		_errorMessage = null;
+		_messageErrorMessage = null;
 		await InvokeAsync(StateHasChanged);
 
 		if (!_isMobile)
@@ -658,7 +700,7 @@ else
 				await _messageInput.FocusAsync();
 			});
 		}
-		await InvokeAsync(StateHasChanged);
+
 
 
 	}
@@ -684,10 +726,7 @@ else
 				var response = await MessageApi.GetConversationMessagesAsync(_model);
 				if (response.IsSuccess)
 				{
-					// foreach (var message in response.Data.Items.Where(m => !string.IsNullOrEmpty(m.PhotoId)))
-					// {
-					// 	await GetMessagePhotoAsync(message);
-					// }
+
 					var tempList = _model.Model.Items.ToList();
 					tempList.AddRange(response.Data.Items);
 					_model.Model.Items = tempList;
@@ -722,12 +761,7 @@ else
 		}
 	}
 
-	private bool IsValidImageType(string contentType)
-	{
-		var validTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
 
-		return validTypes.Contains(contentType.ToLowerInvariant());
-	}
 	private void GetCurrentUserId()
 	{
 		_currentUserId = Guid.TryParse(AuthStateProvider.User?.id, out var g) ? g : Guid.Empty;
@@ -751,7 +785,8 @@ else
 		{
 			var response = await MessageApi.GetSignedPhotoUrlAsync(message.PhotoId, _currentUserId);
 
-			if (response.IsSuccess){
+			if (response.IsSuccess)
+			{
 				_selectedPhotoUrl = $"{ApiBaseUrl.BaseUrl}/api/message/photo?token={response.Data}";
 				_showPhotoModal.Open();
 			}
@@ -761,7 +796,7 @@ else
 			Console.WriteLine(ex.Message);
 			throw;
 		}
-				
+
 	}
 
 }

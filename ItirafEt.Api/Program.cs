@@ -65,9 +65,9 @@ builder.Services.AddSignalR();
 //    options.AddDefaultPolicy(policy =>
 //    {
 //        policy
-//            .AllowAnyOrigin()
-//            .AllowAnyHeader()
-//            .AllowAnyMethod();
+//    .AllowAnyOrigin()
+//    .AllowAnyHeader()
+//    .AllowAnyMethod();
 //    });
 //});
 
@@ -157,9 +157,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//app.UseRouting();
+app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
-app.UseCors();
+//app.UseCors();
 
 
 app.Use(async (context, next) =>
@@ -201,22 +201,9 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     await BackgorundService.ScheduleJobs(services);
 }
-try
-{
-    app.Run();
-    Console.WriteLine("app running");
 
-}
-catch (Exception ex)
-{
-    Console.WriteLine("app not running");
-    Console.WriteLine(ex.Message);
-    throw;
-}
-finally
-{
-    Console.WriteLine(" aaa");
-}
+    app.Run();
+
 
 static void ApplyDbMigrations(IServiceProvider serviceProvider)
 {

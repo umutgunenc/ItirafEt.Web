@@ -19,7 +19,8 @@ namespace ItirafEt.SharedComponents.Apis
             [AliasAs("Content")] string content,
             [AliasAs("SenderId")] string senderId,
             [AliasAs("ReceiverId")] string receiverId,
-            [AliasAs("Photo")] StreamPart? photo
+            [AliasAs("Photo")] StreamPart? photo,
+            [AliasAs("Thumbnail")] StreamPart? thumb
         );
 
         [Headers("Authorization: Bearer")]
