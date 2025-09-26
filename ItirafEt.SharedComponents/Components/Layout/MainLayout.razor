@@ -3,6 +3,7 @@
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject ISignalRService SignalRServiceBase
+@inject IDeviceService DeviceService
 
 
 <div class="page bg-secondary-subtle container-fluid p-0">
@@ -31,6 +32,8 @@
 			await Task.Delay(500);
 
 		await StartUserBanHubConnection();
+
+		await DeviceService.InitializeAsync();
 	}
 
 	private async Task StartUserBanHubConnection()
@@ -44,7 +47,6 @@
 					await AuthStateProvider.SetLogoutAsync();
 					NavigationManager.NavigateTo("/", replace: true);
 				}
-
 			});
 		}
 

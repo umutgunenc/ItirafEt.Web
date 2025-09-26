@@ -49,7 +49,7 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
                     {
 
                         var json = Encoding.UTF8.GetString(e.Body.ToArray());
-                    var message = JsonSerializer.Deserialize<MessageViewModel>(json);
+                        var message = JsonSerializer.Deserialize<MessageViewModel>(json);
 
                     if (message != null)
                     {
@@ -62,9 +62,7 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
                         await _channel.BasicAckAsync(e.DeliveryTag, false);
                     }
                     else
-                    {
                         await _channel.BasicNackAsync(e.DeliveryTag, false, false);
-                    }
                 }
                 catch
                 {

@@ -1,7 +1,5 @@
 ﻿@page "/conversations/{ConversationId:guid}"
 
-
-
 @inject NavigationManager NavigationManager
 @inject IMessageApi MessageApi
 @inject AuthStateProvider AuthStateProvider
@@ -328,7 +326,7 @@ else
 
 		if (firstRender)
 		{
-			_isMobile = await DeviceService.IsMobileAsync();
+			_isMobile = DeviceService.IsMobile;
 			_dotNetRef = DotNetObjectReference.Create(this);
 			await JSRuntime.InvokeVoidAsync("chatInput.init", ChatInputId, _isMobile, _dotNetRef);
 			await JSRuntime.InvokeVoidAsync("chatInputWithPhoto.init", ChatInputWithPhotoId, _isMobile, _dotNetRef);

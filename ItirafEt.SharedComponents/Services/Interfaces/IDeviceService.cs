@@ -8,7 +8,7 @@ namespace ItirafEt.SharedComponents.Services
 {
     public interface IDeviceService
     {
-        string Platform { get;}
-        Task<bool> IsMobileAsync();
+        bool IsMobile { get; }
+        Task InitializeAsync();
     }
 }

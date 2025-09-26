@@ -16,7 +16,7 @@
 		<p class="navbar-brand text-white fw-bold" p>@errorMessage</p>
 
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-		aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+				aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon @(_isHaveUnreadMessages ?"text-danger":"")" style="filter: invert(1);"></span>
 		</button>
 
@@ -133,9 +133,9 @@
 	private Guid _currentUserId = Guid.Empty;
 
 	private string allowedRoles = string.Join(",",
-		nameof(UserRoleEnum.SuperAdmin),
-		nameof(UserRoleEnum.Admin),
-		nameof(UserRoleEnum.Moderator));
+	nameof(UserRoleEnum.SuperAdmin),
+	nameof(UserRoleEnum.Admin),
+	nameof(UserRoleEnum.Moderator));
 	private bool _isHaveUnreadMessages = false;
 	private string? errorMessage;
 
@@ -180,6 +180,7 @@
 
 		if (authState.User.Identity?.IsAuthenticated == true)
 			await InvokeAsync(async () => await InitializeLogedInUserServices());
+		else
 		{
 			_currentUserId = Guid.Empty;
 			_inboxViewModel?.Clear();
@@ -221,8 +222,8 @@
 			if (response.IsSuccess)
 			{
 				_categories = response.Data?
-		.OrderBy(c => c.CategoryOrder)
-		.ToList();
+	.OrderBy(c => c.CategoryOrder)
+	.ToList();
 			}
 			else
 				_categories = null;
@@ -240,16 +241,16 @@
 		if (_categoryHubConnection != null)
 		{
 			_categoryHubConnection.On<CategoryViewModel>("CategoryInfoChangedAsync", async (category) =>
-		{
-			UpdateCategories(category);
-			await InvokeAsync(StateHasChanged);
-		});
+	{
+		UpdateCategories(category);
+		await InvokeAsync(StateHasChanged);
+	});
 
 			_categoryHubConnection.On<int, bool>("CategoryPostCountChangedAsync", async (categoryId, isPostAdded) =>
-		{
-			UpdateCategories(categoryId, isPostAdded);
-			await InvokeAsync(StateHasChanged);
-		});
+	{
+		UpdateCategories(categoryId, isPostAdded);
+		await InvokeAsync(StateHasChanged);
+	});
 
 			await _categoryHubConnection.StartAsync();
 			await _categoryHubConnection.SendAsync("JoinCategoryInfoChangedGroup");
@@ -414,11 +415,12 @@
 				_isHaveUnreadMessages = false;
 
 		}
-		catch (Exception )
+		catch (Exception)
 		{
 
 		}
-		finally{
+		finally
+		{
 			await InvokeAsync(StateHasChanged);
 		}
 	}

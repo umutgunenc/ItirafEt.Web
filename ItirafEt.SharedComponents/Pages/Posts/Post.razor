@@ -167,7 +167,8 @@
 
 					<div class="mt-4">
 						<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
-							Yorumlar @($"({_comments?.Count ?? 0})") 														<i class="bi @(_showComments ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+							Yorumlar @($"({_comments?.Count ?? 0})")
+							<i class="bi @(_showComments ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
 
 						</h6>
 					</div>
@@ -176,24 +177,31 @@
 						<div class="my-4">
 							@if (_comments?.Count > 0)
 							{
-								<EditForm Model="_commentModel" OnValidSubmit="AddCommentAsync">
+
+								<EditForm Model="_commentModel"
+										  OnValidSubmit="async () => await AddCommentAsync()">
 									<DataAnnotationsValidator />
+									<div class="d-flex align-items-end mt-3">
 
-									<div class="mb-3">
-										<InputTextArea id="yorum"
-													   class="form-control"
+										<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
 													   placeholder="Yorum yazın..."
-													   @bind-Value="_commentModel.Content"
-													   rows="4" />
-										<ValidationMessage For="@(() => _commentModel.Content)" />
-									</div>
+													   rows="4"
+													   @bind-Value="_commentModel.Content">
+										</InputTextArea>
 
-									<div class="my-3">
-										<button type="submit" class="btn-custom col-12" disabled="@_isApiBusy">Gönder</button>
+										<div class="mx-2">
+											<button class="btn-custom-circle" disabled="@_isApiBusy">
+												<i class="bi bi-send-check text-white"></i>
+											</button>
+										</div>
+
+
 									</div>
+									<ValidationMessage For="@(() => _commentModel.Content)" />
+
 								</EditForm>
 
-								<div class="card mb-2 shadow-sm">
+								<div class="card mt-3 shadow-sm">
 									<div class="card-body p-2">
 										<!-- Yorum listesi -->
 										@foreach (var comment in _comments)
@@ -213,24 +221,34 @@
 											}
 											else
 											{
-												<EditForm Model="comment" OnValidSubmit="async ()=> await EditCommentAsync(comment.Id)">
+
+												<EditForm Model="comment"
+														  OnValidSubmit="async () => await EditCommentAsync(comment.Id)">
 													<DataAnnotationsValidator />
+													<div class="d-flex align-items-end mt-3">
 
-													<div class="my-3">
-														<InputTextArea class="form-control"
+														<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
 																	   placeholder="Yorumunuzu düzenleyin..."
-																	   @bind-Value="comment.Content"
-																	   rows="4" />
-														<ValidationMessage For="@(() => comment.Content)" />
-													</div>
+																	   rows="4"
+																	   @bind-Value="comment.Content">
+														</InputTextArea>
 
-													<div class="d-flex justify-content-start my-3 gap-2">
-														<button type="submit" class="btn-custom" disabled="@_isApiBusy">Değiştir</button>
-														<button type="button" class="btn-custom-red" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" disabled="@_isApiBusy">İptal</button>
+														<div class="mx-2">
+															<button class="btn-custom-circle" disabled="@_isApiBusy">
+																<i class="bi bi-send-check text-white"></i>
+															</button>
+														</div>
+														<div class="me-2">
+															<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)">
+																<i class="bi bi-arrow-counterclockwise"></i>
+															</button>
+														</div>
 													</div>
+													<ValidationMessage For="@(() => comment.Content)" />
+
 												</EditForm>
 											}
-											<div class="d-flex justify-content-start m-0 my-1 gap-2">
+											<div class="d-flex justify-content-start m-0 my-2 gap-2">
 
 												@if (comment.IsActive)
 												{
@@ -324,21 +342,26 @@
 											<!-- Reply input -->
 											@if (_replyToCommentId == comment.Id)
 											{
+
 												<EditForm Model="_replyModel"
-														  OnValidSubmit="()=>AddReplyAsync(comment.Id)">
+														  OnValidSubmit="async () => await AddReplyAsync(comment.Id)">
 													<DataAnnotationsValidator />
-													<div class="input-group mb-2">
-														<input type="text"
-															   class="form-control form-control-sm"
-															   placeholder="Cevabınızı yazın..."
-															   @bind="_replyModel.Content" />
-														<div class="input-group-append">
-															<button class="btn-custom rounded-start-0" type="submit">
-																Gönder
+													<div class="d-flex align-items-end mt-3">
+
+														<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+																	   placeholder="Cevabınızı yazın..."
+																	   rows="4"
+																	   @bind-Value="_replyModel.Content">
+														</InputTextArea>
+
+														<div class="mx-2">
+															<button class="btn-custom-circle" disabled="@_isApiBusy">
+																<i class="bi bi-send-check text-white"></i>
 															</button>
 														</div>
 													</div>
 													<ValidationMessage For="@(() => _replyModel.Content)" />
+
 												</EditForm>
 											}
 											<!-- Alt yorumlar (replies) -->
@@ -381,26 +404,36 @@
 																}
 																else
 																{
-																	<EditForm Model="reply" OnValidSubmit="async ()=> await EditCommentAsync(reply.Id)">
+
+																	<EditForm Model="reply"
+																			  OnValidSubmit="async () => await EditCommentAsync(reply.Id)">
 																		<DataAnnotationsValidator />
+																		<div class="d-flex align-items-end mt-3">
 
-																		<div class="my-3">
-																			<InputTextArea class="form-control"
+																			<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
 																						   placeholder="Yorumunuzu düzenleyin..."
-																						   @bind-Value="reply.Content"
-																						   rows="4" />
-																			<ValidationMessage For="@(() => reply.Content)" />
-																		</div>
+																						   rows="4"
+																						   @bind-Value="reply.Content">
+																			</InputTextArea>
 
-																		<div class="d-flex justify-content-start my-3 gap-2">
-																			<button type="submit" class="btn-custom" disabled="@_isApiBusy">Değiştir</button>
-																			<button type="button" class="btn-custom-red" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)" disabled="@_isApiBusy">İptal</button>
+																			<div class="mx-2">
+																				<button class="btn-custom-circle" disabled="@_isApiBusy">
+																					<i class="bi bi-send-check text-white"></i>
+																				</button>
+																			</div>
+																			<div class="me-2">
+																				<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																					<i class="bi bi-arrow-counterclockwise"></i>
+																				</button>
+																			</div>
 																		</div>
+																		<ValidationMessage For="@(() => reply.Content)" />
+
 																	</EditForm>
 																}
 																@if (reply.IsActive)
 																{
-																	<div class="d-flex justify-content-start gap-2">
+																	<div class="d-flex justify-content-start gap-2 mt-2">
 
 																		<div class="d-flex align-items-center  gap-2 ">
 																			@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
@@ -491,21 +524,24 @@
 								</div>
 
 								<EditForm Model="_commentModel"
-										  OnValidSubmit="AddCommentAsync">
+										  OnValidSubmit="async () => await AddCommentAsync()">
 									<DataAnnotationsValidator />
-
-									<div class="mb-3">
-										<InputTextArea id="yorum"
-													   class="form-control"
+									<div class="d-flex align-items-end mt-3">
+										<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
 													   placeholder="Yorum yazın..."
-													   @bind-Value="_commentModel.Content"
-													   rows="4" />
-										<ValidationMessage For="@(() => _commentModel.Content)" />
-									</div>
+													   rows="4"
+													   @bind-Value="_commentModel.Content">
+										</InputTextArea>
 
-									<div class="my-3">
-										<button type="submit" class="blue col-12 text-white fw-medium" disabled="@_isApiBusy">Gönder</button>
+										<div class="mx-2">
+											<button class="btn-custom-circle" disabled="@_isApiBusy">
+												<i class="bi bi-send-check text-white"></i>
+											</button>
+										</div>
+
 									</div>
+									<ValidationMessage For="@(() => _commentModel.Content)" />
+
 								</EditForm>
 							}
 							else if (_isCommentsHaveError)
