@@ -34,6 +34,10 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             await _channel.QueueDeclareAsync(MessageTypes.SendMessage, durable: true, exclusive: false, autoDelete: false);
             await _channel.QueueBindAsync(MessageTypes.SendMessage, "message-exchange", MessageTypes.SendMessage);
 
+            // aynı anda 10 mesaj işleyebilir
+            await _channel.BasicQosAsync(0, 10, false, cancellationToken);
+
+
             await base.StartAsync(cancellationToken);
 
         }
@@ -45,53 +49,55 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
 
             consumer.ReceivedAsync += async (sender, e) =>
             {
-
-                try
-                {
-                    var body = e.Body.ToArray();
-                    var json = Encoding.UTF8.GetString(body);
-                    var message = JsonSerializer.Deserialize<RabbitMqMessageViewModel>(json);
-
-
-                    if (message != null)
+                _ = Task.Run(async () => {
+                    try
                     {
+                        var body = e.Body.ToArray();
+                        var json = Encoding.UTF8.GetString(body);
+                        var message = JsonSerializer.Deserialize<RabbitMqMessageViewModel>(json);
 
-                        var messageViewModel = new MessageViewModel
+
+                        if (message != null)
                         {
-                            Id = message.Id,
-                            Content = message.Content,
-                            CreatedDate = message.CreatedDate,
-                            SenderId = message.SenderId,
-                            SenderUserName = message.SenderUserName,
-                            ConversationId = message.ConversationId,
-                            PhotoId = message.PhotoId,
-                            ThumbnailId = message.ThumbnailId,
-                            SignedThumbnailUrl = message.SignedThumbnailUrl,
-                        };
 
-                        var inboxViewModel = new InboxItemViewModel
-                        {
-                            ConversationId = messageViewModel.ConversationId,
-                            LastMessageDate = messageViewModel.CreatedDate,
-                            LastMessagePrewiew = messageViewModel.Content,
-                            SenderUserUserName = messageViewModel.SenderUserName,
-                            SenderUserProfileImageUrl = message.SenderUserProfileImageUrl,
-                            UnreadMessageCount = 1
-                        };
+                            var messageViewModel = new MessageViewModel
+                            {
+                                Id = message.Id,
+                                Content = message.Content,
+                                CreatedDate = message.CreatedDate,
+                                SenderId = message.SenderId,
+                                SenderUserName = message.SenderUserName,
+                                ConversationId = message.ConversationId,
+                                PhotoId = message.PhotoId,
+                                ThumbnailId = message.ThumbnailId,
+                                SignedThumbnailUrl = message.SignedThumbnailUrl,
+                            };
 
-                        await _hubService.SendMessageAsync(message.ConversationId, messageViewModel);
-                        await _hubService.SendMessageNotificationAsync(message.ConversationId, messageViewModel);
-                        await _hubService.NewMessageForInboxAsync(message.ReceiverId, inboxViewModel);
+                            var inboxViewModel = new InboxItemViewModel
+                            {
+                                ConversationId = messageViewModel.ConversationId,
+                                LastMessageDate = messageViewModel.CreatedDate,
+                                LastMessagePrewiew = messageViewModel.Content,
+                                SenderUserUserName = messageViewModel.SenderUserName,
+                                SenderUserProfileImageUrl = message.SenderUserProfileImageUrl,
+                                UnreadMessageCount = 1
+                            };
 
-                        await _channel.BasicAckAsync(e.DeliveryTag, multiple: false);
+                            await _hubService.SendMessageAsync(message.ConversationId, messageViewModel);
+                            await _hubService.SendMessageNotificationAsync(message.ConversationId, messageViewModel);
+                            await _hubService.NewMessageForInboxAsync(message.ReceiverId, inboxViewModel);
+
+                            await _channel.BasicAckAsync(e.DeliveryTag, multiple: false);
+                        }
+                        else
+                            await _channel.BasicNackAsync(e.DeliveryTag, multiple: false, requeue: false);
                     }
-                    else
-                        await _channel.BasicNackAsync(e.DeliveryTag, multiple: false, requeue: false);
-                }
-                catch (Exception)
-                {
-                    await _channel.BasicNackAsync(e.DeliveryTag, multiple: false, requeue: true);
-                }
+                    catch (Exception)
+                    {
+                        await _channel.BasicNackAsync(e.DeliveryTag, multiple: false, requeue: true);
+                    }
+                }, stoppingToken);
+
 
             };
 

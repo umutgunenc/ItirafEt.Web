@@ -31,6 +31,9 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
             await _channel.QueueDeclareAsync(MessageTypes.ReadMessage, durable: true, exclusive: false, autoDelete: false);
             await _channel.QueueBindAsync(MessageTypes.ReadMessage, "message-exchange", MessageTypes.ReadMessage);
 
+            await _channel.BasicQosAsync(0, 10, false, cancellationToken);
+
+
             await base.StartAsync(cancellationToken);
         }
 
@@ -40,9 +43,12 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
 
             consumer.ReceivedAsync += async (sender, e) =>
             {
-                try
-                {
-                    var json = Encoding.UTF8.GetString(e.Body.ToArray());
+                _ = Task.Run(async () => {
+
+                    try
+                    {
+
+                        var json = Encoding.UTF8.GetString(e.Body.ToArray());
                     var message = JsonSerializer.Deserialize<MessageViewModel>(json);
 
                     if (message != null)
@@ -64,7 +70,9 @@ namespace ItirafEt.Api.BackgorunServices.RabbitMQ
                 {
                     await _channel.BasicNackAsync(e.DeliveryTag, false, true);
                 }
-            };
+            }, stoppingToken);
+
+        };
 
             await _channel.BasicConsumeAsync(MessageTypes.ReadMessage, autoAck: false, consumer, stoppingToken);
         }

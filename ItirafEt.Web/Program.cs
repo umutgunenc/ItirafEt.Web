@@ -51,7 +51,6 @@ await builder.Build().RunAsync();
 
 static void ConfigureRefit(IServiceCollection services)
 {
-    //const string baseUrl = "https://localhost:7292";
     string baseUrl = ApiBaseUrl.BaseUrl;
 
     services.AddRefitClient<IAuthApi>()
@@ -84,7 +83,6 @@ static void ConfigureRefit(IServiceCollection services)
     services.AddRefitClient<IUserProfileApi>(GetRefitSettings)
         .ConfigureHttpClient(SetHttpClient);
 
-    //static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
     void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
 
     static RefitSettings GetRefitSettings(IServiceProvider sp)
