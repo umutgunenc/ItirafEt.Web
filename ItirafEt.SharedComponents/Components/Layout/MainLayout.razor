@@ -2,8 +2,9 @@
 @inherits LayoutComponentBase
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
-@inject ISignalRService SignalRServiceBase
+@inject ISignalRService SignalRService
 @inject IDeviceService DeviceService
+@implements IAsyncDisposable
 
 
 <div class="page bg-secondary-subtle container-fluid p-0">
@@ -25,32 +26,64 @@
 
 	private HubConnection? _userBanHubConnection;
 
+	private AuthenticationStateChangedHandler? _authStateChangedHandler;
 
 	protected override async Task OnInitializedAsync()
 	{
+		_authStateChangedHandler = new AuthenticationStateChangedHandler(OnAuthStateChanged);
+		AuthStateProvider.AuthenticationStateChanged += _authStateChangedHandler;
+
 		while (AuthStateProvider.IsInitializing)
 			await Task.Delay(500);
 
-		await StartUserBanHubConnection();
+		if (AuthStateProvider.IsLoggedIn)
+			await StartUserBanHubConnection();
 
 		await DeviceService.InitializeAsync();
 	}
 
 	private async Task StartUserBanHubConnection()
 	{
-		if (_userBanHubConnection is null)
-		{ 
-			_userBanHubConnection = SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.BanUser);
-			_userBanHubConnection?.On<Guid>("UserBannedAsync", async (bannedUserId) =>
-			{
-				if (AuthStateProvider?.User?.id == bannedUserId.ToString()){
-					await AuthStateProvider.SetLogoutAsync();
-					NavigationManager.NavigateTo("/", replace: true);
-				}
-			});
-		}
 
-		await _userBanHubConnection.StartAsync();
+		_userBanHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.BanUser, PageType.Layout);
+		_userBanHubConnection?.On<Guid>("UserBannedAsync", async (bannedUserId) =>
+		{
+			if (AuthStateProvider?.User?.id == bannedUserId.ToString())
+			{
+				await AuthStateProvider.SetLogoutAsync();
+				NavigationManager.NavigateTo("/", replace: true);
+			}
+		});
+
+		if (_userBanHubConnection.State == HubConnectionState.Disconnected)
+			await _userBanHubConnection.StartAsync();
+
 		await _userBanHubConnection.SendAsync("JoinBanUserGroup", AuthStateProvider?.User?.id);
+
+
+	}
+	private void OnAuthStateChanged(Task<AuthenticationState> task)
+	{
+		_ = HandleAuthStateChangedAsync(task);
+	}
+
+	private async Task HandleAuthStateChangedAsync(Task<AuthenticationState> task)
+	{
+		var authState = await task;
+
+		if (authState.User.Identity?.IsAuthenticated == false)
+			await DisposeAsync();
+		else
+			await StartUserBanHubConnection();
+
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+
+		await SignalRService.StopAsync(PageType.Layout, HubType.BanUser);
+		await SignalRService.DisposeAsync(PageType.Layout, HubType.BanUser);
+		_userBanHubConnection = null;
+
 	}
 }

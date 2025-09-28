@@ -2,6 +2,8 @@
 using ItirafEt.Shared.ViewModels;
 using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.SignalR.Client;
+using static ItirafEt.Shared.Models.HubConstants;
+using static ItirafEt.SharedComponents.Helpers.PageNameConstants;
 
 public class SignalRInboxService : IAsyncDisposable
 {
@@ -13,7 +15,9 @@ public class SignalRInboxService : IAsyncDisposable
     public event Func<Guid, Guid, Task>? MessageRead;
 
     public SignalRInboxService(ISignalRService signalRServices)
-        => _signalRServices = signalRServices;
+    {
+        _signalRServices = signalRServices;
+    }
 
     public async Task InitializeAsync(Guid currentUserId)
     {
@@ -27,10 +31,11 @@ public class SignalRInboxService : IAsyncDisposable
         {
             await _connection.StopAsync();
             await _connection.DisposeAsync();
+            _connection = null;
         }
 
         _currentUserId = currentUserId;
-        _connection = _signalRServices.ConfigureHubConnection(HubConstants.HubType.Message);
+        _connection = await _signalRServices.ConfigureHubConnectionAsync(HubType.Message,PageType.Layout);
 
         _connection.On<Guid, InboxItemViewModel>(
             "NewMessageForInboxAsync",
@@ -51,8 +56,8 @@ public class SignalRInboxService : IAsyncDisposable
     {
         if (_connection != null)
         {
-            await _connection.StopAsync();
-            await _connection.DisposeAsync();
+            await _signalRServices.StopAsync(PageType.Layout,HubType.Message);
+            await _signalRServices.DisposeAsync(PageType.Layout, HubType.Message);
             _connection = null;
         }
     }

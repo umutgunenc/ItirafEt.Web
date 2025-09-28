@@ -7,6 +7,7 @@
 @inject InboxService InboxService
 @inject IMessageApi MessageApi
 @inject ISignalRService SignalRServiceBase
+@implements IAsyncDisposable
 
 
 
@@ -16,7 +17,7 @@
 		<p class="navbar-brand text-white fw-bold" p>@errorMessage</p>
 
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-				aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+		aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon @(_isHaveUnreadMessages ?"text-danger":"")" style="filter: invert(1);"></span>
 		</button>
 
@@ -130,6 +131,7 @@
 
 	private HubConnection? _categoryHubConnection;
 	private HubConnection? _conversationHubConnection;
+
 	private Guid _currentUserId = Guid.Empty;
 
 	private string allowedRoles = string.Join(",",
@@ -141,6 +143,7 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+
 		try
 		{
 			AuthStateProvider.AuthenticationStateChanged += async (task) => await OnAuthStateChanged(task);
@@ -161,6 +164,7 @@
 
 	}
 
+
 	private void CheckUnreadMessage()
 	{
 		if (_inboxViewModel == null || !_inboxViewModel.Any())
@@ -179,7 +183,10 @@
 		var authState = await task;
 
 		if (authState.User.Identity?.IsAuthenticated == true)
+		{
 			await InvokeAsync(async () => await InitializeLogedInUserServices());
+			await StartCategoryInfoHubAsync();
+		}
 		else
 		{
 			_currentUserId = Guid.Empty;
@@ -204,14 +211,21 @@
 	{
 		if (_conversationHubConnection != null)
 		{
-			await _conversationHubConnection.StopAsync();
-			await _conversationHubConnection.DisposeAsync();
+			await SignalRServiceBase.StopAsync(PageType.Layout,HubType.Message);
+			await SignalRServiceBase.DisposeAsync(PageType.Layout, HubType.Message);
 			_conversationHubConnection = null;
 		}
 
 		await AuthStateProvider.SetLogoutAsync();
 		NavigationManager.NavigateTo("/", replace: true);
 		await CollapseMenuAsync();
+
+		await SignalRServiceBase.StopAsync(PageType.Layout, HubType.Category);
+		await SignalRServiceBase.DisposeAsync(PageType.Layout, HubType.Category);
+		_categoryHubConnection = null;
+
+		await StartCategoryInfoHubAsync();
+
 	}
 
 	private async Task GelAllActiveCategoryAsync()
@@ -222,8 +236,8 @@
 			if (response.IsSuccess)
 			{
 				_categories = response.Data?
-	.OrderBy(c => c.CategoryOrder)
-	.ToList();
+					.OrderBy(c => c.CategoryOrder)
+					.ToList();
 			}
 			else
 				_categories = null;
@@ -236,7 +250,8 @@
 
 	private async Task StartCategoryInfoHubAsync()
 	{
-		_categoryHubConnection = SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Category);
+
+		_categoryHubConnection = await SignalRServiceBase.ConfigureHubConnectionAsync(HubType.Category,PageType.Layout);
 
 		if (_categoryHubConnection != null)
 		{
@@ -345,7 +360,7 @@
 	private async Task StartConversationHubConnection()
 	{
 
-		_conversationHubConnection = SignalRServiceBase.ConfigureHubConnection(HubConstants.HubType.Message);
+		_conversationHubConnection = await SignalRServiceBase.ConfigureHubConnectionAsync(HubType.Message,PageType.Layout);
 
 		if (_conversationHubConnection != null)
 		{
@@ -422,6 +437,23 @@
 		finally
 		{
 			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (_categoryHubConnection != null)
+		{
+			await SignalRServiceBase.StopAsync(PageType.Layout,HubType.Category);
+			await SignalRServiceBase.DisposeAsync(PageType.Layout, HubType.Category);
+			_categoryHubConnection = null;
+
+		}
+		if (_conversationHubConnection != null)
+		{
+			await SignalRServiceBase.StopAsync(PageType.Layout, HubType.Message);
+			await SignalRServiceBase.DisposeAsync(PageType.Layout, HubType.Message);
+			_conversationHubConnection = null;
 		}
 	}
 

@@ -39,7 +39,7 @@ builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredS
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddSingleton<IStorageService, StorageService>();
-builder.Services.AddScoped<ISignalRService, WebSignalRService>();
+builder.Services.AddSingleton<ISignalRService, WebSignalRService>();
 builder.Services.AddSingleton<IDateTimeHelperService, DateTimeHelperService>();
 
 

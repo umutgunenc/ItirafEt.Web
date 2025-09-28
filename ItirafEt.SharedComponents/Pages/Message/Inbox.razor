@@ -82,7 +82,8 @@
 			_userTimeZoneId = "UTC";
 		}
 
-		await SignalRInboxService.InitializeAsync(_currentUserId);
+		
+		InboxService.InitializeAsync(_currentUserId);
 		await GetUserMessagesAsync();
 
 		InboxService.MessageReaded -= RefreshInbox;

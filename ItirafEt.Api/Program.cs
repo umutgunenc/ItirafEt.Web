@@ -60,29 +60,29 @@ builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete
 builder.Services.AddSignalR();
 
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddDefaultPolicy(policy =>
-//    {
-//        policy
-//    .AllowAnyOrigin()
-//    .AllowAnyHeader()
-//    .AllowAnyMethod();
-//    });
-//});
-
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-        policy =>
-        {
-            policy.WithOrigins("https://itirafetweb.runasp.net") // Ýstemci adresi
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials();
-        });
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+    .AllowAnyOrigin()
+    .AllowAnyHeader()
+    .AllowAnyMethod();
+    });
 });
+
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowSpecificOrigin",
+//        policy =>
+//        {
+//            policy.WithOrigins("https://itirafetweb.runasp.net") // Ýstemci adresi
+//                   .AllowAnyHeader()
+//                   .AllowAnyMethod()
+//                   .AllowCredentials();
+//        });
+//});
 
 
 builder.Services.AddAuthorization();
@@ -158,8 +158,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRouting();
-app.UseCors("AllowSpecificOrigin");
-//app.UseCors();
+//app.UseCors("AllowSpecificOrigin");
+app.UseCors();
 
 
 app.Use(async (context, next) =>

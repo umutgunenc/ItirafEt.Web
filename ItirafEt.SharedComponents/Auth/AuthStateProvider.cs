@@ -4,6 +4,7 @@ using System.Security.Principal;
 using System.Text.Json;
 using ItirafEt.Shared;
 using ItirafEt.Shared.Services;
+using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -18,12 +19,14 @@ namespace ItirafEt.SharedComponents.Auth
         private Task<AuthenticationState> _authStateTask;
         private readonly IStorageService _storageService;
         private Timer _tokenCheckTimer;
+        private readonly ISignalRService _signalRService;
 
 
-        public AuthStateProvider(IJSRuntime jSRuntime, IStorageService storageService)
+        public AuthStateProvider(IJSRuntime jSRuntime, IStorageService storageService, ISignalRService signalRService)
         {
             _storageService = storageService;
             SetAuthStateTask();
+            _signalRService = signalRService;
         }
         public override Task<AuthenticationState> GetAuthenticationStateAsync() => _authStateTask;
 
@@ -45,6 +48,7 @@ namespace ItirafEt.SharedComponents.Auth
             User = null;
             SetAuthStateTask();
             NotifyAuthenticationStateChanged(_authStateTask);
+            await _signalRService.DisposeAllAsync();
             await _storageService.ClearItemsAsync();
             _tokenCheckTimer?.Dispose();
 

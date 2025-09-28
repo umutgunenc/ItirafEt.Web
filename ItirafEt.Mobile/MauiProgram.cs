@@ -62,7 +62,7 @@ namespace ItirafEt.Mobile
             builder.Services.AddAuthorizationCore();
 
             builder.Services.AddSingleton<IStorageService, StorageService>();
-            builder.Services.AddScoped<ISignalRService, MobileSignalRService>();
+            builder.Services.AddScoped<ConfigureHubConnectionAsync, MobileSignalRService>();
             builder.Services.AddSingleton<IDateTimeHelperService, DateTimeHelperService>();
 
             ConfigureRefit(builder.Services);

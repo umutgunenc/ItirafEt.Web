@@ -10,9 +10,10 @@
 @inject IJSRuntime JSRuntime
 @inject IStorageService StorageService
 @inject ISignalRService SignalRService
+@implements IAsyncDisposable
 
 
-<div class="col-md-8 col mx-auto py-5">
+<div class="col-lg-8 col mx-auto py-lg-5">
 
 
 	@if (_isError)
@@ -23,7 +24,7 @@
 	}
 	else
 	{
-		<h3 class="text-center">@_categoryName?.ToUpper()</h3>
+		<h3 class="text-center m-0 mt-4">@_categoryName?.ToUpper()</h3>
 		<div class="btn-group btn-group-sm w-100 my-4 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
 			<input type="radio"
 			class="btn-check"
@@ -121,9 +122,8 @@
 @code {
 	[Parameter] public int CategoryId { get; set; }
 
-
-	private HubConnection _postViewHubConnection;
-	private HubConnection _reactionHubConnection;
+	private HubConnection? _postViewHubConnection;
+	private HubConnection? _reactionHubConnection;
 	private int _pageSize = 10;
 	private bool _isLoading = false;
 	private bool _isError = false;
@@ -139,8 +139,8 @@
 	{
 		ResetParameters();
 
-		// var cachedItems = await LocalStorage.GetItemAsync<List<PostInfoViewModel>>($"cat-{CategoryId}-items");
-		// var cachedCursor = await LocalStorage.GetItemAsync<CursorViewModel>($"cat-{CategoryId}-cursor");
+		await StartPostViewHubConnectionAsync();
+		await StartReactionHubConnectionAsync();
 
 		var cachedItems = await StorageService.GetItemAsync<List<PostInfoViewModel>>($"cat-{CategoryId}-items");
 		var cachedCursor = await StorageService.GetItemAsync<CursorViewModel>($"cat-{CategoryId}-cursor");
@@ -156,15 +156,14 @@
 			await GetCategoryNameAsync();
 			await SetCategoryNameToLocalStorageAsync();
 		}
-		await StartPostViewHubConnectionAsync();
-		await StartReactionHubConnectionAsync();
+
 	}
 
 
-	private void ResetParameters()
+	private async void ResetParameters()
 	{
 		ResetCache();
-
+		await DisposeAsync();
 		_isError = false;
 		_errorMessage = null;
 	}
@@ -180,10 +179,7 @@
 		State.CurrentPage = cursorDto.Page;
 		State.ScrollY = cursorDto.ScrollY;
 		await ScrollHelper.SetScrollYAsync(State.ScrollY);
-		// _isDateOrdered = await LocalStorage.GetItemAsync<bool>($"cat-{CategoryId}-dateOrdered");
-		// _isCountOrdered = await LocalStorage.GetItemAsync<bool>($"cat-{CategoryId}-countOrdered");
-		// _isLikeOrdered = await LocalStorage.GetItemAsync<bool>($"cat-{CategoryId}-likeOrdered");
-		// _categoryName = await LocalStorage.GetItemAsync<string?>($"cat-{CategoryId}-categoryName");
+
 
 
 		_isDateOrdered = await StorageService.GetItemAsync<bool>($"cat-{CategoryId}-dateOrdered");
@@ -195,13 +191,9 @@
 	{
 		var scrollY = await ScrollHelper.GetScrollYAsync();
 		State.ScrollY = scrollY;
-		// await LocalStorage.SetItemAsync($"cat-{CategoryId}-items", State.Items);
 		await StorageService.SetItemAsync($"cat-{CategoryId}-items", State.Items);
 		var cursor = new CursorViewModel { Page = State.CurrentPage, ScrollY = scrollY };
-		// await LocalStorage.SetItemAsync($"cat-{CategoryId}-cursor", cursor);
-		// await LocalStorage.SetItemAsync<bool>($"cat-{CategoryId}-dateOrdered", _isDateOrdered);
-		// await LocalStorage.SetItemAsync<bool>($"cat-{CategoryId}-countOrdered", _isCountOrdered);
-		// await LocalStorage.SetItemAsync<bool>($"cat-{CategoryId}-likeOrdered", _isLikeOrdered);
+
 
 
 		await StorageService.SetItemAsync($"cat-{CategoryId}-cursor", cursor);
@@ -297,16 +289,8 @@
 
 	private async Task StartPostViewHubConnectionAsync()
 	{
-		// _postViewHubConnection = new HubConnectionBuilder()
-		// 			.WithUrl("https://localhost:7292/postviewhub")
-		// 			.WithAutomaticReconnect()
-		// 			.Build();
 
-		_postViewHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.PostView);
-		// _postViewHubConnection = new HubConnectionBuilder()
-		// 			.WithUrl("http://10.0.2.2:7292/postviewhub")
-		// 			.WithAutomaticReconnect()
-		// 			.Build();
+		_postViewHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.PostView, PageType.Category);
 
 		_postViewHubConnection.On<int>("UpdatePostViewCountAsync", async updatedPostId =>
 		{
@@ -321,16 +305,7 @@
 	private async Task StartReactionHubConnectionAsync()
 	{
 
-		// _reactionHubConnection = new HubConnectionBuilder()
-		// 			.WithUrl("https://localhost:7292/reactionhub")
-		// 			.WithAutomaticReconnect()
-		// 			.Build();
-
-		_reactionHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.Reaction);
-		// _reactionHubConnection = new HubConnectionBuilder()
-		// 			.WithUrl("http://10.0.2.2:7292/reactionhub")
-		// 			.WithAutomaticReconnect()
-		// 			.Build();
+		_reactionHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Reaction, PageType.Category);
 
 		_reactionHubConnection.On<int, int>("UpdatePostLikeCountAsync", async (postId, likeCount) =>
 		{
@@ -350,8 +325,6 @@
 		_isCountOrdered = orderByViewCount;
 		_isLikeOrdered = orderByLikeCount;
 		ResetCache();
-		// await LocalStorage.RemoveItemAsync($"cat-{CategoryId}-items");
-		// await LocalStorage.RemoveItemAsync($"cat-{CategoryId}-cursor");
 
 		await StorageService.RemoveItemAsync($"cat-{CategoryId}-items");
 		await StorageService.RemoveItemAsync($"cat-{CategoryId}-cursor");
@@ -381,7 +354,6 @@
 
 	private async Task SetCategoryNameToLocalStorageAsync()
 	{
-		// await LocalStorage.SetItemAsync($"cat-{CategoryId}-categoryName", _categoryName);
 		await StorageService.SetItemAsync($"cat-{CategoryId}-categoryName", _categoryName);
 	}
 
@@ -419,11 +391,20 @@
 
 	private async Task UpdateCacheAsync()
 	{
-		// await LocalStorage.RemoveItemAsync($"cat-{CategoryId}-items");
-		// await LocalStorage.SetItemAsync($"cat-{CategoryId}-items", State.Items);
-
 		await StorageService.RemoveItemAsync($"cat-{CategoryId}-items");
 		await StorageService.SetItemAsync($"cat-{CategoryId}-items", State.Items);
+	}
+
+
+	public async ValueTask DisposeAsync()
+	{
+		await SignalRService.StopAsync(PageType.Category, HubType.PostView);
+		await SignalRService.DisposeAsync(PageType.Category, HubType.PostView);
+		_postViewHubConnection = null;
+
+		await SignalRService.StopAsync(PageType.Category, HubType.Reaction);
+		await SignalRService.DisposeAsync(PageType.Category, HubType.Reaction);
+		_reactionHubConnection = null;
 	}
 
 }

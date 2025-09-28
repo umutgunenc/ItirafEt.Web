@@ -9,6 +9,8 @@
 @inject NavigationManager NavigationManager
 @inject ISignalRService SignalRService
 @inject IDateTimeHelperService DateTimeHelperService
+@implements IAsyncDisposable
+
 
 
 
@@ -837,7 +839,7 @@
 
 	protected override async Task OnParametersSetAsync()
 	{
-		ResetPage();
+		await ResetPageAsync();
 		CheckUserLoggedIn();
 		GetUserRoleId();
 
@@ -867,7 +869,7 @@
 		_isBusy = false;
 
 	}
-	private void ResetPage()
+	private async Task ResetPageAsync()
 	{
 		_isPostHaveError = false;
 		_isApiBusy = false;
@@ -875,12 +877,13 @@
 		_showComments = false;
 		_isCommentsHaveError = false;
 		_commentErrorMessage = null;
+		await DisposeAsync();
 
 	}
 	private async Task StartReactionHubConnectionAsync()
 	{
 
-		_reactionHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.Reaction);
+		_reactionHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Reaction, PageType.Post);
 
 
 		if (!allowedRoles.Contains(_userRoleId))
@@ -919,7 +922,7 @@
 	private async Task StartPostViewHubConnectionAsync()
 	{
 
-		_postViewHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.PostView);
+		_postViewHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.PostView, PageType.Post);
 
 		if (allowedRoles.Contains(_userRoleId))
 		{
@@ -950,7 +953,8 @@
 	}
 	private async Task StartCommentHubConnectionAsync()
 	{
-		_commentHubConnection = SignalRService.ConfigureHubConnection(HubConstants.HubType.Comment);
+
+		_commentHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Comment, PageType.Post);
 
 		_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrEditedAsync", async (commentModel, isAdded) =>
 		{
@@ -1329,27 +1333,6 @@
 			else
 				_dislikeCount--;
 		}
-
-
-		// if (_currentUserId == UserId)
-		// {
-		// 	if (newReactionId == (int)ReactionTypeEnum.Like)
-		// 	{
-		// 		_isAlreadyLiked = true;
-		// 		_isAlreadyDisliked = false;
-		// 	}
-		// 	else if (newReactionId == (int)ReactionTypeEnum.Dislike)
-		// 	{
-		// 		_isAlreadyLiked = false;
-		// 		_isAlreadyDisliked = true;
-		// 	}
-		// 	else
-		// 	{
-		// 		_isAlreadyLiked = false;
-		// 		_isAlreadyDisliked = false;
-		// 	}
-
-		// }
 	}
 
 
@@ -2079,6 +2062,30 @@
 			await InvokeAsync(StateHasChanged);
 		}
 
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (_postViewHubConnection is not null)
+		{
+			await SignalRService.StopAsync(PageType.Post,HubType.PostView);
+			await SignalRService.DisposeAsync(PageType.Post, HubType.PostView);
+			_postViewHubConnection = null;
+		}
+
+		if (_commentHubConnection is not null)
+		{
+			await SignalRService.StopAsync(PageType.Post, HubType.Comment);
+			await SignalRService.DisposeAsync(PageType.Post, HubType.Comment);
+			_commentHubConnection = null;
+		}
+
+		if (_reactionHubConnection is not null)
+		{
+			await SignalRService.StopAsync(PageType.Post,HubType.Reaction);
+			await SignalRService.DisposeAsync(PageType.Post, HubType.Reaction);
+			_reactionHubConnection = null;
+		}
 	}
 }
 
