@@ -1,6 +1,11 @@
 ﻿.blue {
     background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
 }
+.blue-reverse {
+
+    background: linear-gradient(315deg, #4b6cb7 0%, #182848 100%);
+}
+
 
 .btn-custom:hover {
     background: linear-gradient(135deg, #3a5599 0%, #121d38 100%);
