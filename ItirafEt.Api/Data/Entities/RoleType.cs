@@ -8,7 +8,7 @@ namespace ItirafEt.Api.Data.Entities
     {
         protected RoleType()
         {
-            Users = new HashSet<User>();
+            UserRoles = new HashSet<UserRoles>();
         }
 
         public static readonly RoleType SuperAdmin = new RoleType( nameof(UserRoleEnum.SuperAdmin));
@@ -30,7 +30,7 @@ namespace ItirafEt.Api.Data.Entities
         [MaxLength(64)]
         public string Name { get; private set; }
 
-        public virtual ICollection<User> Users { get; private set; }
+        public virtual ICollection<UserRoles> UserRoles { get; private set; }
 
         private RoleType(string name) : this()
         {

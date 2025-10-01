@@ -1,5 +1,6 @@
 ﻿using System.Security.Authentication;
 using System.Security.Cryptography;
+using ItirafEt.Api.ConstStrings;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Shared.Enums;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,7 @@ namespace ItirafEt.Api.Data
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         public DbSet<ActivateAccountToken> ActivateAccountTokens { get; set; }
         public DbSet<UserLoginAttempt> UserLoginAttempts { get; set; }
+        public DbSet<UserRoles> UserRoles { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -203,7 +205,6 @@ namespace ItirafEt.Api.Data
                 Id = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 UserName = "admin",
                 Email = "umutgunenc@gmail.com",
-                RoleName = nameof(UserRoleEnum.SuperAdmin),
                 GenderId = (int)GenderEnum.Male,
                 PasswordHash = "AQAAAAIAAYagAAAAED2ATLdR3ZV/GbRKgMX8CnBTh6eN737Th/HT2GGvgGOLlzEQ50HcF8GT5XPRB2scoA==",
                 BirthDate = new DateTime(1989, 5, 29),
@@ -216,10 +217,70 @@ namespace ItirafEt.Api.Data
 
             //adminUser.PasswordHash = _passwordHasher.HashPassword(adminUser, "123456");
 
+            modelBuilder.Entity<UserRoles>(entity =>
+            {
+                entity.HasKey(ur => new { ur.UserId, ur.RoleName, ur.AssignedDate });
+
+                entity.HasOne(ur => ur.User)
+                      .WithMany(u => u.Roles)
+                      .HasForeignKey(ur => ur.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(ur => ur.Role)
+                      .WithMany(r => r.UserRoles)
+                      .HasForeignKey(ur => ur.RoleName)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(ur => ur.AssignedByUser)
+                      .WithMany() // veya .WithMany(u => u.AssignedRoles) dersen User içinde navigation olur
+                      .HasForeignKey(ur => ur.AssignedByUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+            });
+
+            var systemUser = new User
+            {
+                Id = SystemUser.systemUserId,
+                UserName = "system",
+                Email = "system@yourapp.local",
+                GenderId = (int)GenderEnum.Unknown,
+                PasswordHash = "SYSTEMUSER_NO_PASSWORD",
+                BirthDate = new DateTime(2000, 1, 1),
+                CreatedDate = new DateTime(2000, 1, 1),
+                IsDeleted = false,
+                IsBanned = false,
+                IsProfilePrivate = true,
+                IsTermOfUse = true
+            };
 
 
 
+            var roleForeAdmin = new UserRoles()
+            {
+                UserId = adminUser.Id,
+                RoleName = RoleType.SuperAdmin.Name,
+                AssignedByUserId = adminUser.Id,
+                AssignedDate = adminUser.CreatedDate,
+                ExpireDate = null,
+                RevokedDate = null
+            };
+
+            var roleForSystemUser = new UserRoles()
+            {
+                UserId = systemUser.Id,
+                RoleName = RoleType.SuperAdmin.Name,
+                AssignedByUserId = systemUser.Id,
+                AssignedDate = systemUser.CreatedDate,
+                ExpireDate = null,
+                RevokedDate = null
+            };
+
+
+
+            modelBuilder.Entity<User>().HasData(systemUser);
             modelBuilder.Entity<User>().HasData(adminUser);
+            modelBuilder.Entity<UserRoles>().HasData(roleForSystemUser);
+            modelBuilder.Entity<UserRoles>().HasData(roleForeAdmin);
         }
     }
 }

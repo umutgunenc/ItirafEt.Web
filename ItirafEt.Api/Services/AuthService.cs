@@ -32,101 +32,87 @@ namespace ItirafEt.Api.Services
         }
         public async Task<AuthResponse> LoginAsync(LoginViewModel model)
         {
-            model.EmailOrUserName = model.EmailOrUserName.Trim();
 
-            var user = await _context.Users
-                .AsNoTracking()
-                .Where(u => u.Email.ToLower() == model.EmailOrUserName.ToLower() || u.UserName.ToLower() == model.EmailOrUserName.ToLower())
-                .Select(u => new User
-                {
-                    Id = u.Id,
-                    UserName = u.UserName,
-                    Email = u.Email,
-                    PasswordHash = u.PasswordHash,
-                    IsDeleted = u.IsDeleted,
-                    IsBanned = u.IsBanned,
-                    IsTermOfUse = u.IsTermOfUse,
-                    RoleName = u.RoleName,
-                    BannedDateUntil = u.BannedDateUntil,
-                    UserLoginAttempts = u.UserLoginAttempts
-                        .OrderByDescending(ula => ula.AttemptDate)
-                        .Take(5)
-                        .ToList()
-                })
-                .FirstOrDefaultAsync();
+                model.EmailOrUserName = model.EmailOrUserName.Trim();
 
-            if (user == null)
-                return new AuthResponse(default, "Girdiğiniz kullanıcı adı, e-posta veya şifre hatalı.");
-
-            if (user.IsDeleted)
-                return new AuthResponse(default, "Hesabınız aktif durumda değil.");
-
-            if (user.IsBanned)
-                return new AuthResponse(default, $"Hesabınız {user.BannedDateUntil?.ToString("dd/MM/yyyy")} tarihine kadar banlanmıştır.");
-
-            if (user.UserLoginAttempts.Count == 5)
-            {
-                try
-                {
-                    var lastFiveAttempts = user.UserLoginAttempts;
-                    if (lastFiveAttempts.All(la => !la.IsSuccessful))
+                var user = await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Roles)
+                    .Where(u => u.Email.ToLower() == model.EmailOrUserName.ToLower() || u.UserName.ToLower() == model.EmailOrUserName.ToLower())
+                    .Select(u => new User
                     {
-                        var lastFailDate = lastFiveAttempts.Max(a => a.AttemptDate);
+                        Id = u.Id,
+                        UserName = u.UserName,
+                        Email = u.Email,
+                        PasswordHash = u.PasswordHash,
+                        IsDeleted = u.IsDeleted,
+                        IsBanned = u.IsBanned,
+                        Roles = u.Roles.Where(r => r.RevokedDate == null).ToList(),
+                        BannedDateUntil = u.BannedDateUntil,
+                        UserLoginAttempts = u.UserLoginAttempts
+                            .OrderByDescending(ula => ula.AttemptDate)
+                            .Take(5)
+                            .ToList()
+                    })
+                    .FirstOrDefaultAsync();
 
-                        var lastPasswordReset = await _context.PasswordResetTokens
-                            .Where(prt => prt.UserId == user.Id && prt.IsUsed)
-                            .OrderByDescending(prt => prt.ExpTime)
-                            .FirstOrDefaultAsync();
+                if (user == null)
+                    return new AuthResponse(default, "Girdiğiniz kullanıcı adı, e-posta veya şifre hatalı.");
 
-                        if (lastPasswordReset == null || lastPasswordReset.ExpTime < lastFailDate)
-                        {
-                            await _emailSenderProducer.PublishAsync(EmailTypes.AccountBlocked, EmailCreateFactory.CreateEmail(EmailTypes.AccountBlocked, user));
+                if (user.IsDeleted)
+                    return new AuthResponse(default, "Hesabınız aktif durumda değil.");
 
-                            return new AuthResponse(default, "Şifrenizi üst üste 5 kere yanlış girdiğiniz için hesabınız kitlenmiştir.\n Lütfen şifremi unuttum seçeneğini kullanarak şifrenizi yenileyiniz.");
-                        }
-                    }
-                }
-                catch (Exception ex)
+                if (user.IsBanned)
+                    return new AuthResponse(default, $"Hesabınız {user.BannedDateUntil?.ToString("dd/MM/yyyy")} tarihine kadar banlanmıştır.");
+
+                if (user.UserLoginAttempts.Count == 5)
                 {
 
-                    return new AuthResponse(default, ex.Message);
+                        var lastFiveAttempts = user.UserLoginAttempts;
+                        if (lastFiveAttempts.All(la => !la.IsSuccessful))
+                        {
+                            var lastFailDate = lastFiveAttempts.Max(a => a.AttemptDate);
 
+                            var lastPasswordReset = await _context.PasswordResetTokens
+                                .Where(prt => prt.UserId == user.Id && prt.IsUsed)
+                                .OrderByDescending(prt => prt.ExpTime)
+                                .FirstOrDefaultAsync();
+
+                            if (lastPasswordReset == null || lastPasswordReset.ExpTime < lastFailDate)
+                            {
+                                await _emailSenderProducer.PublishAsync(EmailTypes.AccountBlocked, EmailCreateFactory.CreateEmail(EmailTypes.AccountBlocked, user));
+
+                                return new AuthResponse(default, "Şifrenizi üst üste 5 kere yanlış girdiğiniz için hesabınız kitlenmiştir.\n Lütfen şifremi unuttum seçeneğini kullanarak şifrenizi yenileyiniz.");
+                            }
+                        }
                 }
 
+                var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
 
-            }
+                var loginAttempt = new UserLoginAttempt
+                {
+                    UserId = user.Id,
+                    AttemptDate = DateTime.UtcNow,
+                    IpAddress = model.IpAddress,
+                    DeviceInfo = model.DeviceInfo
+                };
 
-            var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
+                if (passwordResult == PasswordVerificationResult.Failed)
+                {
+                    loginAttempt.IsSuccessful = false;
+                    await _context.UserLoginAttempts.AddAsync(loginAttempt);
+                    await _context.SaveChangesAsync();
+                    return new AuthResponse(default, "Girdiğiniz kullanıcı adı, e-posta veya şifre hatalı.");
+                }
 
-            var loginAttempt = new UserLoginAttempt
-            {
-                UserId = user.Id,
-                AttemptDate = DateTime.UtcNow,
-                IpAddress = model.IpAddress,
-                DeviceInfo = model.DeviceInfo
-            };
+                loginAttempt.IsSuccessful = true;
+                var jwtToken = GenearteJwtToken(user);
+                var loggedInUser = new LoggedInUser(user.Id.ToString(), user.UserName, user.Roles.FirstOrDefault().RoleName, jwtToken);
 
-
-
-            if (passwordResult == PasswordVerificationResult.Failed)
-            {
-                loginAttempt.IsSuccessful = false;
                 await _context.UserLoginAttempts.AddAsync(loginAttempt);
                 await _context.SaveChangesAsync();
-                return new AuthResponse(default, "Girdiğiniz kullanıcı adı, e-posta veya şifre hatalı.");
-            }
 
-
-
-            loginAttempt.IsSuccessful = true;
-            var jwtToken = GenearteJwtToken(user);
-            var loggedInUser = new LoggedInUser(user.Id.ToString(), user.UserName, user.RoleName.ToString(), jwtToken);
-
-            await _context.UserLoginAttempts.AddAsync(loginAttempt);
-            await _context.SaveChangesAsync();
-
-            return new AuthResponse(loggedInUser);
-
+                return new AuthResponse(loggedInUser);
         }
 
         public async Task<ApiResponses> RegisterAsync(RegisterViewModel model)
@@ -156,8 +142,18 @@ namespace ItirafEt.Api.Services
                 IsBanned = false,
                 IsProfilePrivate = false,
                 IsTermOfUse = true,
-                RoleName = nameof(UserRoleEnum.User),
                 GenderId = (int)model.GenderId,
+                Roles = new List<UserRoles>
+                {
+                    new UserRoles
+                    {
+                        RoleName = RoleType.User.Name,
+                        AssignedByUserId = SystemUser.systemUserId,
+                        AssignedDate = DateTime.UtcNow,
+                        RevokedDate = null,
+                        ExpireDate = null
+                    }
+                }
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -173,7 +169,7 @@ namespace ItirafEt.Api.Services
             Claim[] claims = [
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, user.RoleName)
+                new Claim(ClaimTypes.Role, user.Roles.FirstOrDefault().RoleName)
                 ];
 
             var secretKey = _configuration.GetValue<string>("Jwt:Secret");

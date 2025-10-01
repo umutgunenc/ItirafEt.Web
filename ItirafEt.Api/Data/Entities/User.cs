@@ -22,6 +22,11 @@ namespace ItirafEt.Api.Data.Entities
             ReadPosts = new HashSet<UserReadPost>();
             PasswordResetTokens = new HashSet<PasswordResetToken>();
             ActivateAccountTokens = new HashSet<ActivateAccountToken>();
+            Roles = new HashSet<UserRoles>();
+            UserLoginAttempts = new HashSet<UserLoginAttempt>();
+            MessageReports = new HashSet<MessageReport>();
+            CommentReports = new HashSet<CommentReport>();
+            PostReports = new HashSet<PostReport>();
         }
         [Key]
         public Guid Id { get; set; }
@@ -64,12 +69,6 @@ namespace ItirafEt.Api.Data.Entities
         public bool IsTermOfUse { get; set; }
 
         [Required]
-        public string RoleName { get; set; }
-
-        [ForeignKey(nameof(RoleName))]
-        public virtual RoleType Role { get; set; }
-
-        [Required]
         public int GenderId { get; set; }
 
         [ForeignKey(nameof(GenderId))]
@@ -93,7 +92,9 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<UserReadPost> ReadPosts { get; set; }
         public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; }
         public virtual ICollection<ActivateAccountToken> ActivateAccountTokens { get; set; }
-
         public virtual ICollection<UserLoginAttempt> UserLoginAttempts { get; set; }
+        public virtual ICollection<UserRoles> Roles { get; set; }
+
+
     }
 }

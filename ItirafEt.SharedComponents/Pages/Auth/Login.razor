@@ -105,9 +105,7 @@
 		var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 		var query = QueryHelpers.ParseQuery(uri.Query);
 		if (query.TryGetValue("returnUrl", out var returnUrlValues))
-		{
 			_returnUrl = returnUrlValues;
-		}
 
 		if (AuthStateProvider.IsLoggedIn)
 			NavigationManager.NavigateTo(_returnUrl ?? "/", replace: true);

@@ -1,4 +1,5 @@
 ﻿@page "/settings"
+@using ItirafEt.Shared.Services.ClientServices.NewFolder
 @using ItirafEt.SharedComponents.Helpers
 
 @inject IUserSettingApi UserSettingApi
@@ -469,7 +470,7 @@
 							}
 							else
 							{
-								@foreach (var post in _userPostsModel.UserPosts)
+								@foreach (var post in _userPostsModel.Items)
 								{
 									<div class="card mb-3 shadow-hover text-bg-light position-relative" role="button" @onclick="() => NavigateToPost(post.PostId)">
 
@@ -668,7 +669,7 @@
 	private Guid _currentUserId;
 	private UserSettingsChangePaswordViewModel _userSettingChangePaswordViewModel = new();
 	private UserSettingsInfoViewModel _userSettingInfoViewModel = new();
-	private UserPostsViewModel _userPostsModel = new();
+	private UserPostsViewModel? _userPostsModel = new();
 	private UserDeactiveViewModel _deactiveModel = new();
 	private ElementReference fileInputWrapper;
 	protected override async Task OnInitializedAsync()
@@ -841,9 +842,9 @@
 			if (response.IsSuccess)
 			{
 				_userPostsModel = response.Data;
-				if (_userPostsModel?.UserPosts.Count != 0)
+				if (_userPostsModel?.TotalCount != 0)
 				{
-					foreach (var post in _userPostsModel.UserPosts)
+					foreach (var post in _userPostsModel.Items)
 					{
 						post.PostCreatedDate = ToLocalTime(post.PostCreatedDate);
 						if (post.PostUpdatedDate != null)

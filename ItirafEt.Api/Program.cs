@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
 
@@ -60,29 +59,29 @@ builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete
 builder.Services.AddSignalR();
 
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy
-    .AllowAnyOrigin()
-    .AllowAnyHeader()
-    .AllowAnyMethod();
-    });
-});
-
-
 //builder.Services.AddCors(options =>
 //{
-//    options.AddPolicy("AllowSpecificOrigin",
-//        policy =>
-//        {
-//            policy.WithOrigins("https://itirafetweb.runasp.net") // Ýstemci adresi
-//                   .AllowAnyHeader()
-//                   .AllowAnyMethod()
-//                   .AllowCredentials();
-//        });
+//    options.AddDefaultPolicy(policy =>
+//    {
+//        policy
+//    .AllowAnyOrigin()
+//    .AllowAnyHeader()
+//    .AllowAnyMethod();
+//    });
 //});
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        policy =>
+        {
+            policy.WithOrigins("https://itirafetweb.runasp.net") // Ýstemci adresi
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
+});
 
 
 builder.Services.AddAuthorization();
@@ -129,6 +128,7 @@ builder.Services.AddTransient<PostViewService>();
 builder.Services.AddTransient<MessageService>();
 builder.Services.AddTransient<UserSettingService>();
 builder.Services.AddTransient<UserProfileService>();
+builder.Services.AddTransient<UserRoleService>();
 
 
 builder.Services.AddTransient<ReactionHubService>();
@@ -158,8 +158,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRouting();
-//app.UseCors("AllowSpecificOrigin");
-app.UseCors();
+app.UseCors("AllowSpecificOrigin");
+//app.UseCors();
 
 
 app.Use(async (context, next) =>
@@ -194,6 +194,7 @@ app.MapPostViewEndpoints();
 app.MapMessageEndpoints();
 app.MapUserSettingsEndpoints();
 app.MapUserProfileEndpoints();
+app.MapUserRoleEndPoints();
 
 
 using (var scope = app.Services.CreateScope())

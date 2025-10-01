@@ -164,7 +164,10 @@ namespace ItirafEt.Api.Services
         public async Task<ApiResponses> UserDeactiveAsync(Guid userId, UserDeactiveViewModel model)
         {
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                .Where(u => u.Id == userId)
+                .Include(u => u.Roles.Where(r => r.RevokedDate == null))
+                .FirstOrDefaultAsync();
+
             if (user == null)
                 return ApiResponses.Fail("Kullanıcı bulunamadı.");
             if (string.IsNullOrEmpty(model.Password))
@@ -173,10 +176,10 @@ namespace ItirafEt.Api.Services
             if (passwordResult == PasswordVerificationResult.Failed)
                 return ApiResponses.Fail("Şifreniz yanlış.");
 
-            if (user.RoleName == nameof(UserRoleEnum.Admin) || user.RoleName == nameof(UserRoleEnum.SuperAdmin))
+            if (user.Roles.FirstOrDefault().RoleName == nameof(UserRoleEnum.Admin) || user.Roles.FirstOrDefault().RoleName == nameof(UserRoleEnum.SuperAdmin))
                 return ApiResponses.Fail("Admin görevindeki kullanıcılar hesabını donduramaz.");
 
-            if (user.RoleName == nameof(UserRoleEnum.Moderator))
+            if (user.Roles.FirstOrDefault().RoleName == nameof(UserRoleEnum.Moderator))
                 return ApiResponses.Fail("Moderator görevindeki kullanıcılar hesabını donduramaz.");
 
             user.IsDeleted = true;

@@ -76,17 +76,15 @@ namespace ItirafEt.Api.Services
 
         public async Task<ApiResponses<ConversationViewModel>> GetConversationDtoAsync(Guid senderUserId, Guid receiverUserId)
         {
-            var senderUser = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == senderUserId);
 
-            if (senderUser == null)
+            var isThereUser = await _context.Users.AnyAsync(u => u.Id == senderUserId);
+
+            if (!isThereUser)
                 return ApiResponses<ConversationViewModel>.Fail("Gönderici Kullanıcı Bulunamadı.");
 
-            var receiverUser = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == receiverUserId);
-            if (receiverUser == null)
+            var isThereReceiverUser = await _context.Users.AnyAsync(u => u.Id == receiverUserId);
+
+            if (!isThereReceiverUser)
                 return ApiResponses<ConversationViewModel>.Fail("Alıcı Kullanıcı Bulunamadı.");
 
             if (senderUserId == receiverUserId)
@@ -100,6 +98,11 @@ namespace ItirafEt.Api.Services
                     (c.InitiatorId == receiverUserId && c.ResponderId == senderUserId)
                 );
 
+            var senderUserRoleName = await _context.UserRoles
+                .Where(ur => ur.UserId == senderUserId && ur.RevokedDate == null)
+                .Select(ur => ur.RoleName)
+                .FirstOrDefaultAsync();
+
             if (conversation != null)
             {
                 var conversationDto = await ConversationToConversationModelAsync(conversation, receiverUserId, senderUserId);
@@ -107,7 +110,7 @@ namespace ItirafEt.Api.Services
             }
             else
             {
-                if (_allowedRoles.Contains(senderUser.RoleName))
+                if (_allowedRoles.Contains(senderUserRoleName))
                 {
                     var newConversation = new Conversation
                     {

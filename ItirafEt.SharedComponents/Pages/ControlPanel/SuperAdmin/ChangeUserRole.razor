@@ -1,0 +1,202 @@
+﻿@page "/admin/changeUserRole"
+@inject AuthStateProvider AuthStateProvider
+@inject IUserRoleApi UserRoleApi
+
+
+<div class="bg-light" style="min-height: calc(100vh - 56px);">
+	<div class="row mx-0">
+		<div class="col-lg-8 mx-auto my-auto p-4 ">
+
+			<EditForm Model="_model" OnValidSubmit="SelectUserAsync">
+				<DataAnnotationsValidator />
+				<label class="form-label">Kullanıcı Adı veya Kullanıcı IDsi</label>
+
+				<div class="my-1 d-flex align-items-center gap-2">
+
+					<div class="flex-grow-1">
+						<InputText @bind-Value="_model.UserNameOrUserId" class="form-control" />
+					</div>
+
+					<div>
+						@if (!_isSelectUserBussy)
+						{
+							<button type="submit" class="btn-custom">Seç <i class="bi bi-check2-circle"></i></button>
+						}
+						else
+						{
+							<button type="button" class="btn-custom" disabled>
+								<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Yükleniyor...
+							</button>
+						}
+					</div>
+				</div>
+				<ValidationMessage For="()=> _model.UserNameOrUserId" />
+
+			</EditForm>
+
+			@if (_isUserSelected)
+			{
+				<label class="form-label my-2">Roller</label>
+				@foreach (var role in _model.RolesNames)
+				{
+					<div class="form-check">
+						<input type="radio"
+							   name="Roles"
+							   checked="@( _model.SelectedRoleName == role )"
+							   @onchange="@(() => _model.SelectedRoleName = role)"
+							   class="form-check-input"
+							   id="@role" />
+						<label class="form-check-label" for="@role">@role</label>
+					</div>
+				}
+
+				<div class="d-flex align-items-center gap-2 my-2">
+					<InputCheckbox @bind-Value="_haveExpireDate" class="form-check-input" id="haveExpireDate" style="margin-top: 0;" />
+					<label class="form-check-label mb-0" for="haveExpireDate">Bitiş Tarihi Olsun Mu</label>
+					<InputDate @bind-Value="_model.ExpireDate" min="@MinDate" class="form-control ms-2" style="max-width: 200px;" disabled="@(!_haveExpireDate)" />
+				</div>
+
+				<div class="row my-3 mx-auto">
+					<div class="d-flex flex-column flex-lg-row justify-content-between gap-2 p-0">
+						@if (!_isChangeUserRoleApiBussy)
+						{
+							<button type="button" class="btn-custom col-lg" @onclick="async ()  => await ChangeUserRoleAsync()">Kaydet <i class="bi bi-box-arrow-down"></i> </button>
+						}
+						else
+						{
+							<button type="button" class="btn-custom col-lg" disabled> <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Yükleniyor... </button>
+						}
+
+					</div>
+				</div>
+
+			}
+
+			@if (!string.IsNullOrEmpty(_errorMessage))
+			{
+				<div class="mb-3 text-bg-danger text-white p-2">
+					<p class="m-0">@_errorMessage</p>
+				</div>
+			}
+			@if (!string.IsNullOrEmpty(_successMessage))
+			{
+				<div class="mb-3 text-bg-success text-white p-2">
+					<p class="m-0">@_successMessage</p>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+
+
+@* <EditForm Model="@changeUser" OnValidSubmit="ChangeUserRoleAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Kullanıcı Adı veya ID</label>
+        <InputText class="form-control" @bind-Value="changeUser.UserNameOrUserId" />
+        <ValidationMessage For="@(() => changeUser.UserNameOrUserId)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Rol Seçiniz</label>
+        <InputSelect class="form-select" @bind-Value="changeUser.SelectedRoleName">
+            <option value="">-- Rol Seçiniz --</option>
+            @foreach (var role in changeUser.RolesNames)
+            {
+                <option value="@role">@role</option>
+            }
+        </InputSelect>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+</EditForm> *@
+
+@code {
+
+	private bool _isSelectUserBussy = false;
+	private bool _isChangeUserRoleApiBussy = false;
+	private bool _isUserSelected = false;
+	private bool _haveExpireDate = false;
+	private string _errorMessage = string.Empty;
+	private string _successMessage = string.Empty;
+	private ChangeUserRoleViewModel _model = new();
+	private string MinDate => DateTime.Today.ToString("yyyy-MM-dd");
+
+	// protected override async Task OnInitializedAsync()
+	// {
+	// 	_model.RolesNames = new List<string> { "SuperAdmin", "Admin", "Moderator" };
+	// 	_model.SelectedRoleName = "Admin";
+	// }
+
+
+	private async Task ChangeUserRoleAsync()
+	{
+		_isChangeUserRoleApiBussy = true;
+		try
+		{
+			var adminId = AuthStateProvider.User.id;
+			if (Guid.TryParse(adminId, out Guid _adminId))
+			_model.AssignedByUserId = _adminId;
+			_successMessage = string.Empty;
+			_errorMessage = string.Empty;
+			var response = await UserRoleApi.ChangeUserRoleAsync(_model);
+			if (!response.IsSuccess)
+			{
+				_errorMessage = response.ErrorMessage;
+				return;
+			}
+			else
+			{
+				_errorMessage = string.Empty;
+				_successMessage = "Kullanıcı Rolü Başarıyla Değiştirildi.";
+			}
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+		}
+		finally
+		{
+			_isChangeUserRoleApiBussy = false;
+		}
+	}
+
+	private async Task SelectUserAsync()
+	{
+		_isSelectUserBussy = true;
+		_isUserSelected = false;
+		_errorMessage = string.Empty;
+		_successMessage = string.Empty;
+
+		try
+		{
+			var response = await UserRoleApi.SelectUserAsync(_model);
+			if (!response.IsSuccess)
+			{
+				_errorMessage = response.ErrorMessage;
+				_isUserSelected = false;
+				return;
+			}
+			else
+			{
+				_model = response.Data;
+				_isUserSelected = true;
+				_errorMessage = string.Empty;
+			}
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+			_isUserSelected = false;
+		}
+		finally
+		{
+			_isSelectUserBussy = false;
+		}
+	}
+
+
+}

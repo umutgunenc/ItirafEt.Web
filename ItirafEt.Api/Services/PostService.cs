@@ -4,6 +4,7 @@ using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
 using ItirafEt.Api.HubServices;
 using ItirafEt.Shared.Enums;
+using ItirafEt.Shared.Services.ClientServices.NewFolder;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -166,11 +167,12 @@ namespace ItirafEt.Api.Services
 
             var userPostsViewModel = new UserPostsViewModel
             {
-                HasNextPage = hasMore,
-                TotalCount = totalPosts,
                 UserName = user.UserName,
                 UserProfilePicture = user.ProfilePictureUrl,
-                UserPosts = posts
+                CurrentPage = page,
+                PageSize = size,
+                TotalCount = totalPosts,
+                Items = posts,
             };
 
             return ApiResponses<UserPostsViewModel>.Success(userPostsViewModel);

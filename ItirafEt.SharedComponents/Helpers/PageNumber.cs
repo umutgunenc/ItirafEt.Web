@@ -10,5 +10,6 @@ namespace ItirafEt.SharedComponents.Helpers
     {
         public static int ProfilePageNo { get; set; } = 1;
         public static int SettingsPageNo { get; set; } = 1;
+        public static int AdminUsersPageNo { get; set; } = 1;
     }
 }

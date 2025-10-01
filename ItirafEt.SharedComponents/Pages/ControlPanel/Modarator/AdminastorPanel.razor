@@ -21,22 +21,24 @@
 
 				@if (isCategoryVisible)
 				{
-					<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
 
-						<NavLink class="text-decoration-none" href="admin/createcategory">
-							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-								<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
-								<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Ekle</span>
-							</div>
-						</NavLink>
-						<NavLink class="text-decoration-none" href="admin/editcategory">
-							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-								<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
-								<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Düzenle</span>
-							</div>
-						</NavLink>
+						<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
 
-					</div>
+							<NavLink class="text-decoration-none" href="admin/createcategory">
+								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
+									<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Ekle</span>
+								</div>
+							</NavLink>
+							<NavLink class="text-decoration-none" href="admin/editcategory">
+								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
+									<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Düzenle</span>
+								</div>
+							</NavLink>
+
+						</div>
+
 				}
 			</AuthorizeView>
 		</Authorized>
@@ -44,7 +46,7 @@
 
 	<AuthorizeView Context="Users">
 		<Authorized>
-			<AuthorizeView Roles="@SuperAdmin">
+			<AuthorizeView Roles="@SuperAdminAdminModerator">
 				<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToggleUsers">
 					<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
 						<i class="bi bi-people me-2"></i>
@@ -55,26 +57,43 @@
 
 				@if (isUsersVisible)
 				{
-					<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
-						<NavLink class="text-decoration-none" href="admin/banUsers">
-							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-								<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
-								<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıyı Banla</span>
-							</div>
-						</NavLink>
 
-						<NavLink class="text-decoration-none" href="admin/checkComplaint">
-							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-								<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
-								<span class="fs-6 fw-semibold text-dark-emphasis">Şikayetleri Gör</span>
-							</div>
-						</NavLink>
+					<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
+						<AuthorizeView Roles="@SuperAdminAdminModerator" Context="SuperAdminAdminModerator">
+
+							<NavLink class="text-decoration-none" href="admin/banUsers">
+								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
+									<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıyı Banla</span>
+								</div>
+							</NavLink>
+
+							<NavLink class="text-decoration-none" href="admin/checkComplaint">
+								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
+									<span class="fs-6 fw-semibold text-dark-emphasis">Şikayetleri Gör</span>
+								</div>
+							</NavLink>
+						</AuthorizeView>
+						<AuthorizeView Roles="@SuperAdmin" Context="SuperAdmin">
+							<NavLink class="text-decoration-none" href="admin/changeUserRole">
+								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
+									<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcı Rolünü Değiştir</span>
+								</div>
+							</NavLink>
+							<NavLink class="text-decoration-none" href="admin/usersWithRoles">
+								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
+									<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıları Gör</span>
+								</div>
+							</NavLink>
+						</AuthorizeView>
 					</div>
 				}
 			</AuthorizeView>
 		</Authorized>
 	</AuthorizeView>
-	.....
 </div>
 
 

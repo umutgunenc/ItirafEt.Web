@@ -88,7 +88,7 @@ else
 										</div>
 									</div>
 									<div class="">
-										@if (_userPostsViewModel.UserPosts?.Count == 0)
+										@if (_userPostsViewModel.Items?.Count == 0)
 										{
 											<div class="text-center">
 												@if (_currentUserId == userId)
@@ -139,7 +139,7 @@ else
 														<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
 													</label>
 												</div>
-												@foreach (var post in _userPostsViewModel.UserPosts)
+												@foreach (var post in _userPostsViewModel.Items)
 												{
 													<div class="card-body p-3 pt-0">
 
@@ -288,9 +288,9 @@ else
 				{
 					_haveError = false;
 					_userPostsViewModel = userPostsResponse.Data;
-					if (_userPostsViewModel?.UserPosts?.Count != 0)
+					if (_userPostsViewModel?.Items?.Count != 0)
 					{
-						foreach (var post in _userPostsViewModel.UserPosts)
+						foreach (var post in _userPostsViewModel.Items)
 						{
 							post.PostCreatedDate = ToLocal(post.PostCreatedDate);
 							if(post.PostUpdatedDate.HasValue)
@@ -397,9 +397,9 @@ else
 			{
 				_haveError = false;
 				_userPostsViewModel = userPostsResponse.Data;
-				if (_userPostsViewModel?.UserPosts?.Count != 0)
+				if (_userPostsViewModel?.Items?.Count != 0)
 				{
-					foreach (var post in _userPostsViewModel.UserPosts)
+					foreach (var post in _userPostsViewModel.Items)
 					{
 						post.PostCreatedDate = ToLocal(post.PostCreatedDate);
 						if (post.PostUpdatedDate.HasValue)

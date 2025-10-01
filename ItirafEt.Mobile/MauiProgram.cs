@@ -62,7 +62,7 @@ namespace ItirafEt.Mobile
             builder.Services.AddAuthorizationCore();
 
             builder.Services.AddSingleton<IStorageService, StorageService>();
-            builder.Services.AddScoped<ConfigureHubConnectionAsync, MobileSignalRService>();
+            builder.Services.AddScoped<ISignalRService, MobileSignalRService>();
             builder.Services.AddSingleton<IDateTimeHelperService, DateTimeHelperService>();
 
             ConfigureRefit(builder.Services);
@@ -107,6 +107,9 @@ namespace ItirafEt.Mobile
                 .ConfigureHttpClient(SetHttpClient);
 
             services.AddRefitClient<IUserProfileApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
+            services.AddRefitClient<IUserRoleApi>(GetRefitSettings)
                 .ConfigureHttpClient(SetHttpClient);
 
             //static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);

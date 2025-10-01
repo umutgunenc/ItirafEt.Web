@@ -4,16 +4,15 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ItirafEt.Shared.Services.ClientServices.NewFolder;
 
 namespace ItirafEt.Shared.ViewModels
 {
-    public class UserPostsViewModel
+    public class UserPostsViewModel : PageResult<ListOfUserPost>
     {
-        public bool HasNextPage { get; set; }
-        public int TotalCount { get; set; }
         public string UserName { get; set; }
         public string? UserProfilePicture { get; set; }
-        public List<ListOfUserPost>? UserPosts { get; set; } = new List<ListOfUserPost>();
+
     }
 
     public class ListOfUserPost

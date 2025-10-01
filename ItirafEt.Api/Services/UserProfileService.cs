@@ -81,15 +81,17 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            var hasMore = totalPosts > size * page;
+            //var hasMore = totalPosts > size * page;
 
             var userPostsViewModel = new UserPostsViewModel
             {
-                HasNextPage = hasMore,
-                TotalCount = totalPosts,
                 UserName = user.UserName,
                 UserProfilePicture = user.ProfilePictureUrl,
-                UserPosts = posts
+                CurrentPage = page,
+                PageSize = size,
+                TotalCount = totalPosts,
+                Items = posts,
+
             };
 
             return ApiResponses<UserPostsViewModel>.Success(userPostsViewModel);
@@ -140,15 +142,16 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            var hasMore = totalPosts > size * page;
+            //var hasMore = totalPosts > size * page;
 
             var userPostsViewModel = new UserPostsViewModel
             {
-                HasNextPage = hasMore,
-                TotalCount = totalPosts,
                 UserName = user.UserName,
                 UserProfilePicture = user.ProfilePictureUrl,
-                UserPosts = posts
+                CurrentPage = page,
+                PageSize = size,
+                TotalCount = totalPosts,
+                Items = posts,
             };
 
             return ApiResponses<UserPostsViewModel>.Success(userPostsViewModel);
@@ -196,15 +199,16 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            var hasMore = totalPosts > size * page;
+            //var hasMore = totalPosts > size * page;
 
             var userPostsViewModel = new UserPostsViewModel
             {
-                HasNextPage = hasMore,
-                TotalCount = totalPosts,
                 UserName = user.UserName,
                 UserProfilePicture = user.ProfilePictureUrl,
-                UserPosts = posts
+                CurrentPage = page,
+                PageSize = size,
+                TotalCount = totalPosts,
+                Items = posts,
             };
 
             return ApiResponses<UserPostsViewModel>.Success(userPostsViewModel);
