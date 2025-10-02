@@ -20,8 +20,8 @@ namespace ItirafEt.SharedComponents.Apis
         Task<ApiResponses> ChangeUserRoleAsync(ChangeUserRoleViewModel _model);
 
 
-        [Get("/api/getUsersWithRoles")]
-        Task<ApiResponses<List<UsersWithRolesViewModel>>> GetUsersWithRolesAsync([Query] string roleName);
+        [Post("/api/getUsersWithRoles")]
+        Task<ApiResponses<SelectOptionForUserWithRoleViewModel>> GetUsersWithRolesAsync(SelectOptionForUserWithRoleViewModel model);
 
 
         [Get("/api/getAllRoles")]

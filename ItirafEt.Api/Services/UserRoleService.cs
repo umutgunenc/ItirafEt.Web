@@ -1,4 +1,5 @@
-﻿using ItirafEt.Api.BackgorunServices.RabbitMQ;
+﻿using System.Reflection.Metadata.Ecma335;
+using ItirafEt.Api.BackgorunServices.RabbitMQ;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.HubServices;
@@ -35,7 +36,7 @@ namespace ItirafEt.Api.Services
                 Guid? _userId = await _context.Users
                     .AsNoTracking()
                     .Where(u => u.UserName == model.UserNameOrUserId)
-                    .Select(u =>u.Id)
+                    .Select(u => u.Id)
                     .FirstOrDefaultAsync();
 
                 if (_userId == null)
@@ -51,7 +52,7 @@ namespace ItirafEt.Api.Services
                     UserNameOrUserId = model.UserNameOrUserId,
                     SelectedRoleName = u.Roles
                         .Where(ur => ur.RevokedDate == null)
-                        .OrderByDescending(ur => ur.AssignedDate) 
+                        .OrderByDescending(ur => ur.AssignedDate)
                         .Select(ur => ur.Role.Name)
                         .FirstOrDefault(),
                     RolesNames = _context.Roles
@@ -70,100 +71,131 @@ namespace ItirafEt.Api.Services
         public async Task<ApiResponses> ChangeUserRoleAsync(ChangeUserRoleViewModel model)
         {
 
-                model.UserNameOrUserId = model.UserNameOrUserId.Trim();
+            model.UserNameOrUserId = model.UserNameOrUserId.Trim();
 
 
-                Guid userId;
-                if (Guid.TryParse(model.UserNameOrUserId, out userId))
-                {
-                    var isUserExist = await _context.Users.AnyAsync(u => u.Id == userId);
+            Guid userId;
+            if (Guid.TryParse(model.UserNameOrUserId, out userId))
+            {
+                var isUserExist = await _context.Users.AnyAsync(u => u.Id == userId);
 
-                    if (!isUserExist)
-                        return ApiResponses.Fail("Kullanıcı bulunamadı.");
-                }
-                else
-                {
-                    Guid? _userId = await _context.Users
-                        .AsNoTracking()
-                        .Where(u => u.UserName == model.UserNameOrUserId)
-                        .Select(u => u.Id)
-                        .FirstOrDefaultAsync();
-
-                    if (_userId == null)
-                        return ApiResponses.Fail("Kullanıcı bulunamadı.");
-                    userId = _userId.Value;
-
-                }
-
-                var isRoleExist = await _context.Roles.AnyAsync(r => r.Name == model.SelectedRoleName);
-                if (!isRoleExist)
-                    return ApiResponses.Fail("Rol bulunamadı.");
-
-                var isAdminValid = await _context.Users
-                    .Include(u => u.Roles)
-                        .ThenInclude(ur => ur.Role)
-                    .Where(u => u.Id == model.AssignedByUserId)
-                    .AnyAsync(u => u.Roles.Any(r => r.Role.Name == RoleType.SuperAdmin.Name && r.RevokedDate == null));
-
-                if (!isAdminValid)
-                    return ApiResponses.Fail("Yönetici yetkiniz yok.");
-
-
-                var userRole = await _context.UserRoles
-                    .Where(ur => ur.UserId == userId && ur.RevokedDate == null)
+                if (!isUserExist)
+                    return ApiResponses.Fail("Kullanıcı bulunamadı.");
+            }
+            else
+            {
+                Guid? _userId = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => u.UserName == model.UserNameOrUserId)
+                    .Select(u => u.Id)
                     .FirstOrDefaultAsync();
 
-                userRole.RevokedDate = DateTime.UtcNow;
-                _context.Update(userRole);
-                await _context.SaveChangesAsync();
+                if (_userId == null)
+                    return ApiResponses.Fail("Kullanıcı bulunamadı.");
+                userId = _userId.Value;
+
+            }
+
+            var isRoleExist = await _context.Roles.AnyAsync(r => r.Name == model.SelectedRoleName);
+            if (!isRoleExist)
+                return ApiResponses.Fail("Rol bulunamadı.");
+
+            var isAdminValid = await _context.Users
+                .Include(u => u.Roles)
+                    .ThenInclude(ur => ur.Role)
+                .Where(u => u.Id == model.AssignedByUserId)
+                .AnyAsync(u => u.Roles.Any(r => r.Role.Name == RoleType.SuperAdmin.Name && r.RevokedDate == null));
+
+            if (!isAdminValid)
+                return ApiResponses.Fail("Yönetici yetkiniz yok.");
+
+
+            var userRole = await _context.UserRoles
+                .Where(ur => ur.UserId == userId && ur.RevokedDate == null)
+                .FirstOrDefaultAsync();
+
+            userRole.RevokedDate = DateTime.UtcNow;
+            _context.Update(userRole);
+            await _context.SaveChangesAsync();
 
 
 
-                var newRole = new UserRoles
-                {
-                    UserId = userId,
-                    RoleName = model.SelectedRoleName,
-                    AssignedByUserId = model.AssignedByUserId,
-                    AssignedDate = DateTime.UtcNow,
-                    ExpireDate = model.ExpireDate
-                };
+            var newRole = new UserRoles
+            {
+                UserId = userId,
+                RoleName = model.SelectedRoleName,
+                AssignedByUserId = model.AssignedByUserId,
+                AssignedDate = DateTime.UtcNow,
+                ExpireDate = model.ExpireDate
+            };
 
-                await _context.UserRoles.AddAsync(newRole);
-                await _context.SaveChangesAsync();
+            await _context.UserRoles.AddAsync(newRole);
+            await _context.SaveChangesAsync();
 
-                return ApiResponses.Success();
+            return ApiResponses.Success();
 
 
 
 
         }
 
-        public async Task<ApiResponses<List<UsersWithRolesViewModel>>> GetAllUsersWithRolesAsync(string roleName)
+        public async Task<ApiResponses<SelectOptionForUserWithRoleViewModel>> GetAllUsersWithRolesAsync(SelectOptionForUserWithRoleViewModel model)
         {
             var roles = await GetAllRolesAsync();
+            var selectedRoleName = model.SelectedRoleName;
 
-            if(!roles.Data.Contains(roleName))
-                return ApiResponses<List<UsersWithRolesViewModel>>.Fail("Rol bulunamadı.");
+            bool isRoleValid = selectedRoleName == "Hepsi" || roles.Data.Contains(selectedRoleName);
+            if (!isRoleValid)
+                return ApiResponses<SelectOptionForUserWithRoleViewModel>.Fail("Seçilen rol yanlış");
 
-            var usersWithRoles = await _context.UserRoles
-                .Include(ur => ur.User)       
-                .Include(ur => ur.AssignedByUser)
-                .Include(ur => ur.Role)       
-                .Where(ur => ur.RoleName == roleName)
-                .Select(ur => new UsersWithRolesViewModel
+            Guid? userId = null;
+            if (!string.IsNullOrEmpty(model.SearchedUserName))
+            {
+                userId = await GetUserIdAsync(model.SearchedUserName);
+                if (userId == null)
+                    return ApiResponses<SelectOptionForUserWithRoleViewModel>.Fail("Kullanıcı bilgisi yanlış girildi");
+            }
+
+            var query = _context.UserRoles
+                .Include(r => r.User)
+                .AsQueryable();
+
+            if (userId.HasValue)
+                query = query.Where(x => x.UserId == userId.Value);
+
+            if (selectedRoleName != "Hepsi")
+                query = query.Where(x => x.RoleName == selectedRoleName);
+
+            // 4) Geçmiş mi aktif mi
+            if (!model.ShowAll)
+                query = query
+                    .Where(x => x.RevokedDate == null)
+                    .GroupBy(x => x.UserId)
+                    .Select(g => g.OrderByDescending(x => x.AssignedDate).FirstOrDefault());
+
+            // 5) Sayfalama
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(x => x.AssignedDate)
+                .Skip((model.CurrentPage - 1) * model.PageSize)
+                .Take(model.PageSize)
+                .Select(x => new UsersWithRolesViewModel
                 {
-                    UserName = ur.User.UserName,
-                    RoleName = ur.Role.Name,
-                    AssignedDate = ur.AssignedDate,
-                    ExpireDate = ur.ExpireDate,
-                    RevokedDate = ur.RevokedDate,
-                    AssignedByUserName = ur.AssignedByUser.UserName
+                    UserName = x.User.UserName,
+                    RoleName = x.RoleName,
+                    AssignedDate = x.AssignedDate,
+                    ExpireDate = x.ExpireDate,
+                    RevokedDate = x.RevokedDate,
+                    AssignedByUserName = x.AssignedByUser.UserName
                 })
                 .ToListAsync();
 
-            return ApiResponses<List<UsersWithRolesViewModel>>.Success(usersWithRoles);
+            model.Items = items;
+            model.TotalCount = totalCount;
 
+            return ApiResponses<SelectOptionForUserWithRoleViewModel>.Success(model);
         }
+
 
         public async Task<ApiResponses<List<string>>> GetAllRolesAsync()
         {
@@ -172,6 +204,15 @@ namespace ItirafEt.Api.Services
                 .Select(r => r.Name)
                 .ToListAsync();
             return ApiResponses<List<string>>.Success(roles);
+        }
+
+        private async Task<Guid?> GetUserIdAsync(string userName)
+        {
+
+            return await _context.Users
+                .Where(u => u.UserName.ToLower() == userName.ToLower().Trim())
+                .Select(u => (Guid?)u.Id)
+                .FirstOrDefaultAsync();
         }
     }
 }

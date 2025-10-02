@@ -18,8 +18,8 @@ namespace ItirafEt.Api.EndPoints
                  Results.Ok(await changeUserRoleService.ChangeUserRoleAsync(model)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin)));
 
-            app.MapGet("/api/getUsersWithRoles", async (UserRoleService changeUserRoleService,[FromQuery]string roleName) =>
-                Results.Ok(await changeUserRoleService.GetAllUsersWithRolesAsync(roleName)))
+            app.MapPost("/api/getUsersWithRoles", async (UserRoleService changeUserRoleService, SelectOptionForUserWithRoleViewModel model) =>
+                Results.Ok(await changeUserRoleService.GetAllUsersWithRolesAsync(model)))
                     .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin)));
 
             app.MapGet("/api/getAllRoles", async (UserRoleService changeUserRoleService) =>

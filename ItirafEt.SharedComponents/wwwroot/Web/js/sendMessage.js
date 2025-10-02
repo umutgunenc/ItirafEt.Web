@@ -7,41 +7,78 @@
             return;
         }
 
-        element.addEventListener("keydown", (e) => {
+        if (element._keydownHandler) {
+            element.removeEventListener("keydown", element._keydownHandler);
+        }
 
+        //element.addEventListener("keydown", (e) => {
+
+        //    if (e.key === "Enter") {
+
+        //        let caret = element.selectionStart;
+        //        let content = element.value;
+        //        if (isMobile) {
+        //            e.preventDefault();
+        //            element.value = content.substring(0, caret) + "\n" + content.substring(caret);
+        //            element.selectionStart = element.selectionEnd = caret + 1;
+        //            this.resize(id);
+
+        //        } else {
+        //            if (e.shiftKey) {
+
+        //                e.preventDefault();
+        //                element.value = content.substring(0, caret) + "\n" + content.substring(caret);
+        //                element.selectionStart = element.selectionEnd = caret + 1;
+        //                this.resize(id);
+
+        //            } else {
+        //                e.preventDefault();
+
+        //                try {
+        //                    dotNetRef.invokeMethodAsync("SendMessageFromJs", element.value);
+        //                } catch (error) {
+        //                    console.error("Blazor metodu çağrılırken hata oluştu:", error);
+        //                }
+
+        //            }
+        //        }
+        //    }
+
+
+        //});
+
+
+        //ekelndi
+        element._keydownHandler = (e) => {
             if (e.key === "Enter") {
-
                 let caret = element.selectionStart;
                 let content = element.value;
+
                 if (isMobile) {
                     e.preventDefault();
                     element.value = content.substring(0, caret) + "\n" + content.substring(caret);
                     element.selectionStart = element.selectionEnd = caret + 1;
                     this.resize(id);
-
                 } else {
                     if (e.shiftKey) {
-
                         e.preventDefault();
                         element.value = content.substring(0, caret) + "\n" + content.substring(caret);
                         element.selectionStart = element.selectionEnd = caret + 1;
                         this.resize(id);
-
                     } else {
                         e.preventDefault();
-
                         try {
                             dotNetRef.invokeMethodAsync("SendMessageFromJs", element.value);
                         } catch (error) {
                             console.error("Blazor metodu çağrılırken hata oluştu:", error);
                         }
-
                     }
                 }
             }
+        };
 
-
-        });
+        //ekelndi
+        element.addEventListener("keydown", element._keydownHandler);
     },
 
     resize: function (id) {
@@ -58,6 +95,14 @@
         const element = document.getElementById(id);
         if (!element) return;
         element.style.height = "auto";
+    },
+    //eklendi
+    dispose: function (id) {
+        const element = document.getElementById(id);
+        if (element && element._keydownHandler) {
+            element.removeEventListener("keydown", element._keydownHandler);
+            element._keydownHandler = null;
+        }
     }
 };
 
@@ -70,42 +115,79 @@ window.chatInputWithPhoto = {
             return;
         }
 
-        element.addEventListener("keydown", (e) => {
+        //element.addEventListener("keydown", (e) => {
 
+        //    if (e.key === "Enter") {
+
+        //        let caret = element.selectionStart;
+        //        let content = element.value;
+        //        if (isMobile) {
+        //            e.preventDefault();
+        //            element.value = content.substring(0, caret) + "\n" + content.substring(caret);
+        //            element.selectionStart = element.selectionEnd = caret + 1;
+        //            this.resize(id);
+
+        //        } else {
+        //            if (e.shiftKey) {
+
+        //                e.preventDefault();
+        //                element.value = content.substring(0, caret) + "\n" + content.substring(caret);
+        //                element.selectionStart = element.selectionEnd = caret + 1;
+        //                this.resize(id);
+
+        //            } else {
+        //                e.preventDefault();
+        //                // Blazor tarafını çağır
+        //                //DotNet.invokeMethodAsync("ItirafEt.SharedComponents", "SendMessageFromJs");
+        //                try {
+        //                    dotNetRef.invokeMethodAsync("SendMessagemWithPhotoFromJs", element.value);
+        //                } catch (error) {
+        //                    console.error("Blazor metodu çağrılırken hata oluştu:", error);
+        //                }
+
+        //            }
+        //        }
+        //    }
+
+
+        //});
+
+
+        //ekelndi
+        if (element._keydownHandler) {
+            element.removeEventListener("keydown", element._keydownHandler);
+        }
+
+        element._keydownHandler = (e) => {
             if (e.key === "Enter") {
-
                 let caret = element.selectionStart;
                 let content = element.value;
+
                 if (isMobile) {
                     e.preventDefault();
                     element.value = content.substring(0, caret) + "\n" + content.substring(caret);
                     element.selectionStart = element.selectionEnd = caret + 1;
                     this.resize(id);
-
                 } else {
                     if (e.shiftKey) {
-
                         e.preventDefault();
                         element.value = content.substring(0, caret) + "\n" + content.substring(caret);
                         element.selectionStart = element.selectionEnd = caret + 1;
                         this.resize(id);
-
                     } else {
                         e.preventDefault();
-                        // Blazor tarafını çağır
-                        //DotNet.invokeMethodAsync("ItirafEt.SharedComponents", "SendMessageFromJs");
                         try {
                             dotNetRef.invokeMethodAsync("SendMessagemWithPhotoFromJs", element.value);
                         } catch (error) {
                             console.error("Blazor metodu çağrılırken hata oluştu:", error);
                         }
-
                     }
                 }
             }
+        };
+        //ekelndi
+        element.addEventListener("keydown", element._keydownHandler);
 
-
-        });
     },
 
     resize: function (id) {
@@ -122,6 +204,14 @@ window.chatInputWithPhoto = {
         const element = document.getElementById(id);
         if (!element) return;
         element.style.height = "auto";
+    },
+    //eklendi
+    dispose: function (id) {
+        const element = document.getElementById(id);
+        if (element && element._keydownHandler) {
+            element.removeEventListener("keydown", element._keydownHandler);
+            element._keydownHandler = null;
+        }
     }
 };
 

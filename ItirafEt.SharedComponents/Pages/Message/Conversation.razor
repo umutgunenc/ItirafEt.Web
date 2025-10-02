@@ -15,7 +15,7 @@
 @if (_isLoading)
 {
 	<div class="d-flex justify-content-center align-items-center"
-	style="height:75vh">
+		 style="height:75vh">
 		<div class="spinner-border text-primary" role="status">
 			<span class="visually-hidden">Loading...</span>
 		</div>
@@ -37,11 +37,11 @@ else
 		<div class="chat-header d-flex align-items-center">
 			<div class="position-relative me-3">
 				<img src="@(string.IsNullOrEmpty(_conversationDto?.ResponderUser.ProfilePictureUrl) ? "/anonymousIcon.png" : _conversationDto.ResponderUser.ProfilePictureUrl)"
-				class="profile-photo rounded-circle"
-				width="56"
-				height="56"
-				style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-				alt="Profile Resmi">
+					 class="profile-photo rounded-circle"
+					 width="56"
+					 height="56"
+					 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+					 alt="Profile Resmi">
 			</div>
 			<div>
 				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto?.ResponderUser.UserName</h5>
@@ -68,9 +68,9 @@ else
 								@if (!string.IsNullOrEmpty(message.SignedThumbnailUrl))
 								{
 									<img src="@($"{ApiBaseUrl.BaseUrl}/api/message/thumbnail?token={message.SignedThumbnailUrl}")"
-									alt="Thumbnail"
-									style="max-width:150px; border-radius:10px; cursor:pointer"
-									@onclick="async () => await ShowFullImage(message)" />
+										 alt="Thumbnail"
+										 style="max-width:150px; border-radius:10px; cursor:pointer"
+										 @onclick="async () => await ShowFullImage(message)" />
 								}
 								else
 								{
@@ -121,29 +121,29 @@ else
 				<!-- Sol: Fotoğraf butonu -->
 				<div class="me-3">
 					<InputFile id="uploadPhoto"
-					accept="image/*"
-					style="display: none;"
-					OnChange="OnFileSelected" />
+							   accept="image/*"
+							   style="display: none;"
+							   OnChange="OnFileSelected" />
 
 					<label for="uploadPhoto"
-					class="btn-custom-circle"
-					style="cursor: pointer;">
+						   class="btn-custom-circle"
+						   style="cursor: pointer;">
 						<i class="bi bi-image text-white"></i>
 					</label>
 				</div>
 
 				<textarea id="@ChatInputId"
-				@ref="_messageInput"
-				class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
-				placeholder="Bir mesaj yazın..."
-				@bind="_messageDto.Content"
-				disabled="@_isSendMessageBusy"
-				rows="1" />
+						  @ref="_messageInput"
+						  class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
+						  placeholder="Bir mesaj yazın..."
+						  @bind="_messageDto.Content"
+						  disabled="@_isSendMessageBusy"
+						  rows="1" />
 				<!-- Sağ: Gönder butonu -->
 				<div class="ms-3">
 					<button class="btn-custom-circle"
-					@onclick="async () => await SendMessageAsync(_messageDto)"
-					disabled="@_isSendMessageBusy">
+							@onclick="async () => await SendMessageAsync(_messageDto)"
+							disabled="@_isSendMessageBusy">
 
 						@if (_isSendMessageBusy)
 						{
@@ -171,19 +171,19 @@ else
 }
 
 <ModalComponent @ref="_sendPhotoModal"
-Title="Fotoğraf Gönder"
-TitleClass="d-none"
-HeaderClass="d-none my-0"
-FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
-ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
+				Title="Fotoğraf Gönder"
+				TitleClass="d-none"
+				HeaderClass="d-none my-0"
+				FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
+				ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 	<ChildContent>
 		<div class="d-flex flex-column h-100">
 			<!-- Image container with dynamic sizing -->
 			<div class="flex-grow-1 d-flex justify-content-center align-items-center"
-			style="min-height:0; overflow:hidden; background-color:#030303">
+				 style="min-height:0; overflow:hidden; background-color:#030303">
 				<img src="@_previewImageUrl"
-				class="w-100"
-				style="max-height:100%; max-width:100%; object-fit:contain" />
+					 class="w-100"
+					 style="max-height:100%; max-width:100%; object-fit:contain" />
 			</div>
 
 			<div class="message-input p-3">
@@ -191,17 +191,17 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 				<div class="chat-composer d-flex align-items-end">
 
 					<textarea id="@ChatInputWithPhotoId"
-					@ref="_messageInputWithPhoto"
-					class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
-					placeholder="Bir mesaj yazın..."
-					@bind="_messageDto.Content"
-					disabled="@_isSendMessageBusy"
-					rows="1" />
+							  @ref="_messageInputWithPhoto"
+							  class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
+							  placeholder="Bir mesaj yazın..."
+							  @bind="_messageDto.Content"
+							  disabled="@_isSendMessageBusy"
+							  rows="1" />
 					<!-- Sağ: Gönder butonu -->
 					<div class="ms-3">
 						<button class="btn-custom-circle"
-						disabled="@_isSendMessageBusy"
-						@onclick="async () => await SendMessageWithPhotoAsync(_messageDto)">
+								disabled="@_isSendMessageBusy"
+								@onclick="async () => await SendMessageWithPhotoAsync(_messageDto)">
 
 							@if (_isSendMessageBusy)
 							{
@@ -216,7 +216,7 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 						</button>
 					</div>
 					<button class="btn-custom-red-circle ms-3"
-					@onclick="_sendPhotoModal.Close">
+							@onclick="_sendPhotoModal.Close">
 						<i class="bi bi-x-lg text-white"></i>
 					</button>
 				</div>
@@ -234,22 +234,22 @@ ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
 </ModalComponent>
 
 <ModalComponent @ref="_showPhotoModal"
-TitleClass="d-none"
-HeaderClass="d-none my-0"
-FooterClass="d-none"
-ChildClass="modal-body p-0 d-flex flex-column h-100">
+				TitleClass="d-none"
+				HeaderClass="d-none my-0"
+				FooterClass="d-none"
+				ChildClass="modal-body p-0 d-flex flex-column h-100">
 	<ChildContent>
 		<div class="d-flex flex-column h-100">
 
 			<!-- Fotoğraf Alanı -->
 			<div class="flex-grow-1 d-flex justify-content-center align-items-center bg-dark"
-			style="min-height:0; overflow:hidden;">
+				 style="min-height:0; overflow:hidden;">
 				@if (!string.IsNullOrEmpty(_selectedPhotoUrl))
 				{
 					<img src="@_selectedPhotoUrl"
-					class="w-100"
-					style="max-height:100%; max-width:100%; object-fit:contain;"
-					@onclick="_showPhotoModal.Close" />
+						 class="w-100"
+						 style="max-height:100%; max-width:100%; object-fit:contain;"
+						 @onclick="_showPhotoModal.Close" />
 				}
 				else
 				{
@@ -259,6 +259,8 @@ ChildClass="modal-body p-0 d-flex flex-column h-100">
 		</div>
 	</ChildContent>
 </ModalComponent>
+
+
 
 @code {
 
@@ -474,7 +476,7 @@ ChildClass="modal-body p-0 d-flex flex-column h-100">
 
 		try
 		{
-			var streamFile = _selectedFile.OpenReadStream(_selectedFile.Size); 
+			var streamFile = _selectedFile.OpenReadStream(_selectedFile.Size);
 			var photoPart = new Refit.StreamPart(streamFile, _selectedFile.Name, _selectedFile.ContentType);
 
 			Refit.StreamPart? thumbPart = null;
@@ -588,7 +590,7 @@ ChildClass="modal-body p-0 d-flex flex-column h-100">
 	private async Task StartHubConnection()
 	{
 
-		_hubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Message,PageType.Conversation);
+		_hubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Message, PageType.Conversation);
 
 		_hubConnection.On<Guid, MessageViewModel>("SendMessageAsync", async (conversationId, messageDto) =>
 		{
@@ -706,7 +708,15 @@ ChildClass="modal-body p-0 d-flex flex-column h-100">
 	}
 	public async ValueTask DisposeAsync()
 	{
-		_dotNetRef?.Dispose();
+		if (_dotNetRef != null)
+		{
+			await JSRuntime.InvokeVoidAsync("chatScrollHelper.cleanupInfiniteScroll", "messageDiv");
+			await JSRuntime.InvokeVoidAsync("chatInput.dispose", ChatInputId);
+			await JSRuntime.InvokeVoidAsync("chatInputWithPhoto.dispose", ChatInputWithPhotoId);
+
+			_dotNetRef.Dispose();
+
+		}
 
 		await DisposeSignalRConnectionAsync();
 	}

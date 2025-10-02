@@ -59,4 +59,12 @@ window.chatScrollHelper = {
         });
     },
 
+    cleanupInfiniteScroll: function (divId) {
+        let el = document.getElementById(divId);
+        if (el && el._onScroll) {
+            el.removeEventListener("scroll", el._onScroll);
+            el._onScroll = null;
+        }
+    }
+
 };
