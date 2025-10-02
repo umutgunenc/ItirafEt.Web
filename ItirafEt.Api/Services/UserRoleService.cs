@@ -165,35 +165,39 @@ namespace ItirafEt.Api.Services
 
             if (selectedRoleName != "Hepsi")
                 query = query.Where(x => x.RoleName == selectedRoleName);
+            try
+            {
+                if (!model.ShowAll)
+                    query = query.Where(x => x.RevokedDate == null);
 
-            // 4) Geçmiş mi aktif mi
-            if (!model.ShowAll)
-                query = query
-                    .Where(x => x.RevokedDate == null)
-                    .GroupBy(x => x.UserId)
-                    .Select(g => g.OrderByDescending(x => x.AssignedDate).FirstOrDefault());
 
-            // 5) Sayfalama
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .OrderByDescending(x => x.AssignedDate)
-                .Skip((model.CurrentPage - 1) * model.PageSize)
-                .Take(model.PageSize)
-                .Select(x => new UsersWithRolesViewModel
-                {
-                    UserName = x.User.UserName,
-                    RoleName = x.RoleName,
-                    AssignedDate = x.AssignedDate,
-                    ExpireDate = x.ExpireDate,
-                    RevokedDate = x.RevokedDate,
-                    AssignedByUserName = x.AssignedByUser.UserName
-                })
-                .ToListAsync();
 
-            model.Items = items;
-            model.TotalCount = totalCount;
+                var totalCount = await query.CountAsync();
+                var items = await query
+                    .OrderByDescending(x => x.AssignedDate)
+                    .Skip((model.CurrentPage - 1) * model.PageSize)
+                    .Take(model.PageSize)
+                    .Select(x => new UsersWithRolesViewModel
+                    {
+                        UserName = x.User.UserName,
+                        RoleName = x.RoleName,
+                        AssignedDate = x.AssignedDate,
+                        ExpireDate = x.ExpireDate,
+                        RevokedDate = x.RevokedDate,
+                        AssignedByUserName = x.AssignedByUser.UserName
+                    })
+                    .ToListAsync();
 
-            return ApiResponses<SelectOptionForUserWithRoleViewModel>.Success(model);
+                model.Items = items;
+                model.TotalCount = totalCount;
+
+                return ApiResponses<SelectOptionForUserWithRoleViewModel>.Success(model);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponses<SelectOptionForUserWithRoleViewModel>.Fail(ex.Message);
+            }
+
         }
 
 

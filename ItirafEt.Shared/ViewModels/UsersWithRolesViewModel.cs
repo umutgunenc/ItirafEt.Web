@@ -21,9 +21,7 @@ namespace ItirafEt.Shared.ViewModels
     {
         public string? SearchedUserName { get; set; }
         public string SelectedRoleName { get; set; }
-        public DateTime? ExpireDate { get; set; }
         public bool ShowAll { get; set; }
-        public List<string> RoleNames { get; set; } = new();
 
     }
 }

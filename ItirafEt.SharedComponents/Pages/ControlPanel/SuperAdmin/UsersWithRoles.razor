@@ -78,21 +78,21 @@
 			<div class="mb-3">
 				<div class="form-check">
 					<input class="form-check-input"
-					type="radio"
-					name="showOption"
-					id="showAll"
-					checked="@_options.ShowAll"
-					@onchange="() => _options.ShowAll = true" />
+						   type="radio"
+						   name="showOption"
+						   id="showAll"
+						   checked="@_options.ShowAll"
+						   @onchange="() => _options.ShowAll = true" />
 					<label class="form-check-label" for="showAll">Tüm Kayıtları Göster</label>
 				</div>
 
 				<div class="form-check">
 					<input class="form-check-input"
-					type="radio"
-					name="showOption"
-					id="showLatest"
-					checked="@(!_options.ShowAll)"
-					@onchange="() => _options.ShowAll = false" />
+						   type="radio"
+						   name="showOption"
+						   id="showLatest"
+						   checked="@(!_options.ShowAll)"
+						   @onchange="() => _options.ShowAll = false" />
 					<label class="form-check-label" for="showLatest">Mevcut Rolleri Göster</label>
 				</div>
 			</div>
@@ -110,11 +110,12 @@
 					{
 						<div class="form-check">
 							<input class="form-check-input"
-							type="radio"
-							name="roles"
-							id="@role"
-							value="@role"
-							@onchange="() => _options.SelectedRoleName = role" />
+								   type="radio"
+								   name="roles"
+								   id="@role"
+								   value="@role"
+								   checked="@(role == "Hepsi")"
+								   @onchange="() => _options.SelectedRoleName = role" />
 							<label class="form-check-label" for="@role">@role</label>
 						</div>
 					}
@@ -122,7 +123,7 @@
 			</div>
 
 			<div class="mb-3">
-				<button class="btn-custom col-12" disabled="@_isBusy" @onclick="async () => await  SearchAsync()">Ara</button>
+				<button class="btn-custom col-12" disabled="@_isBusy" @onclick="async () => await  SearchRequestStartedAsync()">Ara</button>
 			</div>
 
 			@if (_isThereAnyRecord && string.IsNullOrEmpty(_errorMessage))
@@ -165,15 +166,15 @@
 					<nav aria-label="Page navigation example">
 						<ul class="pagination justify-content-end mb-0">
 							<li class="page-item"
-							hidden="@( _options.CurrentPage == 1 )"
-							style="cursor:pointer">
+								hidden="@( _options.CurrentPage == 1 )"
+								style="cursor:pointer">
 								<a class="page-link mb-0" @onclick="() => GoToPageAsync(1)">İlk</a>
 							</li>
 							@foreach (var p in GetPageNumbers())
 							{
 								<li class="page-item @(p == _options.CurrentPage ? "disabled" : "")"
-								style="@(p != _options.CurrentPage ? "cursor: pointer;" : "")"
-								@onclick=" async () => {
+									style="@(p != _options.CurrentPage ? "cursor: pointer;" : "")"
+									@onclick=" async () => {
 															if (p != _options.CurrentPage)
 															{
 																await GoToPageAsync(p);
@@ -183,9 +184,9 @@
 								</li>
 							}
 							<li class="page-item"
-							hidden="@( _options.CurrentPage == _options.TotalPages )"
-							@onclick="() => GoToPageAsync(_options.TotalPages)"
-							style="cursor:pointer">
+								hidden="@( _options.CurrentPage == _options.TotalPages )"
+								@onclick="() => GoToPageAsync(_options.TotalPages)"
+								style="cursor:pointer">
 								<a class="page-link mb-0">Son</a>
 							</li>
 						</ul>
@@ -200,9 +201,9 @@
 			}
 			@if (!string.IsNullOrEmpty(_errorMessage))
 			{
-					<div class="alert alert-danger" role="alert">
+				<div class="alert alert-danger" role="alert">
 					@_errorMessage
-					</div>
+				</div>
 			}
 
 
@@ -231,7 +232,16 @@
 	protected override async Task OnInitializedAsync()
 	{
 		await GetRolesAsync();
+	}
 
+
+	private async Task SearchRequestStartedAsync()
+	{
+		_options.CurrentPage = 1;
+		PageNumber.AdminUsersPageNo = 1;
+
+		await SearchAsync();
+		await InvokeAsync(StateHasChanged);
 	}
 
 	private async Task GetRolesAsync()
@@ -259,6 +269,7 @@
 		_errorMessage = null;
 		try
 		{
+			_options.Items.Clear();
 			var response = await UserRoleApi.GetUsersWithRolesAsync(_options);
 			if (!response.IsSuccess)
 			{
