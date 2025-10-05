@@ -5,7 +5,6 @@
 
 
 
-<div class="col-lg-8 col mx-auto py-lg-5">
 
 	@if (!_canUserEditMessage || _haveError)
 	{
@@ -16,7 +15,6 @@
 	}
 	else
 	{
-		<div class="border shadow-lg card p-3">
 			<EditForm Model="_editPostModel" OnValidSubmit="() => EditPostAsync(_editPostModel)">
 				<DataAnnotationsValidator />
 				<div class="my-3">
@@ -68,10 +66,8 @@
 
 
 			</EditForm>
-		</div>
 	}
 
-</div>
 
 
 @code {

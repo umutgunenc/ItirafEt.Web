@@ -10,7 +10,6 @@
 @implements IAsyncDisposable
 
 
-<div class="col-lg-8 col mx-auto py-lg-5">
 
 	@if (_isError)
 	{
@@ -20,7 +19,7 @@
 	}
 	else
 	{
-		<div class="list-group">
+		<div class="list-group pt-lg-3">
 			
 			@foreach (var inboxItem in _inboxItems)
 			{
@@ -57,7 +56,6 @@
 			}
 		</div>
 	}
-</div>
 
 
 @code {

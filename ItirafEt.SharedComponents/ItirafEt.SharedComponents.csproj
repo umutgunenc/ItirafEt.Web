@@ -32,4 +32,6 @@
 		<ProjectReference Include="..\ItirafEt.Shared\ItirafEt.Shared.csproj" />
 	</ItemGroup>
 
+	<ProjectExtensions><VisualStudio><UserProperties wwwroot_4web_4lib_4bootstrap_4dist_4css_4bootstrap-utilities_1css_1map__JsonSchema="" wwwroot_4web_4lib_4bootstrap_4dist_4css_4bootstrap-utilities_1rtl_1min_1css_1map__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
 </Project>

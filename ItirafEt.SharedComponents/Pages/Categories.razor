@@ -13,8 +13,6 @@
 @implements IAsyncDisposable
 
 
-<div class="col-lg-8 col mx-auto py-lg-5">
-
 
 	@if (_isError)
 	{
@@ -73,9 +71,9 @@
 							<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
 						</div>
 
-						<h5 class="card-title text-bg mb-3">@post.PostTitle</h5>
+					<h5 class="card-title text-bg text-break mb-3">@post.PostTitle</h5>
 
-						<p class="card-text text-secondary text-truncate-3 mb-4">@post.PostContentReview</p>
+					<p class="card-text text-secondary text-break mb-4">@post.PostContentReview</p>
 
 						<div class="d-flex justify-content-between align-items-center">
 							<div class="d-flex align-items-center">
@@ -115,7 +113,6 @@
 		}
 	}
 
-</div>
 
 
 

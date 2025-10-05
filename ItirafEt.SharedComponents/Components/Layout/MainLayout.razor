@@ -16,17 +16,95 @@
 		}
 		else
 		{
-			@Body
+			@* <div class="d-flex justify-content-center">
+				@if (!_hideAds)
+				{
+					<!-- Sol Reklam -->
+					<div class="ad-fixed" style="left:0;">
+						<div class="ad-inner">
+							<p>Reklam Sol</p>
+							<p>@_adsCounter</p>
+						</div>
+					</div>
+
+					<!-- Sağ Reklam -->
+					<div class="ad-fixed" style="right:0;">
+						<div class="ad-inner">
+							<p>Reklam Sağ</p>
+							<p>@_adsCounter</p>
+						</div>
+					</div>
+				}
+
+				<!-- Orta İçerik -->
+				<div class="flex-grow-1 p-0 @(_hideAds ? "" : "pb-5")">
+					<div class="mx-auto" style="max-width: 1000px;">
+						@Body
+					</div>
+				</div>
+			</div>
+ *@
+			<div class="container-fluid h-100 p-0">
+				<div class="d-flex h-100">
+					@if (!_hideAds)
+					{
+						<div class="col-2 d-none d-lg-block">
+							<div class="position-sticky mx-auto" 
+								 style="top: 50%;
+										transform: translateY(-50%);
+										height: 600px;">
+								<div class="h-100 d-flex flex-column justify-content-center align-items-center">
+@* 									<p>Ads Left</p>
+									<p>@_adsCounter</p> *@
+									<img src="_content/ItirafEt.SharedComponents/Ads/Adsiz.png" />
+								</div>
+							</div>
+						</div>
+
+					}
+					<div class="col-12 col-lg-8 p-0 @(_hideAds ?"":"pb-5") mx-auto">
+						<div class="col mx-auto">
+							@Body
+						</div>
+					</div>
+					@if (!_hideAds)
+					{
+						<div class="col-2 d-none d-lg-block">
+							<div class="position-sticky mx-auto"
+								 style="top: 50%;
+										transform: translateY(-50%);
+										height: 600px;">
+								<div class="h-100 d-flex flex-column justify-content-center align-items-center">
+									<img src="_content/ItirafEt.SharedComponents/Ads/Adsiz.png" />
+								</div>
+							</div>
+						</div>
+
+					}
+
+				</div>
+			</div>
 		}
 	</div>
+
+	@if (!_hideAds)
+	{
+		<div class="w-100 bg-dark text-white text-center p-2" style="position: fixed; bottom: 0; left: 0; z-index: 1030;">
+			Ads Footer
+		</div>
+	}
+
 </div>
 
 
 @code {
 
 	private HubConnection? _userBanHubConnection;
-
 	private AuthenticationStateChangedHandler? _authStateChangedHandler;
+	private string _currentPath = "";
+	private string _previousPath = "";
+	private bool _hideAds;
+	private int _adsCounter = 1;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -40,6 +118,12 @@
 			await StartUserBanHubConnection();
 
 		await DeviceService.InitializeAsync();
+
+
+		UpdateCurrentPath(); // ilk path
+		_previousPath = _currentPath;
+
+		NavigationManager.LocationChanged += OnLocationChanged;
 	}
 
 	private async Task StartUserBanHubConnection()
@@ -85,5 +169,30 @@
 		await SignalRService.DisposeAsync(PageType.Layout, HubType.BanUser);
 		_userBanHubConnection = null;
 
+	}
+
+	private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+	{
+
+
+		_previousPath = _currentPath;
+		UpdateCurrentPath();
+
+		if (_previousPath != _currentPath)
+		{
+			_adsCounter++;
+			InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private void UpdateCurrentPath()
+	{
+		_currentPath = NavigationManager
+			.ToBaseRelativePath(NavigationManager.Uri)
+			.TrimEnd('/')
+			.ToLowerInvariant();
+
+
+		_hideAds = _currentPath.Contains("inbox") || _currentPath.Contains("conversation");
 	}
 }
