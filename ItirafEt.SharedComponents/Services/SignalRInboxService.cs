@@ -1,4 +1,5 @@
-﻿using ItirafEt.Shared.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using ItirafEt.Shared.Models;
 using ItirafEt.Shared.ViewModels;
 using ItirafEt.SharedComponents.Services;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -8,6 +9,7 @@ using static ItirafEt.SharedComponents.Helpers.PageNameConstants;
 public class SignalRInboxService : IAsyncDisposable
 {
     private HubConnection? _connection;
+    private CancellationTokenSource _cts = new();
     private readonly ISignalRService _signalRServices;
     private Guid _currentUserId;
 
@@ -21,11 +23,15 @@ public class SignalRInboxService : IAsyncDisposable
 
     public async Task InitializeAsync(Guid currentUserId)
     {
+        if (_cts.IsCancellationRequested)
+            return;
         if (_connection != null &&
             _connection.State == HubConnectionState.Connected &&
             _currentUserId == currentUserId)
             return;
 
+        if (_cts.IsCancellationRequested)
+            return;
         // Eğer eski connection varsa temizle
         if (_connection != null)
         {
@@ -34,8 +40,13 @@ public class SignalRInboxService : IAsyncDisposable
             _connection = null;
         }
 
+        if (_cts.IsCancellationRequested)
+            return;
         _currentUserId = currentUserId;
         _connection = await _signalRServices.ConfigureHubConnectionAsync(HubType.Message,PageType.Layout);
+
+        if(_cts.IsCancellationRequested)
+            return;
 
         _connection.On<Guid, InboxItemViewModel>(
             "NewMessageForInboxAsync",
@@ -45,18 +56,23 @@ public class SignalRInboxService : IAsyncDisposable
             "MessageReadByCurrentUserAsync",
             (uid, convId) => MessageRead?.Invoke(uid, convId) ?? Task.CompletedTask);
 
-        await _connection.StartAsync();
+        if (_cts.IsCancellationRequested)
+            return;
+
+        await _connection.StartAsync(_cts.Token);
 
         // Aynı connection ile iki gruba katılıyoruz
-        await _connection.SendAsync("JoinInboxGroup", currentUserId);
-        await _connection.SendAsync("JoinMessageReadGroup", currentUserId);
+        await _connection.SendAsync("JoinInboxGroup", currentUserId, _cts.Token);
+        await _connection.SendAsync("JoinMessageReadGroup", currentUserId, _cts.Token);
     }
 
     public async ValueTask DisposeAsync()
     {
+        _cts.Cancel();
         if (_connection != null)
         {
-            await _signalRServices.StopAsync(PageType.Layout,HubType.Message);
+            if (_connection.State == HubConnectionState.Connected)
+                await _signalRServices.StopAsync(PageType.Layout,HubType.Message);
             await _signalRServices.DisposeAsync(PageType.Layout, HubType.Message);
             _connection = null;
         }

@@ -3,7 +3,7 @@
 
 @inject AuthStateProvider AuthStateProvider
 
-<PageTitle>Home</PageTitle>
+@* <PageTitle>Home</PageTitle>
 
 
 
@@ -25,7 +25,155 @@ Welcome to your new app.
 		<p>@AuthStateProvider.User?.id</p>
 		<p>@AuthStateProvider.User?.roleId</p>
 	</Authorized>
-</AuthorizeView>
+</AuthorizeView> *@
+
+<div class="text-center mt-3 mb-4">
+	<h1 class="fw-bold text-danger">İtiraf Et 😶‍🌫️</h1>
+	<p class="text-muted">İçindekileri paylaş, anonim kal.</p>
+	<button class="btn-custom-red">Yeni İtiraf Et</button>
+</div>
+
+<!-- Kategori Filtreleri -->
+<div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+	<span>En fazla gödneri olan 5-6 kategori burada olacak. Iconlar ile birlikte</span>
+	<button class="btn-custom">Popüler</button>
+	<button class="btn-custom">Aşk</button>
+	<button class="btn-custom">İş / Okul</button>
+	<button class="btn-custom">Arkadaşlık</button>
+	<button class="btn-custom">Gizli İtiraflar</button>
+	<button class="btn-custom">Yeni</button>
+</div>
+
+<!-- Popüler İtiraflar Carousel -->
+<div id="itirafCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+	<!-- Gösterge noktaları -->
+	<div class="carousel-indicators">
+		<button type="button" data-bs-target="#itirafCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="1"></button>
+		<button type="button" data-bs-target="#itirafCarousel" data-bs-slide-to="1" aria-label="2"></button>
+		<button type="button" data-bs-target="#itirafCarousel" data-bs-slide-to="2" aria-label="3"></button>
+		<button type="button" data-bs-target="#itirafCarousel" data-bs-slide-to="3" aria-label="4"></button>
+		<button type="button" data-bs-target="#itirafCarousel" data-bs-slide-to="4" aria-label="5"></button>
+	</div>
+
+	<!-- İçerikler -->
+	<div class="carousel-inner rounded shadow-sm">
+		<div class="carousel-item active bg-dark-subtle p-5">
+			<p class="lead mb-0 fst-italic text-center">
+				“En yakın arkadaşıma aşık oldum ama asla söyleyemem…”
+			</p>
+		</div>
+		<div class="carousel-item bg-dark-subtle p-5">
+			<p class="lead mb-0 fst-italic text-center">
+				“İş yerinde herkes kahveyi seviyor ama ben nefret ediyorum.”
+			</p>
+		</div>
+		<div class="carousel-item bg-dark-subtle p-5">
+			<p class="lead mb-0 fst-italic text-center">
+				“Sınavdan önce dua ettim, çalışmayı unuttum.”
+			</p>
+		</div>
+		<div class="carousel-item bg-dark-subtle p-5">
+			<p class="lead mb-0 fst-italic text-center">
+				“Sınavdan önce dua ettim, çalışmayı unuttum.”
+			</p>
+		</div>
+		<div class="carousel-item bg-dark-subtle p-5">
+			<p class="lead mb-0 fst-italic text-center">
+				“Sınavdan önce dua ettim, çalışmayı unuttum.”
+			</p>
+		</div>
+	</div>
+
+	<!-- Kontroller -->
+	<button class="carousel-control-prev" type="button" data-bs-target="#itirafCarousel" data-bs-slide="prev">
+		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+		<span class="visually-hidden">Önceki</span>
+	</button>
+	<button class="carousel-control-next" type="button" data-bs-target="#itirafCarousel" data-bs-slide="next">
+		<span class="carousel-control-next-icon" aria-hidden="true"></span>
+		<span class="visually-hidden">Sonraki</span>
+	</button>
+</div>
+
+<p class="text-center text-muted small">
+	Sayfa her yüklendiğinde rastgele 4-5 gönderi alınacak
+</p>
+
+
+<!-- Ana İtiraf Feed -->
+<div class="row g-4 m-0">
+	<span>Sayfa her yüklendiğinde rastele 8-12 gönderi alınacak</span>
+
+	@foreach (var i in Enumerable.Range(1, 12))
+	{
+@* 		<div class="col-12 col-lg-4 p-0 px-lg-2">
+			<div class="card shadow-sm border-0 h-100">
+				<div class="card-body d-flex flex-column">
+					<h6 class="text-muted small mb-2">Anonim</h6>
+					<p class="flex-grow-1">Bugün metroda yanlış kişiye gülümsedim, o da bana gülümsedi. 3 durak boyunca utancımdan kıpırdayamadım 😳</p>
+					<div class="d-flex justify-content-between align-items-center mt-3">
+						<div>
+							<button class="btn btn-sm btn-outline-danger">
+								❤️ 128
+							</button>
+							<button class="btn btn-sm btn-outline-secondary ms-1">
+								💬 12
+							</button>
+						</div>
+						<span class="text-muted small">2 saat önce</span>
+					</div>
+				</div>
+			</div>
+		</div> *@
+		
+		<div class="col-12 col-lg-6 p-0 px-lg-2 m-0 mt-3">
+			<div class="card shadow-hover text-bg-light" role="button" b-09jawufz0e="">
+				<div class="card-body" b-09jawufz0e="">
+					<div class="d-flex justify-content-end align-items-end mb-3" b-09jawufz0e=""><small class="text-muted" b-09jawufz0e="">05 Eyl 2025 12:21</small></div><!--!-->
+
+					<h5 class="card-title text-bg text-break mb-3" b-09jawufz0e="">DENEME 123</h5><!--!-->
+
+					<p class="card-text text-secondary text-break mb-4" b-09jawufz0e="">
+						Denememe
+						Hdjwknd
+						Hdjwkkw
+						Hsiwkkans
+
+						Hejwijshwhjw
+						Hsuuen
+						Heuundhdhhe djskkwifuhbw dhsjkw
+						Uwueijs
+						
+						
+						Hw...
+					</p><!--!-->
+
+					<div class="d-flex justify-content-between align-items-center" b-09jawufz0e="">
+						<div class="d-flex align-items-center" b-09jawufz0e="">
+							<img src="https://itirafetapi.runasp.net/profilepicture/ed2b9ee0-ae5f-429a-84ed-08ddea18c25d/0ef0302b-422f-43be-9e86-333df96eb09e.jpg" alt="Profil Resmi" class="profile-photo rounded-circle me-2" style="width:48px;height:48px; cursor:default;" b-09jawufz0e=""><!--!-->
+							<span class="text-dark fw-medium" b-09jawufz0e="">umut2</span>
+						</div><!--!-->
+						<div class="d-flex gap-3" b-09jawufz0e="">
+							<span class="text-muted" b-09jawufz0e=""><!--!--><i class="bi bi-eye me-1" b-09jawufz0e=""></i>4</span><!--!-->
+							<span class="text-muted" b-09jawufz0e=""><!--!--><i class="bi bi-heart me-1" b-09jawufz0e=""></i>0</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+</div>
+
+
+
+
+<!-- İstatistik Alanı -->
+<div class="text-center my-5">
+	<div class="d-inline-block bg-light rounded p-3 shadow-sm">
+		<p class="mb-1 text-muted small">Toplam itiraf sayısı</p>
+		<h4 class="fw-bold text-danger">42,381</h4>
+	</div>
+</div>
 
 @code {
 

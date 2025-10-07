@@ -14,104 +14,104 @@
 
 
 
-	@if (_isError)
+@if (_isError)
+{
+	<div class="alert alert-danger m-3" role="alert">
+		@_errorMessage
+	</div>
+}
+else
+{
+	<h3 class="text-center m-0 mt-4">@_categoryName?.ToUpper()</h3>
+	<div class="btn-group btn-group-sm w-100 my-4 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
+		<input type="radio"
+			   class="btn-check"
+			   name="orderOptions"
+			   id="orderByDate"
+			   autocomplete="off"
+			   @onchange="() => SetOrderAsync(true, false, false)"
+			   checked="@_isDateOrdered" />
+		<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
+			<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
+			<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
+		</label>
+
+		<input type="radio"
+			   class="btn-check"
+			   name="orderOptions"
+			   id="orderByView"
+			   autocomplete="off"
+			   @onchange="() => SetOrderAsync(false, true, false)"
+			   checked="@_isCountOrdered" />
+		<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
+			<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
+			<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
+		</label>
+
+		<input type="radio"
+			   class="btn-check"
+			   name="orderOptions"
+			   id="orderByLike"
+			   autocomplete="off"
+			   @onchange="() => SetOrderAsync(false, false, true)"
+			   checked="@_isLikeOrdered" />
+		<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
+			<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
+			<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
+		</label>
+	</div>
+
+	if (State.Items != null)
 	{
-		<div class="alert alert-danger m-3" role="alert">
-			@_errorMessage
-		</div>
-	}
-	else
-	{
-		<h3 class="text-center m-0 mt-4">@_categoryName?.ToUpper()</h3>
-		<div class="btn-group btn-group-sm w-100 my-4 flex-nowrap" role="group" aria-label="Sıralama Seçenekleri">
-			<input type="radio"
-			class="btn-check"
-			name="orderOptions"
-			id="orderByDate"
-			autocomplete="off"
-			@onchange="() => SetOrderAsync(true, false, false)"
-			checked="@_isDateOrdered" />
-			<label class="btn btn-modern-order rounded-start-3 px-2 px-sm-3 py-2" for="orderByDate">
-				<i class="bi bi-clock fs-5 me-0 me-sm-2"></i>
-				<span class="fw-medium d-none d-sm-inline">En Yeniler</span>
-			</label>
-
-			<input type="radio"
-			class="btn-check"
-			name="orderOptions"
-			id="orderByView"
-			autocomplete="off"
-			@onchange="() => SetOrderAsync(false, true, false)"
-			checked="@_isCountOrdered" />
-			<label class="btn btn-modern-order px-2 px-sm-3 py-2" for="orderByView">
-				<i class="bi bi-eye fs-5 me-0 me-sm-2"></i>
-				<span class="fw-medium d-none d-sm-inline">En Çok Okunanlar</span>
-			</label>
-
-			<input type="radio"
-			class="btn-check"
-			name="orderOptions"
-			id="orderByLike"
-			autocomplete="off"
-			@onchange="() => SetOrderAsync(false, false, true)"
-			checked="@_isLikeOrdered" />
-			<label class="btn btn-modern-order rounded-end-3 px-2 px-sm-3 py-2" for="orderByLike">
-				<i class="bi bi-heart fs-5 me-0 me-sm-2"></i>
-				<span class="fw-medium d-none d-sm-inline">En Çok Beğenilenler</span>
-			</label>
-		</div>
-
-		if (State.Items != null)
+		foreach (var post in State.Items)
 		{
-			foreach (var post in State.Items)
-			{
-				<div class="card mb-3 shadow-hover text-bg-light" role="button" @onclick="@(() => NavigateToPost(post.PostId))">
-					<div class="card-body ">
-						<div class="d-flex justify-content-end align-items-end mb-3">
-							<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
-						</div>
+			<div class="card mb-3 shadow-hover text-bg-light" role="button" @onclick="@(() => NavigateToPost(post.PostId))">
+				<div class="card-body ">
+					<div class="d-flex justify-content-end align-items-end mb-3">
+						<small class="text-muted">@post.PostCreatedDate.ToString("dd MMM yyyy HH:mm")</small>
+					</div>
 
 					<h5 class="card-title text-bg text-break mb-3">@post.PostTitle</h5>
 
 					<p class="card-text text-secondary text-break mb-4">@post.PostContentReview</p>
 
-						<div class="d-flex justify-content-between align-items-center">
-							<div class="d-flex align-items-center">
-								<img src="@(string.IsNullOrEmpty(post.PostCreatorProfilPicture)? "/anonymousIcon.png" : post.PostCreatorProfilPicture)"
-								alt="Profil Resmi"
-								class="profile-photo rounded-circle me-2"
-								style="width:48px;height:48px; cursor:default;"
-								@onclick:preventDefault="true"
-								@onclick:stopPropagation="true">
-								<span class="text-dark fw-medium">@post.PostCreatorUserName</span>
-							</div>
-							<div class="d-flex gap-3">
-								<span class="text-muted">
-									<i class="bi bi-eye me-1"></i>@post.PostViewCount
-								</span>
-								<span class="text-muted">
-									<i class="bi bi-heart me-1"></i>@post.PostLikeCount
-								</span>
-							</div>
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="d-flex align-items-center">
+							<img src="@(string.IsNullOrEmpty(post.PostCreatorProfilPicture)? "/anonymousIcon.png" : post.PostCreatorProfilPicture)"
+								 alt="Profil Resmi"
+								 class="profile-photo rounded-circle me-2"
+								 style="width:48px;height:48px; cursor:default;"
+								 @onclick:preventDefault="true"
+								 @onclick:stopPropagation="true">
+							<span class="text-dark fw-medium">@post.PostCreatorUserName</span>
+						</div>
+						<div class="d-flex gap-3">
+							<span class="text-muted">
+								<i class="bi bi-eye me-1"></i>@post.PostViewCount
+							</span>
+							<span class="text-muted">
+								<i class="bi bi-heart me-1"></i>@post.PostLikeCount
+							</span>
 						</div>
 					</div>
 				</div>
-			}
-		}
-
-		@if (_isLoading)
-		{
-			<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
-				<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
-					<span class="visually-hidden">Loading...</span>
-				</div>
 			</div>
 		}
-		else if (!State.HasMore)
-		{
-			<p class="text-center text-muted">@_errorMessage</p>
-		}
 	}
+
+	@if (_isLoading)
+	{
+		<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
+			<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
+	}
+	else if (!State.HasMore)
+	{
+		<p class="text-center text-muted">@_errorMessage</p>
+	}
+}
 
 
 
@@ -121,6 +121,7 @@
 
 	private HubConnection? _postViewHubConnection;
 	private HubConnection? _reactionHubConnection;
+	private CancellationTokenSource _cts = new();
 	private int _pageSize = 10;
 	private bool _isLoading = false;
 	private bool _isError = false;
@@ -163,6 +164,8 @@
 		await DisposeAsync();
 		_isError = false;
 		_errorMessage = null;
+		_cts?.Dispose();
+		_cts = new();
 	}
 
 	private async Task GetItemsFromCacheAsync(List<PostInfoViewModel> postInfoModels, CursorViewModel cursorDto)
@@ -286,33 +289,70 @@
 
 	private async Task StartPostViewHubConnectionAsync()
 	{
-
-		_postViewHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.PostView, PageType.Category);
-
-		_postViewHubConnection.On<int>("UpdatePostViewCountAsync", async updatedPostId =>
+		try
 		{
-			await UpdateViewCountAsync(updatedPostId);
-			await InvokeAsync(StateHasChanged);
+			if (_cts.IsCancellationRequested)
+				return;
 
-		});
-		await _postViewHubConnection.StartAsync();
-		await _postViewHubConnection.SendAsync("JoinCategoryPostViewCountGroup", CategoryId);
+			_postViewHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.PostView, PageType.Category);
+
+			if (_cts.IsCancellationRequested)
+				return;
+
+			_postViewHubConnection.On<int>("UpdatePostViewCountAsync", async updatedPostId =>
+			{
+				await UpdateViewCountAsync(updatedPostId);
+				await InvokeAsync(StateHasChanged);
+
+			});
+
+			if (_cts.IsCancellationRequested)
+				return;
+			await _postViewHubConnection.StartAsync(_cts.Token);
+			await _postViewHubConnection.SendAsync("JoinCategoryPostViewCountGroup", CategoryId, _cts.Token);
+		}
+
+		catch (OperationCanceledException)
+		{
+			return;
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("console.error", $"Categories Hub Start Error: {ex.Message}");
+		}
 	}
+
 
 	private async Task StartReactionHubConnectionAsync()
 	{
-
-		_reactionHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Reaction, PageType.Category);
-
-		_reactionHubConnection.On<int, int>("UpdatePostLikeCountAsync", async (postId, likeCount) =>
+		try
 		{
-			await UpdateReactionsAsync(postId, likeCount);
-			await InvokeAsync(StateHasChanged);
+			if (_cts.IsCancellationRequested)
+				return;
 
-		});
+			_reactionHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Reaction, PageType.Category);
 
-		await _reactionHubConnection.StartAsync();
-		await _reactionHubConnection.SendAsync("JoinCategoryPostReactionGroup", CategoryId);
+			if (_cts.IsCancellationRequested)
+				return;
+			_reactionHubConnection.On<int, int>("UpdatePostLikeCountAsync", async (postId, likeCount) =>
+			{
+				await UpdateReactionsAsync(postId, likeCount);
+				await InvokeAsync(StateHasChanged);
+
+			});
+			if (_cts.IsCancellationRequested)
+				return;
+			await _reactionHubConnection.StartAsync(_cts.Token);
+			await _reactionHubConnection.SendAsync("JoinCategoryPostReactionGroup", CategoryId, _cts.Token);
+		}
+		catch (OperationCanceledException)
+		{
+			return;
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("console.error", $"Categories Hub Start Error: {ex.Message}");
+		}
 
 	}
 
@@ -395,13 +435,22 @@
 
 	public async ValueTask DisposeAsync()
 	{
-		await SignalRService.StopAsync(PageType.Category, HubType.PostView);
-		await SignalRService.DisposeAsync(PageType.Category, HubType.PostView);
-		_postViewHubConnection = null;
+		_cts.Cancel();
+		if (_postViewHubConnection is not null)
+		{
+			if (_postViewHubConnection.State == HubConnectionState.Connected)
+				await SignalRService.StopAsync(PageType.Category, HubType.PostView);
+			await SignalRService.DisposeAsync(PageType.Category, HubType.PostView);
+			_postViewHubConnection = null;
+		}
 
-		await SignalRService.StopAsync(PageType.Category, HubType.Reaction);
-		await SignalRService.DisposeAsync(PageType.Category, HubType.Reaction);
-		_reactionHubConnection = null;
+		if (_reactionHubConnection is not null)
+		{
+			if (_reactionHubConnection.State == HubConnectionState.Connected)
+				await SignalRService.StopAsync(PageType.Category, HubType.Reaction);
+			await SignalRService.DisposeAsync(PageType.Category, HubType.Reaction);
+			_reactionHubConnection = null;
+		}
+
 	}
-
 }

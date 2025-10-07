@@ -282,6 +282,7 @@ else
 	private GetConversationMessageViewModel _model = new();
 	private CreateMessageViewModel _messageDto = new();
 	private HubConnection? _hubConnection;
+	private CancellationTokenSource _cts = new();
 	private string? _errorMessage;
 	private string? _messageErrorMessage;
 	private bool _isError = false;
@@ -306,6 +307,8 @@ else
 		if (_canUserReadMessage)
 		{
 			await DisposeSignalRConnectionAsync();
+			_cts?.Dispose();
+			_cts = new();
 			await GetConversationAsync();
 			await GetConversationMessagesAsync();
 			await StartHubConnection();
@@ -590,29 +593,53 @@ else
 	private async Task StartHubConnection()
 	{
 
-		_hubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Message, PageType.Conversation);
-
-		_hubConnection.On<Guid, MessageViewModel>("SendMessageAsync", async (conversationId, messageDto) =>
+		try
 		{
-			await AddMessageAsync(messageDto);
-			await ReadMessageAsync(messageDto);
-		});
+			if (_cts.IsCancellationRequested)
+				return;
+			_hubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Message, PageType.Conversation);
 
-		_hubConnection.On<Guid, MessageViewModel>("ReadMessageAsync", async (conversationId, messageDto) =>
+			if (_cts.IsCancellationRequested)
+				return;
+
+			_hubConnection.On<Guid, MessageViewModel>("SendMessageAsync", async (conversationId, messageDto) =>
+			{
+				await AddMessageAsync(messageDto);
+				await ReadMessageAsync(messageDto);
+			});
+
+			_hubConnection.On<Guid, MessageViewModel>("ReadMessageAsync", async (conversationId, messageDto) =>
+			{
+
+				var message = _model.Model.Items.FirstOrDefault(m => m.Id == messageDto.Id);
+
+				message.IsRead = messageDto.IsRead;
+				message.ReadDate = messageDto.ReadDate;
+
+				await InvokeAsync(StateHasChanged);
+
+			});
+
+			if (_cts.IsCancellationRequested)
+				return;
+
+			if (_cts.IsCancellationRequested)
+				return;
+
+			await _hubConnection.StartAsync(_cts.Token);
+			await _hubConnection.SendAsync("JoinMessageGroup", ConversationId, _cts.Token);
+			// await _hubConnection.StartAsync();
+			// await _hubConnection.SendAsync("JoinMessageGroup", ConversationId);
+		}
+		catch (OperationCanceledException)
 		{
+			return;
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("console.error", $"Conversation Hub Start Error: {ex.Message}");
+		}
 
-			var message = _model.Model.Items.FirstOrDefault(m => m.Id == messageDto.Id);
-
-			message.IsRead = messageDto.IsRead;
-			message.ReadDate = messageDto.ReadDate;
-
-			await InvokeAsync(StateHasChanged);
-
-		});
-
-
-		await _hubConnection.StartAsync();
-		await _hubConnection.SendAsync("JoinMessageGroup", ConversationId);
 	}
 
 	private async Task CanUserReadMessageAsync(Guid conversationId, Guid userId)
@@ -708,6 +735,7 @@ else
 	}
 	public async ValueTask DisposeAsync()
 	{
+
 		if (_dotNetRef != null)
 		{
 			await JSRuntime.InvokeVoidAsync("chatScrollHelper.cleanupInfiniteScroll", "messageDiv");
@@ -715,17 +743,25 @@ else
 			await JSRuntime.InvokeVoidAsync("chatInputWithPhoto.dispose", ChatInputWithPhotoId);
 
 			_dotNetRef.Dispose();
-
 		}
 
 		await DisposeSignalRConnectionAsync();
+
 	}
 
 	public async Task DisposeSignalRConnectionAsync()
 	{
-		await SignalRService.StopAsync(PageType.Conversation, HubType.Message);
-		await SignalRService.DisposeAsync(PageType.Conversation, HubType.Message);
-		_hubConnection = null;
+		_cts.Cancel();
+
+		if (_hubConnection is not null)
+		{
+			if (_hubConnection.State == HubConnectionState.Connected)
+				await SignalRService.StopAsync(PageType.Conversation, HubType.Message);
+			await SignalRService.DisposeAsync(PageType.Conversation, HubType.Message);
+			_hubConnection = null;
+		}
+
+		_cts.Dispose();
 
 	}
 
@@ -807,8 +843,7 @@ else
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine(ex.Message);
-			throw;
+			//TODO handle error
 		}
 
 	}

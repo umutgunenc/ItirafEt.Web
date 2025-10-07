@@ -9,554 +9,555 @@
 @inject NavigationManager NavigationManager
 @inject ISignalRService SignalRService
 @inject IDateTimeHelperService DateTimeHelperService
+@inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
 
 
 
-	<div class="card shadow-lg rounded-0 border-1 my-lg-3 text-bg-light">
-		@if (_isPostHaveError)
+<div class="card shadow-lg rounded-0 border-1 my-lg-3 text-bg-light">
+	@if (_isPostHaveError)
+	{
+		<div class="alert alert-danger m-3" role="alert">
+			@_errorMessage
+		</div>
+	}
+	else
+	{
+		@if (_isBusy)
 		{
-			<div class="alert alert-danger m-3" role="alert">
-				@_errorMessage
+			<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
+				<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
+					<span class="visually-hidden">Loading...</span>
+				</div>
 			</div>
 		}
 		else
 		{
-			@if (_isBusy)
-			{
-				<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
-					<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
-						<span class="visually-hidden">Loading...</span>
-					</div>
-				</div>
-			}
-			else
-			{
 
-				<div class="card-body">
-					<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
+			<div class="card-body">
+				<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
-					<p class="card-text text-break"
-					   style="text-align: justify;
+				<p class="card-text text-break"
+				   style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
-						@_postDto.Content
-					</p>
+					@_postDto.Content
+				</p>
 
-					<div class="d-flex flex-column flex-lg-row justify-content-between">
+				<div class="d-flex flex-column flex-lg-row justify-content-between">
 
-						<!-- Web (lg-) -->
-						<div class="d-none d-lg-flex gap-2 align-items-start">
-							<div class="d-flex align-items-center  gap-2 ">
-								<button class="@($"btn-like{(_isAlreadyLiked ? " liked" :"")}")" style="height:30px; width:30px" @onclick="LikePostAsync">
-									<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
+					<!-- Web (lg-) -->
+					<div class="d-none d-lg-flex gap-2 align-items-start">
+						<div class="d-flex align-items-center  gap-2 ">
+							<button class="@($"btn-like{(_isAlreadyLiked ? " liked" :"")}")" style="height:30px; width:30px" @onclick="LikePostAsync">
+								<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
+							</button>
+							<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
+								@_likeCount
+							</span>
+						</div>
+						<div class="d-flex align-items-center  gap-2 ">
+							<button class="@($"btn-dislike{(_isAlreadyDisliked ? " disliked" :"")}")" style="height:30px; width:30px" @onclick="DislikePostAsync">
+								<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
+							</button>
+							<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
+								@_dislikeCount
+							</span>
+						</div>
+						@if (!_isPostOwner)
+						{
+							<div class="d-flex align-items-center" @onclick="ReportPost">
+								<button class="btn-report" style="height:30px; width:30px">
+									<i class="bi bi-exclamation-circle" style="height:25px;"></i>
 								</button>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
-									@_likeCount
-								</span>
 							</div>
-							<div class="d-flex align-items-center  gap-2 ">
-								<button class="@($"btn-dislike{(_isAlreadyDisliked ? " disliked" :"")}")" style="height:30px; width:30px" @onclick="DislikePostAsync">
-									<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
-								</button>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
-									@_dislikeCount
-								</span>
-							</div>
-							@if (!_isPostOwner)
+						}
+					</div>
+
+					<!-- Right Section (Always) -->
+					<div class="order-lg-2 mb-2 mb-lg-0 text-end">
+						<!-- Tarih -->
+						<div class="text-muted small">
+							@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+							@if (_postDto.UpdatedDate.HasValue)
 							{
-								<div class="d-flex align-items-center" @onclick="ReportPost">
-									<button class="btn-report" style="height:30px; width:30px">
-										<i class="bi bi-exclamation-circle" style="height:25px;"></i>
-									</button>
-								</div>
+								@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
 							}
 						</div>
-
-						<!-- Right Section (Always) -->
-						<div class="order-lg-2 mb-2 mb-lg-0 text-end">
-							<!-- Tarih -->
-							<div class="text-muted small">
-								@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
-								@if (_postDto.UpdatedDate.HasValue)
-								{
-									@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
-								}
-							</div>
-							<!-- Görüntülenme -->
-							<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViwers">
-								<i class="bi bi-eye me-1"></i>@_postViewCount
-							</div>
-						</div>
-
-						<!-- Mobile (lg-) -->
-						<div class="d-flex d-lg-none justify-content-end gap-2 mt-2 order-3">
-							<!-- Beğeni -->
-							<div class="d-flex align-items-center gap-2 ">
-								<button class="btn-like" style="height:30px; width:30px" @onclick="LikePostAsync">
-									<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
-								</button>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
-									@_likeCount
-								</span>
-							</div>
-							<div class="d-flex align-items-center  gap-2 ">
-								<button class="btn-dislike" style="height:30px; width:30px" @onclick="DislikePostAsync">
-									<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
-								</button>
-								<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
-									@_dislikeCount
-								</span>
-							</div>
-							@if (!_isPostOwner)
-							{
-								<div class="d-flex align-items-center" @onclick="ReportPost">
-									<button class="btn-report" style="height:30px; width:30px">
-										<i class="bi bi-exclamation-circle" style="height:25px;"></i>
-									</button>
-								</div>
-							}
+						<!-- Görüntülenme -->
+						<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViwers">
+							<i class="bi bi-eye me-1"></i>@_postViewCount
 						</div>
 					</div>
 
-					<hr />
+					<!-- Mobile (lg-) -->
+					<div class="d-flex d-lg-none justify-content-end gap-2 mt-2 order-3">
+						<!-- Beğeni -->
+						<div class="d-flex align-items-center gap-2 ">
+							<button class="btn-like" style="height:30px; width:30px" @onclick="LikePostAsync">
+								<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
+							</button>
+							<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
+								@_likeCount
+							</span>
+						</div>
+						<div class="d-flex align-items-center  gap-2 ">
+							<button class="btn-dislike" style="height:30px; width:30px" @onclick="DislikePostAsync">
+								<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
+							</button>
+							<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
+								@_dislikeCount
+							</span>
+						</div>
+						@if (!_isPostOwner)
+						{
+							<div class="d-flex align-items-center" @onclick="ReportPost">
+								<button class="btn-report" style="height:30px; width:30px">
+									<i class="bi bi-exclamation-circle" style="height:25px;"></i>
+								</button>
+							</div>
+						}
+					</div>
+				</div>
 
-					<div class="d-flex flex-column gap-2 mb-4">
-						<!-- Üst Bilgi Satırı -->
-						<div class="d-flex align-items-center gap-3">
-							<!-- Profil Fotoğrafı -->
-							<img src="@(string.IsNullOrEmpty(_postDto.UserProfileImageUrl)? "/anonymousIcon.png" : _postDto.UserProfileImageUrl)"
-								 class="profile-photo rounded-circle"
-								 width="56" height="56">
+				<hr />
 
-							<!-- Kullanıcı Bilgileri -->
-							<div class="d-flex flex-column">
-								<div class="d-flex align-items-center gap-2 mb-2">
-									<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="ShowUserProfile">@_postDto.UserName</h5>
-								</div>
+				<div class="d-flex flex-column gap-2 mb-4">
+					<!-- Üst Bilgi Satırı -->
+					<div class="d-flex align-items-center gap-3">
+						<!-- Profil Fotoğrafı -->
+						<img src="@(string.IsNullOrEmpty(_postDto.UserProfileImageUrl)? "/anonymousIcon.png" : _postDto.UserProfileImageUrl)"
+							 class="profile-photo rounded-circle"
+							 width="56" height="56">
 
-								<div class="d-flex  align-items-center justify-content-between">
+						<!-- Kullanıcı Bilgileri -->
+						<div class="d-flex flex-column">
+							<div class="d-flex align-items-center gap-2 mb-2">
+								<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="ShowUserProfile">@_postDto.UserName</h5>
+							</div>
 
-									<div class="d-flex align-items-center gap-2">
-										<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-											@_postDto.UserAge
+							<div class="d-flex  align-items-center justify-content-between">
+
+								<div class="d-flex align-items-center gap-2">
+									<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+										@_postDto.UserAge
+									</span>
+									@if (_postDto.UserGenderId == (int)GenderEnum.Male)
+									{
+										<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+											<i class="bi bi-gender-male me-1"></i>Erkek
 										</span>
-										@if (_postDto.UserGenderId == (int)GenderEnum.Male)
-										{
-											<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-												<i class="bi bi-gender-male me-1"></i>Erkek
-											</span>
-										}
-										else if (_postDto.UserGenderId == (int)GenderEnum.Female)
-										{
-											<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-												<i class="bi bi-gender-female me-1"></i>Kadın
-											</span>
-										}
-										@if (_currentUserId != _postDto.UserId)
-										{
-											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(_postDto.UserId)">
-												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-											</a>
-										}
-									</div>
+									}
+									else if (_postDto.UserGenderId == (int)GenderEnum.Female)
+									{
+										<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+											<i class="bi bi-gender-female me-1"></i>Kadın
+										</span>
+									}
+									@if (_currentUserId != _postDto.UserId)
+									{
+										<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(_postDto.UserId)">
+											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+										</a>
+									}
 								</div>
 							</div>
 						</div>
 					</div>
+				</div>
 
-					<div class="mt-4">
-						<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
-							Yorumlar @($"({_comments?.Count ?? 0})")
-							<i class="bi @(_showComments ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+				<div class="mt-4">
+					<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
+						Yorumlar @($"({_comments?.Count ?? 0})")
+						<i class="bi @(_showComments ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
 
-						</h6>
-					</div>
-					@if (_showComments)
-					{
-						<div class="my-4">
-							@if (_comments?.Count > 0)
-							{
+					</h6>
+				</div>
+				@if (_showComments)
+				{
+					<div class="my-4">
+						@if (_comments?.Count > 0)
+						{
 
-								<EditForm Model="_commentModel"
-										  OnValidSubmit="async () => await AddCommentAsync()">
-									<DataAnnotationsValidator />
-									<div class="d-flex align-items-end mt-3">
+							<EditForm Model="_commentModel"
+									  OnValidSubmit="async () => await AddCommentAsync()">
+								<DataAnnotationsValidator />
+								<div class="d-flex align-items-end mt-3">
 
-										<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-													   placeholder="Yorum yazın..."
-													   rows="4"
-													   @bind-Value="_commentModel.Content">
-										</InputTextArea>
+									<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+												   placeholder="Yorum yazın..."
+												   rows="4"
+												   @bind-Value="_commentModel.Content">
+									</InputTextArea>
 
-										<div class="mx-2">
-											<button class="btn-custom-circle" disabled="@_isApiBusy">
-												<i class="bi bi-send-check text-white"></i>
-											</button>
-										</div>
-
-
+									<div class="mx-2">
+										<button class="btn-custom-circle" disabled="@_isApiBusy">
+											<i class="bi bi-send-check text-white"></i>
+										</button>
 									</div>
-									<ValidationMessage For="@(() => _commentModel.Content)" />
 
-								</EditForm>
 
-								<div class="card mt-3 shadow-sm">
-									<div class="card-body p-2">
-										<!-- Yorum listesi -->
-										@foreach (var comment in _comments)
+								</div>
+								<ValidationMessage For="@(() => _commentModel.Content)" />
+
+							</EditForm>
+
+							<div class="card mt-3 shadow-sm">
+								<div class="card-body p-2">
+									<!-- Yorum listesi -->
+									@foreach (var comment in _comments)
+									{
+										<div>
+											<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
+												 class="profile-photo rounded-circle"
+												 width="40" height="40" />
+											<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
+
+										</div>
+										<small class="text-muted" style="font-size:12px;">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(comment.UpdatedDate != null ? $"- {comment.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "")</small>
+
+										@if (!comment.IsCommentEditing)
 										{
-											<div>
-												<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
-													 class="profile-photo rounded-circle"
-													 width="40" height="40" />
-												<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
+											<p class="m-0 my-2 @(!comment.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@comment.Content</p>
+										}
+										else
+										{
 
-											</div>
-											<small class="text-muted" style="font-size:12px;">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(comment.UpdatedDate != null ? $"- {comment.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "")</small>
+											<EditForm Model="comment"
+													  OnValidSubmit="async () => await EditCommentAsync(comment.Id)">
+												<DataAnnotationsValidator />
+												<div class="d-flex align-items-end mt-3">
 
-											@if (!comment.IsCommentEditing)
-											{
-												<p class="m-0 my-2 @(!comment.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@comment.Content</p>
-											}
-											else
-											{
+													<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+																   placeholder="Yorumunuzu düzenleyin..."
+																   rows="4"
+																   @bind-Value="comment.Content">
+													</InputTextArea>
 
-												<EditForm Model="comment"
-														  OnValidSubmit="async () => await EditCommentAsync(comment.Id)">
-													<DataAnnotationsValidator />
-													<div class="d-flex align-items-end mt-3">
-
-														<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-																	   placeholder="Yorumunuzu düzenleyin..."
-																	   rows="4"
-																	   @bind-Value="comment.Content">
-														</InputTextArea>
-
-														<div class="mx-2">
-															<button class="btn-custom-circle" disabled="@_isApiBusy">
-																<i class="bi bi-send-check text-white"></i>
-															</button>
-														</div>
-														<div class="me-2">
-															<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)">
-																<i class="bi bi-arrow-counterclockwise"></i>
-															</button>
-														</div>
+													<div class="mx-2">
+														<button class="btn-custom-circle" disabled="@_isApiBusy">
+															<i class="bi bi-send-check text-white"></i>
+														</button>
 													</div>
-													<ValidationMessage For="@(() => comment.Content)" />
+													<div class="me-2">
+														<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)">
+															<i class="bi bi-arrow-counterclockwise"></i>
+														</button>
+													</div>
+												</div>
+												<ValidationMessage For="@(() => comment.Content)" />
 
-												</EditForm>
-											}
-											<div class="d-flex justify-content-start m-0 my-2 gap-2">
+											</EditForm>
+										}
+										<div class="d-flex justify-content-start m-0 my-2 gap-2">
 
-												@if (comment.IsActive)
-												{
-													<div class="d-flex gap-2 align-items-start">
-														<div class="d-flex align-items-center  gap-2 ">
-															@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
-															{
-																<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
-																	<i class="bi bi-heart-fill" style="height:20px;"></i>
-																</button>
-															}
-															else
-															{
-																<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
-																	<i class="bi bi-heart" style="height:20px;"></i>
-																</button>
-															}
-
-															<span class="text-muted small" style="cursor:pointer">@comment.LikeCount</span>
-														</div>
-
-														<div class="d-flex align-items-center  gap-2 ">
-
-															@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
-															{
-
-																<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
-																	<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
-																</button>
-															}
-															else
-															{
-
-																<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
-																	<i class="bi bi-heartbreak" style="height:20px;"></i>
-																</button>
-															}
-															<span class="text-muted small" style="cursor:pointer">@comment.DislikeCount</span>
-														</div>
-
-														@if (comment.UserId != _currentUserId)
+											@if (comment.IsActive)
+											{
+												<div class="d-flex gap-2 align-items-start">
+													<div class="d-flex align-items-center  gap-2 ">
+														@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
 														{
-															<div class="d-flex align-items-center">
-																<button class="btn-report" style="height:30px; width:30px">
-																	<i class="bi bi-exclamation-circle"></i>
-																</button>
-															</div>
+															<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
+																<i class="bi bi-heart-fill" style="height:20px;"></i>
+															</button>
 														}
+														else
+														{
+															<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
+																<i class="bi bi-heart" style="height:20px;"></i>
+															</button>
+														}
+
+														<span class="text-muted small" style="cursor:pointer">@comment.LikeCount</span>
 													</div>
-												}
 
+													<div class="d-flex align-items-center  gap-2 ">
 
-												@if (comment.IsActive && (comment.UserId == _currentUserId || adminRoles.Contains(_userRoleId)))
-												{
-													@if (comment.UserId == _currentUserId)
+														@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+														{
+
+															<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
+																<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
+															</button>
+														}
+														else
+														{
+
+															<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
+																<i class="bi bi-heartbreak" style="height:20px;"></i>
+															</button>
+														}
+														<span class="text-muted small" style="cursor:pointer">@comment.DislikeCount</span>
+													</div>
+
+													@if (comment.UserId != _currentUserId)
 													{
-														<div>
-															<button class="btn-custom-orange-circle" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" style="height:30px; width:30px">
-																<i class="bi bi-pen"></i>
+														<div class="d-flex align-items-center">
+															<button class="btn-report" style="height:30px; width:30px">
+																<i class="bi bi-exclamation-circle"></i>
 															</button>
 														</div>
 													}
+												</div>
+											}
 
+
+											@if (comment.IsActive && (comment.UserId == _currentUserId || adminRoles.Contains(_userRoleId)))
+											{
+												@if (comment.UserId == _currentUserId)
+												{
 													<div>
-														<button class="btn-custom-red-circle" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)" style="height:30px; width:30px">
-															<i class="bi bi-trash-fill"></i>
+														<button class="btn-custom-orange-circle" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" style="height:30px; width:30px">
+															<i class="bi bi-pen"></i>
 														</button>
 													</div>
 												}
-												@if (comment.IsActive)
-												{
-													<button class="btn-custom-circle" @onclick="() => ToggleReplyBox(comment.Id)" style="height:30px; width:30px">
-														<i class="bi bi-chat-right-quote" style="height:20px;"></i>
-													</button>
-												}
 
-											</div>
-											@if (comment.ShowDeleteWarning)
+												<div>
+													<button class="btn-custom-red-circle" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)" style="height:30px; width:30px">
+														<i class="bi bi-trash-fill"></i>
+													</button>
+												</div>
+											}
+											@if (comment.IsActive)
 											{
-												<div role="alert">
-													<div>
-														Yorumunuzu silmek istediğinize emin misiniz?
-													</div>
-													<div class="d-flex justify-content-start my-1 gap-2">
-														<button class="btn-custom" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">Hayır</button>
-														<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(comment.Id)">Evet</button>
+												<button class="btn-custom-circle" @onclick="() => ToggleReplyBox(comment.Id)" style="height:30px; width:30px">
+													<i class="bi bi-chat-right-quote" style="height:20px;"></i>
+												</button>
+											}
+
+										</div>
+										@if (comment.ShowDeleteWarning)
+										{
+											<div role="alert">
+												<div>
+													Yorumunuzu silmek istediğinize emin misiniz?
+												</div>
+												<div class="d-flex justify-content-start my-1 gap-2">
+													<button class="btn-custom" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">Hayır</button>
+													<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(comment.Id)">Evet</button>
+												</div>
+											</div>
+
+										}
+										<!-- Reply input -->
+										@if (_replyToCommentId == comment.Id)
+										{
+
+											<EditForm Model="_replyModel"
+													  OnValidSubmit="async () => await AddReplyAsync(comment.Id)">
+												<DataAnnotationsValidator />
+												<div class="d-flex align-items-end mt-3">
+
+													<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+																   placeholder="Cevabınızı yazın..."
+																   rows="4"
+																   @bind-Value="_replyModel.Content">
+													</InputTextArea>
+
+													<div class="mx-2">
+														<button class="btn-custom-circle" disabled="@_isApiBusy">
+															<i class="bi bi-send-check text-white"></i>
+														</button>
 													</div>
 												</div>
+												<ValidationMessage For="@(() => _replyModel.Content)" />
 
-											}
-											<!-- Reply input -->
-											@if (_replyToCommentId == comment.Id)
+											</EditForm>
+										}
+										<!-- Alt yorumlar (replies) -->
+										<div class="mt-2 d-flex align-items-end justify-content-between">
+											@if (comment.CommentReplies?.Any() == true)
 											{
-
-												<EditForm Model="_replyModel"
-														  OnValidSubmit="async () => await AddReplyAsync(comment.Id)">
-													<DataAnnotationsValidator />
-													<div class="d-flex align-items-end mt-3">
-
-														<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-																	   placeholder="Cevabınızı yazın..."
-																	   rows="4"
-																	   @bind-Value="_replyModel.Content">
-														</InputTextArea>
-
-														<div class="mx-2">
-															<button class="btn-custom-circle" disabled="@_isApiBusy">
-																<i class="bi bi-send-check text-white"></i>
-															</button>
-														</div>
-													</div>
-													<ValidationMessage For="@(() => _replyModel.Content)" />
-
-												</EditForm>
+												<h6 class="fw-semibold"
+													@onclick="() => ShowCommentReplies(comment)"
+													style="cursor:pointer">
+													Cevaplar (@comment.CommentReplies.Count)
+													<i class="bi @(comment.ShowReplies ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+												</h6>
 											}
-											<!-- Alt yorumlar (replies) -->
-											<div class="mt-2 d-flex align-items-end justify-content-between">
-												@if (comment.CommentReplies?.Any() == true)
-												{
-													<h6 class="fw-semibold"
-														@onclick="() => ShowCommentReplies(comment)"
-														style="cursor:pointer">
-														Cevaplar (@comment.CommentReplies.Count)
-														<i class="bi @(comment.ShowReplies ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
-													</h6>
-												}
-												else
-												{
-													<h6 class="fw-semibold">
-														Cevaplar (0)
-													</h6>
-												}
-
-											</div>
-											@if (comment.CommentReplies?.Any() == true && comment.ShowReplies)
+											else
 											{
-												<div class="ms-5">
-													@foreach (var reply in comment.CommentReplies)
-													{
-														<div class="mb-1 bg-light border-1">
-															<div class="card-text py-2 ps-2">
-																<div class="d-flex justify-content-between">
+												<h6 class="fw-semibold">
+													Cevaplar (0)
+												</h6>
+											}
+
+										</div>
+										@if (comment.CommentReplies?.Any() == true && comment.ShowReplies)
+										{
+											<div class="ms-5">
+												@foreach (var reply in comment.CommentReplies)
+												{
+													<div class="mb-1 bg-light border-1">
+														<div class="card-text py-2 ps-2">
+															<div class="d-flex justify-content-between">
+																<div>
+																	<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
+																		 class="profile-photo rounded-circle" width="40" height="40" />
+																	<strong class="ms-2" @onclick="()=>NavigateToUserProfile(reply.UserId)" style="cursor:pointer">@reply.UserName</strong>
+																</div>
+															</div>
+															<small class="text-muted" style="font-size:12px;">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(reply.UpdatedDate != null ? $"- {reply.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "") </small>
+															@if (!reply.IsCommentEditing)
+															{
+																<p class="m-0 mt-2  @(!reply.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@reply.Content</p>
+															}
+															else
+															{
+
+																<EditForm Model="reply"
+																		  OnValidSubmit="async () => await EditCommentAsync(reply.Id)">
+																	<DataAnnotationsValidator />
+																	<div class="d-flex align-items-end mt-3">
+
+																		<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+																					   placeholder="Yorumunuzu düzenleyin..."
+																					   rows="4"
+																					   @bind-Value="reply.Content">
+																		</InputTextArea>
+
+																		<div class="mx-2">
+																			<button class="btn-custom-circle" disabled="@_isApiBusy">
+																				<i class="bi bi-send-check text-white"></i>
+																			</button>
+																		</div>
+																		<div class="me-2">
+																			<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																				<i class="bi bi-arrow-counterclockwise"></i>
+																			</button>
+																		</div>
+																	</div>
+																	<ValidationMessage For="@(() => reply.Content)" />
+
+																</EditForm>
+															}
+															@if (reply.IsActive)
+															{
+																<div class="d-flex justify-content-start gap-2 mt-2">
+
+																	<div class="d-flex align-items-center  gap-2 ">
+																		@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
+																		{
+																			<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
+																				<i class="bi bi-heart-fill" style="height:20px;"></i>
+																			</button>
+																		}
+																		else
+																		{
+																			<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
+																				<i class="bi bi-heart" style="height:20px;"></i>
+																			</button>
+																		}
+																		<span class="text-muted small" style="cursor:pointer">@reply.LikeCount</span>
+																	</div>
+
+																	<div class="d-flex align-items-center  gap-2 ">
+																		@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+																		{
+																			<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
+																				<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
+																			</button>
+																		}
+																		else
+																		{
+																			<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
+																				<i class="bi bi-heartbreak" style="height:20px;"></i>
+																			</button>
+																		}
+																		<span class="text-muted small" style="cursor:pointer">@reply.DislikeCount</span>
+																	</div>
+
+																	@if (comment.UserId != _currentUserId)
+																	{
+																		<div class="d-flex align-items-center">
+																			<button class="btn-report" style="height:30px; width:30px">
+																				<i class="bi bi-exclamation-circle"></i>
+																			</button>
+																		</div>
+																	}
+																	@if (reply.UserId == _currentUserId && comment.IsActive || adminRoles.Contains(_userRoleId))
+																	{
+																		<div>
+																			<button class="btn-custom-orange-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																				<i class="bi bi-pen"></i>
+																			</button>
+																		</div>
+
+																		<div>
+																			<button class="btn-custom-red-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
+																				<i class="bi bi-trash-fill"></i>
+																			</button>
+																		</div>
+																	}
+
+
+
+																</div>
+															}
+
+															@if (reply.ShowDeleteWarning)
+															{
+																<div class="" role="alert">
 																	<div>
-																		<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
-																			 class="profile-photo rounded-circle" width="40" height="40" />
-																		<strong class="ms-2" @onclick="()=>NavigateToUserProfile(reply.UserId)" style="cursor:pointer">@reply.UserName</strong>
+																		Yorumunuzu silmek istediğinize emin misiniz?
+																	</div>
+																	<div class="d-flex justify-content-start my-1 gap-2">
+																		<button class="btn-custom" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">Hayır</button>
+																		<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(reply.Id)">Evet</button>
 																	</div>
 																</div>
-																<small class="text-muted" style="font-size:12px;">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(reply.UpdatedDate != null ? $"- {reply.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "") </small>
-																@if (!reply.IsCommentEditing)
-																{
-																	<p class="m-0 mt-2  @(!reply.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@reply.Content</p>
-																}
-																else
-																{
-
-																	<EditForm Model="reply"
-																			  OnValidSubmit="async () => await EditCommentAsync(reply.Id)">
-																		<DataAnnotationsValidator />
-																		<div class="d-flex align-items-end mt-3">
-
-																			<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-																						   placeholder="Yorumunuzu düzenleyin..."
-																						   rows="4"
-																						   @bind-Value="reply.Content">
-																			</InputTextArea>
-
-																			<div class="mx-2">
-																				<button class="btn-custom-circle" disabled="@_isApiBusy">
-																					<i class="bi bi-send-check text-white"></i>
-																				</button>
-																			</div>
-																			<div class="me-2">
-																				<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
-																					<i class="bi bi-arrow-counterclockwise"></i>
-																				</button>
-																			</div>
-																		</div>
-																		<ValidationMessage For="@(() => reply.Content)" />
-
-																	</EditForm>
-																}
-																@if (reply.IsActive)
-																{
-																	<div class="d-flex justify-content-start gap-2 mt-2">
-
-																		<div class="d-flex align-items-center  gap-2 ">
-																			@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
-																			{
-																				<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
-																					<i class="bi bi-heart-fill" style="height:20px;"></i>
-																				</button>
-																			}
-																			else
-																			{
-																				<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
-																					<i class="bi bi-heart" style="height:20px;"></i>
-																				</button>
-																			}
-																			<span class="text-muted small" style="cursor:pointer">@reply.LikeCount</span>
-																		</div>
-
-																		<div class="d-flex align-items-center  gap-2 ">
-																			@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
-																			{
-																				<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
-																					<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
-																				</button>
-																			}
-																			else
-																			{
-																				<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
-																					<i class="bi bi-heartbreak" style="height:20px;"></i>
-																				</button>
-																			}
-																			<span class="text-muted small" style="cursor:pointer">@reply.DislikeCount</span>
-																		</div>
-
-																		@if (comment.UserId != _currentUserId)
-																		{
-																			<div class="d-flex align-items-center">
-																				<button class="btn-report" style="height:30px; width:30px">
-																					<i class="bi bi-exclamation-circle"></i>
-																				</button>
-																			</div>
-																		}
-																		@if (reply.UserId == _currentUserId && comment.IsActive || adminRoles.Contains(_userRoleId))
-																		{
-																			<div>
-																				<button class="btn-custom-orange-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
-																					<i class="bi bi-pen"></i>
-																				</button>
-																			</div>
-
-																			<div>
-																				<button class="btn-custom-red-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
-																					<i class="bi bi-trash-fill"></i>
-																				</button>
-																			</div>
-																		}
-
-
-
-																	</div>
-																}
-
-																@if (reply.ShowDeleteWarning)
-																{
-																	<div class="" role="alert">
-																		<div>
-																			Yorumunuzu silmek istediğinize emin misiniz?
-																		</div>
-																		<div class="d-flex justify-content-start my-1 gap-2">
-																			<button class="btn-custom" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">Hayır</button>
-																			<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(reply.Id)">Evet</button>
-																		</div>
-																	</div>
-																}
-															</div>
+															}
 														</div>
-													}
-												</div>
-											}
-											<hr />
+													</div>
+												}
+											</div>
 										}
+										<hr />
+									}
+								</div>
+							</div>
+						}
+						@if (_comments?.Count == null)
+						{
+							<div class="alert alert-info" role="alert">
+								@_commentErrorMessage
+							</div>
+
+							<EditForm Model="_commentModel"
+									  OnValidSubmit="async () => await AddCommentAsync()">
+								<DataAnnotationsValidator />
+								<div class="d-flex align-items-end mt-3">
+									<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+												   placeholder="Yorum yazın..."
+												   rows="4"
+												   @bind-Value="_commentModel.Content">
+									</InputTextArea>
+
+									<div class="mx-2">
+										<button class="btn-custom-circle" disabled="@_isApiBusy">
+											<i class="bi bi-send-check text-white"></i>
+										</button>
 									</div>
+
 								</div>
-							}
-							@if (_comments?.Count == null)
-							{
-								<div class="alert alert-info" role="alert">
-									@_commentErrorMessage
-								</div>
+								<ValidationMessage For="@(() => _commentModel.Content)" />
 
-								<EditForm Model="_commentModel"
-										  OnValidSubmit="async () => await AddCommentAsync()">
-									<DataAnnotationsValidator />
-									<div class="d-flex align-items-end mt-3">
-										<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-													   placeholder="Yorum yazın..."
-													   rows="4"
-													   @bind-Value="_commentModel.Content">
-										</InputTextArea>
-
-										<div class="mx-2">
-											<button class="btn-custom-circle" disabled="@_isApiBusy">
-												<i class="bi bi-send-check text-white"></i>
-											</button>
-										</div>
-
-									</div>
-									<ValidationMessage For="@(() => _commentModel.Content)" />
-
-								</EditForm>
-							}
-							else if (_isCommentsHaveError)
-							{
-								<div class="alert alert-danger" role="alert">
-									@_commentErrorMessage
-								</div>
-							}
-						</div>
-					}
-				</div>
-			}
+							</EditForm>
+						}
+						else if (_isCommentsHaveError)
+						{
+							<div class="alert alert-danger" role="alert">
+								@_commentErrorMessage
+							</div>
+						}
+					</div>
+				}
+			</div>
 		}
-	</div>
+	}
+</div>
 
 <ModalComponent @ref="_likesModel" Title="Beğeneler" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>
@@ -794,6 +795,7 @@
 	private HubConnection? _reactionHubConnection;
 	private HubConnection? _commentHubConnection;
 	private HubConnection? _postViewHubConnection;
+	private CancellationTokenSource _cts = new();
 	private ModalComponent? _likesModel;
 	private ModalComponent? _dislikeModel;
 	private ModalComponent? _viewerModel;
@@ -841,6 +843,9 @@
 		CheckUserLoggedIn();
 		GetUserRoleId();
 
+		_cts?.Dispose();
+		_cts = new();
+
 		try
 		{
 			_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
@@ -880,132 +885,186 @@
 	}
 	private async Task StartReactionHubConnectionAsync()
 	{
-
-		_reactionHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Reaction, PageType.Post);
-
-
-		if (!allowedRoles.Contains(_userRoleId))
+		try
 		{
-			_reactionHubConnection.On<int?, int>("PostLikedOrDislikedAnonymousAsync", async (oldReactionId, newReactionId) =>
-			{
-				UpdatePostReactions(oldReactionId, newReactionId);
-				await InvokeAsync(StateHasChanged);
-			});
+			if (_cts.IsCancellationRequested)
+				return;
 
-			_reactionHubConnection.On<int, int?, int>("CommentLikedOrDislikedAnonymousAsync", async (commentId, oldReactionId, newReactionId) =>
+			_reactionHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Reaction, PageType.Post);
+
+			if (_cts.IsCancellationRequested)
+				return;
+
+			if (!allowedRoles.Contains(_userRoleId))
 			{
-				UpdateCommentReactions(commentId, oldReactionId, newReactionId);
-				await InvokeAsync(StateHasChanged);
-			});
+				_reactionHubConnection.On<int?, int>("PostLikedOrDislikedAnonymousAsync", async (oldReactionId, newReactionId) =>
+				{
+					UpdatePostReactions(oldReactionId, newReactionId);
+					await InvokeAsync(StateHasChanged);
+				});
+
+				_reactionHubConnection.On<int, int?, int>("CommentLikedOrDislikedAnonymousAsync", async (commentId, oldReactionId, newReactionId) =>
+				{
+					UpdateCommentReactions(commentId, oldReactionId, newReactionId);
+					await InvokeAsync(StateHasChanged);
+				});
+			}
+			else
+			{
+				_reactionHubConnection.On<ReactionViewModel, bool>("PostLikedOrDislikedAsync", async (reaction, isReactionUpdated) =>
+				{
+					UpdatePostReactions(reaction, isReactionUpdated);
+					await InvokeAsync(StateHasChanged);
+				});
+
+				_reactionHubConnection.On<ReactionViewModel, bool>("CommentLikedOrDislikedAsync", async (reaction, isReactionUpdated) =>
+				{
+					UpdateCommentReactions(reaction, isReactionUpdated);
+					await InvokeAsync(StateHasChanged);
+				});
+			}
+			if (_cts.IsCancellationRequested)
+				return;
+			await _reactionHubConnection.StartAsync(_cts.Token);
+			await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId, _cts.Token);
 		}
-		else
+		catch (OperationCanceledException)
 		{
-			_reactionHubConnection.On<ReactionViewModel, bool>("PostLikedOrDislikedAsync", async (reaction, isReactionUpdated) =>
-			{
-				UpdatePostReactions(reaction, isReactionUpdated);
-				await InvokeAsync(StateHasChanged);
-			});
-
-			_reactionHubConnection.On<ReactionViewModel, bool>("CommentLikedOrDislikedAsync", async (reaction, isReactionUpdated) =>
-			{
-				UpdateCommentReactions(reaction, isReactionUpdated);
-				await InvokeAsync(StateHasChanged);
-			});
+			return;
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("console.error", $"Reaction Hub Start Error: {ex.Message}");
 		}
 
-		await _reactionHubConnection.StartAsync();
-		await _reactionHubConnection.SendAsync("JoinPostReactionGroup", postId);
+
 
 	}
 	private async Task StartPostViewHubConnectionAsync()
 	{
-
-		_postViewHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.PostView, PageType.Post);
-
-		if (allowedRoles.Contains(_userRoleId))
+		try
 		{
-			_postViewHubConnection.On<int, PostViewersViewModel>("PostViewedAsync", async (postId, postViewerDto) =>
+			if (_cts.IsCancellationRequested)
+				return;
+
+			_postViewHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.PostView, PageType.Post);
+			if (_cts.IsCancellationRequested)
+				return;
+
+			if (allowedRoles.Contains(_userRoleId))
 			{
-				if (_viewers == null)
-					_viewers = new List<PostViewersViewModel>();
+				_postViewHubConnection.On<int, PostViewersViewModel>("PostViewedAsync", async (postId, postViewerDto) =>
+				{
+					if (_viewers == null)
+						_viewers = new List<PostViewersViewModel>();
 
-				_viewers.Add(postViewerDto);
-				_postViewCount = _viewers.Count;
+					_viewers.Add(postViewerDto);
+					_postViewCount = _viewers.Count;
 
-				await InvokeAsync(StateHasChanged);
+					await InvokeAsync(StateHasChanged);
 
-			});
+				});
+			}
+			else
+			{
+				_postViewHubConnection.On<int>("PostViewedAnonymousAsync", async (postId) =>
+				{
+					_postViewCount++;
+					await InvokeAsync(StateHasChanged);
+				});
+			}
+			if (_cts.IsCancellationRequested)
+				return;
+
+			await _postViewHubConnection.StartAsync(_cts.Token);
+			await _postViewHubConnection.SendAsync("JoinPostPostViewCountGroup", postId, _cts.Token);
 		}
-		else
+		catch (OperationCanceledException)
 		{
-			_postViewHubConnection.On<int>("PostViewedAnonymousAsync", async (postId) =>
-			{
-				_postViewCount++;
-				await InvokeAsync(StateHasChanged);
-			});
+			return;
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("console.error", $"PostView Hub Start Error: {ex.Message}");
 		}
 
-		await _postViewHubConnection.StartAsync();
-		await _postViewHubConnection.SendAsync("JoinPostPostViewCountGroup", postId);
 
 	}
 	private async Task StartCommentHubConnectionAsync()
 	{
-
-		_commentHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Comment, PageType.Post);
-
-		_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrEditedAsync", async (commentModel, isAdded) =>
+		try
 		{
+			if (_cts.IsCancellationRequested)
+				return;
 
-			if (isAdded)
+			_commentHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.Comment, PageType.Post);
+			if (_cts.IsCancellationRequested)
+				return;
+
+			_commentHubConnection.On<CommentsViewModel, bool>("CommentAddedOrEditedAsync", async (commentModel, isAdded) =>
 			{
-				commentModel.CreatedDate = ToLocalTime(commentModel.CreatedDate);
-				if (_comments == null)
-					_comments = new List<CommentsViewModel>();
-				_comments.Insert(0, commentModel);
-			}
-			else
-			{
-				var existingCommentIndex = _comments.FindIndex(c => c.Id == commentModel.Id);
-
-				if (existingCommentIndex != -1)
-				{
-					commentModel.UpdatedDate = ToLocalTime(commentModel.UpdatedDate.Value);
-					_comments[existingCommentIndex] = commentModel;
-				}
-
-			}
-			await InvokeAsync(StateHasChanged);
-		});
-
-		_commentHubConnection.On<CommentsViewModel, bool>("ReplyAddedOrEditedAsync", async (replyDto, isAdded) =>
-		{
-			var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
-			if (comment != null)
-			{
-				replyDto.CreatedDate = ToLocalTime(replyDto.CreatedDate);
-				if (comment.CommentReplies == null)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsViewModel>();
 
 				if (isAdded)
-					_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
+				{
+					commentModel.CreatedDate = ToLocalTime(commentModel.CreatedDate);
+					if (_comments == null)
+						_comments = new List<CommentsViewModel>();
+					_comments.Insert(0, commentModel);
+				}
 				else
 				{
-					var existingReplyIndex = comment.CommentReplies.FindIndex(r => r.Id == replyDto.Id);
-					if (existingReplyIndex != -1)
-					{
-						replyDto.UpdatedDate = ToLocalTime(replyDto.UpdatedDate.Value);
-						comment.CommentReplies[existingReplyIndex] = replyDto;
+					var existingCommentIndex = _comments.FindIndex(c => c.Id == commentModel.Id);
 
+					if (existingCommentIndex != -1)
+					{
+						commentModel.UpdatedDate = ToLocalTime(commentModel.UpdatedDate.Value);
+						_comments[existingCommentIndex] = commentModel;
+					}
+
+				}
+				await InvokeAsync(StateHasChanged);
+			});
+
+			_commentHubConnection.On<CommentsViewModel, bool>("ReplyAddedOrEditedAsync", async (replyDto, isAdded) =>
+			{
+				var comment = _comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId);
+				if (comment != null)
+				{
+					replyDto.CreatedDate = ToLocalTime(replyDto.CreatedDate);
+					if (comment.CommentReplies == null)
+						_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId).CommentReplies = new List<CommentsViewModel>();
+
+					if (isAdded)
+						_comments.FirstOrDefault(c => c.Id == replyDto.ParentCommentId)?.CommentReplies.Add(replyDto);
+					else
+					{
+						var existingReplyIndex = comment.CommentReplies.FindIndex(r => r.Id == replyDto.Id);
+						if (existingReplyIndex != -1)
+						{
+							replyDto.UpdatedDate = ToLocalTime(replyDto.UpdatedDate.Value);
+							comment.CommentReplies[existingReplyIndex] = replyDto;
+
+						}
 					}
 				}
-			}
 
-			await InvokeAsync(StateHasChanged);
-		});
+				await InvokeAsync(StateHasChanged);
+			});
+			if (_cts.IsCancellationRequested)
+				return;
 
-		await _commentHubConnection.StartAsync();
-		await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId);
+			await _commentHubConnection.StartAsync(_cts.Token);
+			await _commentHubConnection.SendAsync("JoinPostCommentGroup", postId, _cts.Token);
+		}
+		catch (OperationCanceledException)
+		{
+			return;
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("console.error", $"Comment Hub Start Error: {ex.Message}");
+		}
+
 	}
 	private async Task StartTasksWithUserRoleAsync()
 	{
@@ -2064,26 +2123,33 @@
 
 	public async ValueTask DisposeAsync()
 	{
+
 		if (_postViewHubConnection is not null)
 		{
-			await SignalRService.StopAsync(PageType.Post,HubType.PostView);
+			if (_postViewHubConnection.State == HubConnectionState.Connected)
+				await SignalRService.StopAsync(PageType.Post, HubType.PostView);
 			await SignalRService.DisposeAsync(PageType.Post, HubType.PostView);
 			_postViewHubConnection = null;
 		}
 
 		if (_commentHubConnection is not null)
 		{
-			await SignalRService.StopAsync(PageType.Post, HubType.Comment);
+			if (_commentHubConnection.State == HubConnectionState.Connected)
+				await SignalRService.StopAsync(PageType.Post, HubType.Comment);
 			await SignalRService.DisposeAsync(PageType.Post, HubType.Comment);
 			_commentHubConnection = null;
 		}
 
 		if (_reactionHubConnection is not null)
 		{
-			await SignalRService.StopAsync(PageType.Post,HubType.Reaction);
+			if (_reactionHubConnection.State == HubConnectionState.Connected)
+				await SignalRService.StopAsync(PageType.Post, HubType.Reaction);
 			await SignalRService.DisposeAsync(PageType.Post, HubType.Reaction);
 			_reactionHubConnection = null;
 		}
+
+		_cts?.Cancel();
+		_cts?.Dispose();
 	}
 }
 

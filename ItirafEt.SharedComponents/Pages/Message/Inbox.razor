@@ -4,8 +4,9 @@
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject InboxService InboxService
-@inject SignalRInboxService SignalRInboxService
-@inject IStorageService StorageService
+@* @inject SignalRInboxService SignalRInboxService
+ *@
+ @inject IStorageService StorageService
 @inject IDateTimeHelperService DateTimeHelperService
 @implements IAsyncDisposable
 
@@ -71,6 +72,7 @@
 	protected override async Task OnInitializedAsync()
 	{
 		GetUserId();
+
 		try
 		{
 			_userTimeZoneId = await DateTimeHelperService.GetUserTimeZoneIdAsync();
@@ -81,7 +83,7 @@
 		}
 
 		
-		InboxService.InitializeAsync(_currentUserId);
+		await InboxService.InitializeAsync(_currentUserId);
 		await GetUserMessagesAsync();
 
 		InboxService.MessageReaded -= RefreshInbox;
@@ -141,7 +143,7 @@
 		InboxService.NewMessageRecived -= RefreshInbox;
 		InboxService.NewMessageRecivedInInboxPage -= RefreshInbox;
 		_timer?.Dispose();
-		await SignalRInboxService.DisposeAsync();
+		// await SignalRInboxService.DisposeAsync();
 	}
 
 	private DateTime ToLocalTime(DateTime date)
