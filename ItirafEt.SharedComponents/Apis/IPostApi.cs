@@ -9,7 +9,7 @@ namespace ItirafEt.SharedComponents.Apis
     {
         [Headers("Authorization: Bearer")]
         [Post("/api/createPost")]
-        Task<ApiResponses> CreatePostAsync(PostViewModel model,Guid UserId);
+        Task<ApiResponses> CreatePostAsync(PostViewModel model, Guid UserId);
 
         [Headers("Authorization: Bearer")]
         [Get("/api/getCreatedPost")]
@@ -20,7 +20,7 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Get("/api/getUserPost")]
-        Task<ApiResponses<UserPostsViewModel>> GetUserPostsAsync(Guid UserId,int size, int PageNo);
+        Task<ApiResponses<UserPostsViewModel>> GetUserPostsAsync(Guid UserId, int size, int PageNo);
 
 
         [Headers("Authorization: Bearer")]
@@ -40,11 +40,24 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Headers("Authorization: Bearer")]
         [Get("/api/getPostInformationById")]
-        Task<ApiResponses> CanUserEditPostAsync(int postId,Guid userId);
+        Task<ApiResponses> CanUserEditPostAsync(int postId, Guid userId);
 
 
         [Headers("Authorization: Bearer")]
         [Post("/api/editPost")]
         Task<ApiResponses> EditPostAsync(EditPostViewModel model);
+
+
+        [Headers("Authorization: Bearer")]
+        [Get("/api/GetFiveRandomPostHeader")]
+        Task<ApiResponses<List<PostHeaderViewModel>>> GetFiveRandomPostHeaderAsync(); 
+        
+        [Headers("Authorization: Bearer")]
+        [Get("/api/GetEightRandomPost")]
+        Task<ApiResponses<List<PostInfoViewModel>>> GetEightRandomPostAsync();
+
+        [Headers("Authorization: Bearer")]
+        [Get("/api/GetTotalPostCount")]
+        Task<ApiResponses<int>> GetActivePostCountAsync();
     }
 }

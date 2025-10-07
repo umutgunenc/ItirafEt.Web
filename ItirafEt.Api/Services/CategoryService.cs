@@ -241,5 +241,25 @@ namespace ItirafEt.Api.Services
             return ApiResponses<string>.Success(categoryName);
         }
 
+        public async Task<ApiResponses<List<CategoryButtonInfoViewModel>>> GetTopFiveActiveCategoriesAsync()
+        {
+            var categories = await _context.Categories
+                .AsNoTracking()
+                .Include(c => c.Posts)
+                .Where(c => c.isActive)
+                .OrderByDescending( c=>c.Posts.Count())
+                .Take(5)
+                .Select(c => new CategoryButtonInfoViewModel
+                {
+                    Id = c.Id,
+                    CategoryName = c.CategoryName,
+                    Icon = c.CategoryIconUrl,
+                })
+                .ToListAsync();
+
+            if (categories == null || categories.Count == 0)
+                return ApiResponses<List<CategoryButtonInfoViewModel>>.Fail("Kategori bulunamadı.");
+            return ApiResponses<List<CategoryButtonInfoViewModel>>.Success(categories);
+        }
     }
 }

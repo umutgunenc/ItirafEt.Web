@@ -80,8 +80,22 @@ namespace ItirafEt.Api.EndPoints
 
                 return Results.Ok(await postService.EditPostAsync(model));
             })
-.RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
+            .RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.Moderator), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.User)));
 
+            app.MapGet("/api/GetFiveRandomPostHeader", async (PostService postService) =>
+            {
+                return Results.Ok(await postService.GetFiveRandomPostHeaderAsync());
+            });
+
+            app.MapGet("/api/GetEightRandomPost", async (PostService postService) =>
+            {
+                return Results.Ok(await postService.GetEightRandomPostAsync());
+            });
+
+            app.MapGet("/api/GetTotalPostCount", async (PostService postService) =>
+            {
+                return Results.Ok(await postService.GetTotalActivePostCountAsync());
+            });
 
             return app;
         }

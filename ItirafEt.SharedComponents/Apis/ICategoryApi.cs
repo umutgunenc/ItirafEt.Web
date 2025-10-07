@@ -28,5 +28,9 @@ namespace ItirafEt.SharedComponents.Apis
 
         [Get("/api/getCategoryPostsOrderByLikeCount")]
         Task<ApiResponses<List<PostInfoViewModel>>> GetCategoryPostsOrderByLikeCountAsync([Query] int categoryId, [Query] int pageNo, [Query] int pageSize);
+
+
+        [Get("/api/getTopFiveCategoryInfo")]
+        Task<ApiResponses<List<CategoryButtonInfoViewModel>>> GetTopFiveCategoryInfoAsync();
     }
 }

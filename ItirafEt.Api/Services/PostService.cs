@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Api.Hubs;
@@ -256,6 +257,96 @@ namespace ItirafEt.Api.Services
             _context.PostHistories.Add(oldPost);
             await _context.SaveChangesAsync();
             return ApiResponses.Success();
+        }
+
+        public async Task<ApiResponses<List<PostHeaderViewModel>>> GetFiveRandomPostHeaderAsync()
+        {
+
+            int totalCount = await _context.Posts.CountAsync();
+            if (totalCount == 0)
+                return ApiResponses<List<PostHeaderViewModel>>.Fail("Hiç gönderi yok.");
+
+            var result = new List<PostHeaderViewModel>();
+            var addedIds = new HashSet<int>();
+            var random = new Random();
+
+            while (result.Count < 5)
+            {
+                int randomId = random.Next(1, totalCount + 1);
+
+                var post = await _context.Posts
+                    .Include(p => p.Category)
+                    .AsNoTracking()
+                    .Where(p => p.Id == randomId && !p.IsDeletedByAdmin && !p.IsDeletedByUser && p.Category.isActive)
+                    .Select(p => new PostHeaderViewModel
+                    {
+                        Id = p.Id,
+                        Title = p.Title.Length > 45 ? p.Title.Substring(0, 45) + "..." : p.Title,
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (post is not null && addedIds.Add(post.Id))
+                    result.Add(post);
+            }
+
+            if (!result.Any())
+                return ApiResponses<List<PostHeaderViewModel>>.Fail("Gönderi bulunamadı.");
+
+            return ApiResponses<List<PostHeaderViewModel>>.Success(result);
+
+        }
+
+        public async Task<ApiResponses<List<PostInfoViewModel>>> GetEightRandomPostAsync()
+        {
+
+            int totalCount = await _context.Posts.CountAsync();
+            if (totalCount == 0)
+                return ApiResponses<List<PostInfoViewModel>>.Fail("Hiç gönderi yok.");
+
+            var result = new List<PostInfoViewModel>();
+            var addedIds = new HashSet<int>();
+            var random = new Random();
+
+            while (result.Count < 8)
+            {
+                int randomId = random.Next(1, totalCount + 1);
+
+                var post = await _context.Posts
+                    .Include(p => p.Category)
+                    .Include(p => p.User)
+                    .AsNoTracking()
+                    .Where(p => p.Id == randomId && !p.IsDeletedByAdmin && !p.IsDeletedByUser && p.Category.isActive)
+                    .Select(p => new PostInfoViewModel
+                    {
+                        PostId = p.Id,
+                        PostContentReview = p.Content.Length > 100 ? p.Content.Substring(0, 100) + "..." : p.Content,
+                        PostTitle = p.Title.Length > 25 ? p.Title.Substring(0, 22) + "..." : p.Title,
+                        PostLikeCount = _context.PostReaction.Count(pr => pr.PostId == p.Id && pr.ReactionTypeId == (int)ReactionTypeEnum.Like),
+                        PostViewCount = _context.UserReadPosts.Count(ur => ur.PostId == p.Id),
+                        PostCreatedDate = p.CreatedDate,
+                        PostCreatorProfilPicture = p.User.ProfilePictureUrl,
+                        PostCreatorUserName = p.User.UserName,
+                       
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (post is not null && addedIds.Add(post.PostId))
+                    result.Add(post);
+            }
+
+            if (!result.Any())
+                return ApiResponses<List<PostInfoViewModel>>.Fail("Gönderi bulunamadı.");
+
+            return ApiResponses<List<PostInfoViewModel>>.Success(result);
+
+        }
+
+        public async Task<ApiResponses<int>> GetTotalActivePostCountAsync()
+        {
+            var count = await _context.Posts
+                .AsNoTracking()
+                .CountAsync(p => !p.IsDeletedByAdmin && !p.IsDeletedByUser && p.Category.isActive);
+            return ApiResponses<int>.Success(count);
         }
     }
 }

@@ -49,6 +49,9 @@ namespace ItirafEt.Api.EndPoints
                 Results.Ok(await categoryServices.GetCategoryPostsOrderByLikeCountAsync(categoryId, pageNo, pageSize)));
             //.RequireCors("AllowSpecificOrigin");
 
+            app.MapGet("/api/getTopFiveCategoryInfo", async (CategoryService categoryServices) =>
+                Results.Ok(await categoryServices.GetTopFiveActiveCategoriesAsync()));
+
 
             return app;
         }
