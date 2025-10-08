@@ -4,83 +4,94 @@
 @inject AuthStateProvider AuthStateProvider
 
 <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new []{typeof(ItirafEt.SharedComponents.Auth.AuthStateProvider).Assembly}">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-            <NotAuthorized>
-                <main class="flex-fill d-flex align-items-center justify-content-center bg-light" style="min-height: calc(100vh - 56px); width: 100%;">
-                    <div class="card shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="bi bi-lock-fill" style="font-size: 3rem; color: #dc3545;"></i>
-                            <h1 class="card-title mt-3">Erişim Reddedildi</h1>
-                            <p class="card-text">
-                                Bu sayfaya erişim yetkiniz yok. Lütfen gerekli yetkiye sahip olduğunuzdan emin olun.
-                            </p>
-                            <a @onclick="NavigateToLogin" class="btn btn-primary">Ana Sayfaya Dön</a>
-                        </div>
-                    </div>
-                </main>
-            </NotAuthorized>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
+	<Found Context="routeData">
+		<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+			<NotAuthorized>
+				<main class="flex-fill d-flex align-items-center justify-content-center bg-secondary-subtle" style="min-height: calc(100vh - 56px); width: 100%;">
+					<div class="card shadow-sm">
+						<div class="card-body text-center">
+							<i class="bi bi-lock-fill" style="font-size: 3rem; color: #dc3545;"></i>
+							<h1 class="card-title mt-3">Erişim Reddedildi</h1>
+							<p class="card-text">
+								Bu sayfaya erişim yetkiniz yok. Lütfen gerekli yetkiye sahip olduğunuzdan emin olun.
+							</p>
+							<div class="d-inline-flex gap-3 align-items-center">
+								@if (!AuthStateProvider.IsLoggedIn){
+									<button @onclick="NavigateToLogin" class="btn-custom">Giriş Yap</button>
+								}
+								<button @onclick="NavigateToHome" class="btn-custom">Ana Sayfaya Dön</button>
+							</div>
 
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <main class="flex-fill d-flex align-items-center justify-content-center bg-light" style="min-height: calc(100vh - 56px); width: 100%;">
-                <div class="card shadow-sm p-4">
-                    <div class="card-body text-center">
-                        <i class="bi bi-question-circle-fill" style="font-size: 3rem; color: #ffc107;"></i>
-                        <h1 class="card-title mt-3">Kayboldunuz mu?</h1>
-                        <p class="card-text">
-                            Aradığınız sayfa bulunamadı veya mevcut değil. Belki bir harf hatası yaptınız ya da sayfa taşınmış olabilir.
-                        </p>
-                        <a href="/" class="btn btn-warning text-white">Ana Sayfaya Dön</a>
-                    </div>
-                </div>
-            </main>
-        </LayoutView>
-    </NotFound>
+						</div>
+					</div>
+				</main>
+			</NotAuthorized>
+		</AuthorizeRouteView>
+		<FocusOnNavigate RouteData="@routeData" Selector="h1" />
+	</Found>
+
+	<NotFound>
+		<PageTitle>Not found</PageTitle>
+		<LayoutView Layout="@typeof(MainLayout)">
+			<main class="flex-fill d-flex align-items-center justify-content-center bg-secondary-subtle" style="min-height: calc(100vh - 56px); width: 100%;">
+				<div class="card shadow-sm p-4">
+					<div class="card-body text-center">
+						<i class="bi bi-question-circle-fill" style="font-size: 3rem; color: #ffc107;"></i>
+						<h1 class="card-title mt-3">Kayboldunuz mu?</h1>
+						<p class="card-text">
+							Aradığınız sayfa bulunamadı veya mevcut değil. Belki bir harf hatası yaptınız ya da sayfa taşınmış olabilir.
+						</p>
+						<button @onclick="NavigateToHome" class="btn-custom">Ana Sayfaya Dön</button>
+					</div>
+				</div>
+			</main>
+		</LayoutView>
+	</NotFound>
 </Router>
 
 @code {
-    private string _returnUrl = string.Empty;
+	private string _returnUrl = string.Empty;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await AuthStateProvider.InitializeAsync();
+	protected override async Task OnInitializedAsync()
+	{
+		await AuthStateProvider.InitializeAsync();
 
-        NavigationManager.LocationChanged += OnLocationChanged;
+		NavigationManager.LocationChanged += OnLocationChanged;
 
-        UpdateReturnUrl(NavigationManager.Uri);
-    }
+		UpdateReturnUrl(NavigationManager.Uri);
+	}
 
-    private void NavigateToLogin()
-    {
-        if (!string.IsNullOrEmpty(_returnUrl))
-            NavigationManager.NavigateTo($"/auth/login?returnUrl={Uri.EscapeDataString(_returnUrl)}");
-        else
-            NavigationManager.NavigateTo("/auth/login");
-    }
+	private void NavigateToLogin()
+	{
+		if (!string.IsNullOrEmpty(_returnUrl))
+			NavigationManager.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(_returnUrl)}");
+		else
+			NavigationManager.NavigateTo("/login");
+	}
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        UpdateReturnUrl(e.Location);
-        _ = InvokeAsync(StateHasChanged);
-    }
+	private void NavigateToHome()
+	{
+		NavigationManager.NavigateTo("/");
+	}
 
-    private void UpdateReturnUrl(string absoluteUri)
-    {
-        var relativePath = NavigationManager.ToBaseRelativePath(absoluteUri);
+	private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+	{
+		UpdateReturnUrl(e.Location);
+		_ = InvokeAsync(StateHasChanged);
+	}
 
-        if (!string.IsNullOrWhiteSpace(relativePath))
-            _returnUrl = "/" + relativePath;
-        else
-            _returnUrl = string.Empty;
-    }
+	private void UpdateReturnUrl(string absoluteUri)
+	{
+		var relativePath = NavigationManager.ToBaseRelativePath(absoluteUri);
 
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
+		if (!string.IsNullOrWhiteSpace(relativePath))
+			_returnUrl = "/" + relativePath;
+		else
+			_returnUrl = string.Empty;
+	}
+
+	public void Dispose()
+	{
+		NavigationManager.LocationChanged -= OnLocationChanged;
+	}
 }

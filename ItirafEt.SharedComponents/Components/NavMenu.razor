@@ -174,17 +174,23 @@
 				<!-- Kullanıcı -->
 				<AuthorizeView Context="LoggedInContext">
 					<Authorized>
+						<li class="nav-item">
+							<NavLink class="nav-link text-white d-flex align-items-center gap-1" href="posts/createPosts">
+								<i class="bi bi-pen"></i> <span>İtiraf Et</span>
+							</NavLink>
+						</li>
+
 						<li class="nav-item dropdown">
 							<a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 								<i class="@(_isHaveUnreadMessages ? "bi bi-person-fill-check" : "bi bi-person-check") fs-5" style="@(_isHaveUnreadMessages ? "transition:2s; color:red;" : "transition:2s;")"></i>
 								<span class="ms-2">@AuthStateProvider.User?.userName.ToUpper()</span>
 							</a>
-							<ul class="dropdown-menu border-0 shadow-lg" style="background: rgba(75, 108, 183, 0.9); backdrop-filter: blur(10px);">
-								<li>
+							<ul class="dropdown-menu border-0 shadow-lg" style="min-width: 100px; background: rgba(75, 108, 183, 0.9); backdrop-filter: blur(10px);">
+@* 								<li>
 									<NavLink class="dropdown-item py-2 d-flex align-items-center gap-2 text-white" href="posts/createPosts">
 										<i class="bi bi-pen"></i> <span>İtiraf Et</span>
 									</NavLink>
-								</li>
+								</li> *@
 								<li>
 									<NavLink class="dropdown-item py-2 d-flex align-items-center gap-2 text-white" href="/inbox">
 										<i class="@(_isHaveUnreadMessages ? "bi bi-envelope-fill text-danger" : "bi bi-envelope")"></i>
