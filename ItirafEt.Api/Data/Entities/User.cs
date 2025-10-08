@@ -27,6 +27,9 @@ namespace ItirafEt.Api.Data.Entities
             MessageReports = new HashSet<MessageReport>();
             CommentReports = new HashSet<CommentReport>();
             PostReports = new HashSet<PostReport>();
+            ReviewedCommentReports = new HashSet<CommentReport>();
+            ReviewedMessageReports = new HashSet<MessageReport>();
+            ReviewedPostReports = new HashSet<PostReport>();
         }
         [Key]
         public Guid Id { get; set; }
@@ -83,9 +86,17 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<Conversation> ConversationsInitiated { get; set; }  // User1 
         public virtual ICollection<Conversation> ConversationsReceived { get; set; }   // User2 
         public virtual ICollection<MessageReaction> MessageReactions { get; set; }
+        // Kullanıcı tarafından yapılmış yorum şikayetleri
+
         public virtual ICollection<MessageReport> MessageReports { get; set; }
         public virtual ICollection<CommentReport> CommentReports { get; set; }
         public virtual ICollection<PostReport> PostReports { get; set; }
+
+        // Admin olarak incelediği yorum şikayetleri
+        public virtual ICollection<CommentReport> ReviewedCommentReports { get; set; }
+        public virtual ICollection<MessageReport> ReviewedMessageReports { get; set; }
+        public virtual ICollection<PostReport> ReviewedPostReports { get; set; }
+
         public virtual ICollection<Message> SentMessages { get; set; }
         public virtual ICollection<UserBlock> BlockedUsers { get; set; } // Bu kullanıcı kimi engelledi
         public virtual ICollection<UserBlock> BlockedByUsers { get; set; } // Bu kullanıcı kim tarafından engellendi

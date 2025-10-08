@@ -32,13 +32,13 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        public int? ReportName { get; set; }
+        //public int? ReportName { get; set; }
 
-        [ForeignKey(nameof(ReportName))]
-        public ReportType? ReportType { get; set; }
+        //[ForeignKey(nameof(ReportName))]
+        //public ReportType? ReportType { get; set; }
 
-        [MaxLength(1024)]
-        public string? ReportExplanation { get; set; }
+        //[MaxLength(1024)]
+        //public string? ReportExplanation { get; set; }
 
     }
 }

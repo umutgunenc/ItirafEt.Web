@@ -4,6 +4,7 @@ using ItirafEt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ItirafEt.Api.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20251008112444_mig13")]
+    partial class mig13
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -212,6 +215,10 @@ namespace ItirafEt.Api.Migrations
                     b.Property<int>("ReactionId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ReportExplanation")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CommentId");
@@ -238,9 +245,6 @@ namespace ItirafEt.Api.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ReportExplanation")
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
@@ -252,31 +256,13 @@ namespace ItirafEt.Api.Migrations
                     b.Property<Guid>("ReportingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ReviewedAdminId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ReviewedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CommentId");
 
-                    b.HasIndex("PostId");
-
                     b.HasIndex("ReportTypeName");
 
                     b.HasIndex("ReportingUserId");
-
-                    b.HasIndex("ReviewedAdminId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("CommentReports");
                 });
@@ -427,6 +413,10 @@ namespace ItirafEt.Api.Migrations
                     b.Property<int?>("ReactionTypeId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ReportExplanation")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MessageId");
@@ -447,9 +437,6 @@ namespace ItirafEt.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -467,26 +454,13 @@ namespace ItirafEt.Api.Migrations
                     b.Property<Guid>("ReportingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ReviewedAdminId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ReviewedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
 
                     b.HasIndex("MessageId");
 
                     b.HasIndex("ReportTypeName");
 
                     b.HasIndex("ReportingUserId");
-
-                    b.HasIndex("ReviewedAdminId");
 
                     b.ToTable("MessageReports");
                 });
@@ -689,15 +663,6 @@ namespace ItirafEt.Api.Migrations
                     b.Property<Guid>("ReportingUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ReviewedAdminId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ReviewedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
@@ -705,8 +670,6 @@ namespace ItirafEt.Api.Migrations
                     b.HasIndex("ReportTypeName");
 
                     b.HasIndex("ReportingUserId");
-
-                    b.HasIndex("ReviewedAdminId");
 
                     b.ToTable("PostReports");
                 });
@@ -754,7 +717,7 @@ namespace ItirafEt.Api.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("ReportTypes");
+                    b.ToTable("ReportType");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.RoleType", b =>
@@ -1098,19 +1061,13 @@ namespace ItirafEt.Api.Migrations
                     b.HasOne("ItirafEt.Api.Data.Entities.Comment", "Comment")
                         .WithMany("CommentReports")
                         .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ItirafEt.Api.Data.Entities.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
-                        .WithMany("CommentReports")
+                        .WithMany()
                         .HasForeignKey("ReportTypeName")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.User", "ReportingUser")
@@ -1119,24 +1076,11 @@ namespace ItirafEt.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ItirafEt.Api.Data.Entities.User", "ReviewedAdmin")
-                        .WithMany()
-                        .HasForeignKey("ReviewedAdminId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ItirafEt.Api.Data.Entities.User", null)
-                        .WithMany("ReviewedCommentReports")
-                        .HasForeignKey("UserId");
-
                     b.Navigation("Comment");
-
-                    b.Navigation("Post");
 
                     b.Navigation("ReportType");
 
                     b.Navigation("ReportingUser");
-
-                    b.Navigation("ReviewedAdmin");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Conversation", b =>
@@ -1204,20 +1148,14 @@ namespace ItirafEt.Api.Migrations
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.MessageReport", b =>
                 {
-                    b.HasOne("ItirafEt.Api.Data.Entities.Conversation", "Conversation")
-                        .WithMany("MessageReports")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ItirafEt.Api.Data.Entities.Message", "Message")
-                        .WithMany()
+                        .WithMany("MessageReports")
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
-                        .WithMany("MessageReports")
+                        .WithMany()
                         .HasForeignKey("ReportTypeName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1228,19 +1166,11 @@ namespace ItirafEt.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ItirafEt.Api.Data.Entities.User", "ReviewedAdmin")
-                        .WithMany("ReviewedMessageReports")
-                        .HasForeignKey("ReviewedAdminId");
-
-                    b.Navigation("Conversation");
-
                     b.Navigation("Message");
 
                     b.Navigation("ReportType");
 
                     b.Navigation("ReportingUser");
-
-                    b.Navigation("ReviewedAdmin");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.PasswordResetToken", b =>
@@ -1328,7 +1258,7 @@ namespace ItirafEt.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("ItirafEt.Api.Data.Entities.ReportType", "ReportType")
-                        .WithMany("PostReports")
+                        .WithMany()
                         .HasForeignKey("ReportTypeName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1339,17 +1269,11 @@ namespace ItirafEt.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ItirafEt.Api.Data.Entities.User", "ReviewedAdmin")
-                        .WithMany("ReviewedPostReports")
-                        .HasForeignKey("ReviewedAdminId");
-
                     b.Navigation("Post");
 
                     b.Navigation("ReportType");
 
                     b.Navigation("ReportingUser");
-
-                    b.Navigation("ReviewedAdmin");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.User", b =>
@@ -1459,8 +1383,6 @@ namespace ItirafEt.Api.Migrations
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Conversation", b =>
                 {
-                    b.Navigation("MessageReports");
-
                     b.Navigation("Messages");
                 });
 
@@ -1472,6 +1394,8 @@ namespace ItirafEt.Api.Migrations
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Message", b =>
                 {
                     b.Navigation("MessageReactions");
+
+                    b.Navigation("MessageReports");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.Post", b =>
@@ -1492,15 +1416,6 @@ namespace ItirafEt.Api.Migrations
                     b.Navigation("MessageReactions");
 
                     b.Navigation("PostReactions");
-                });
-
-            modelBuilder.Entity("ItirafEt.Api.Data.Entities.ReportType", b =>
-                {
-                    b.Navigation("CommentReports");
-
-                    b.Navigation("MessageReports");
-
-                    b.Navigation("PostReports");
                 });
 
             modelBuilder.Entity("ItirafEt.Api.Data.Entities.RoleType", b =>
@@ -1543,12 +1458,6 @@ namespace ItirafEt.Api.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("ReadPosts");
-
-                    b.Navigation("ReviewedCommentReports");
-
-                    b.Navigation("ReviewedMessageReports");
-
-                    b.Navigation("ReviewedPostReports");
 
                     b.Navigation("Roles");
 

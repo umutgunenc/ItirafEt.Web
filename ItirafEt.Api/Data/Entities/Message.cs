@@ -8,7 +8,6 @@ namespace ItirafEt.Api.Data.Entities
         public Message()
         {
             MessageReactions = new HashSet<MessageReaction>();
-            MessageReports = new HashSet<MessageReport>();
         }
 
         [Key]
@@ -47,7 +46,6 @@ namespace ItirafEt.Api.Data.Entities
         public string? Thumbnail { get; set; }
 
         public virtual ICollection<MessageReaction> MessageReactions { get; set; }
-        public virtual ICollection<MessageReport> MessageReports { get; set; }
 
 
     }

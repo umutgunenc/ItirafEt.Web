@@ -29,7 +29,7 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        [MaxLength(1024)]
-        public string? ReportExplanation { get; set; }
+        //[MaxLength(1024)]
+        //public string? ReportExplanation { get; set; }
     }
 }

@@ -8,6 +8,7 @@ namespace ItirafEt.Api.Data.Entities
         public Conversation()
         {
             Messages = new HashSet<Message>();
+            MessageReports = new HashSet<MessageReport>();
         }
 
         [Key]
@@ -29,6 +30,9 @@ namespace ItirafEt.Api.Data.Entities
         public virtual User Responder { get; set; }
 
         public virtual ICollection<Message> Messages { get; set; }
+
+        public virtual ICollection<MessageReport> MessageReports { get; set; }
+
 
     }
 }

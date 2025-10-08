@@ -39,6 +39,8 @@ namespace ItirafEt.Api.Data
         public DbSet<ActivateAccountToken> ActivateAccountTokens { get; set; }
         public DbSet<UserLoginAttempt> UserLoginAttempts { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
+        public DbSet<ReportType> ReportTypes { get; set; }
+
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -141,6 +143,24 @@ namespace ItirafEt.Api.Data
                 .HasOne(cr => cr.ReportingUser)
                 .WithMany(u => u.CommentReports)
                 .HasForeignKey(cr => cr.ReportingUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CommentReport>()
+                .HasOne(cr => cr.Comment)
+                .WithMany(c => c.CommentReports)
+                .HasForeignKey(cr => cr.CommentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CommentReport>()
+                .HasOne(cr => cr.ReviewedAdmin)
+                .WithMany()
+                .HasForeignKey(cr => cr.ReviewedAdminId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CommentReport>()
+                .HasOne(cr => cr.ReportType)
+                .WithMany(rt => rt.CommentReports)
+                .HasForeignKey(cr => cr.ReportTypeName)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<MessageReport>()

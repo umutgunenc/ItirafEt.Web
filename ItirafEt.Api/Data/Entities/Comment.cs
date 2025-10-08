@@ -52,7 +52,5 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<CommentReport> CommentReports { get; set; }
 
 
-
-
     }
 }

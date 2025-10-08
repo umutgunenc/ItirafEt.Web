@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using ItirafEt.Shared.Enums;
 
 namespace ItirafEt.Api.Data.Entities
 {
@@ -21,9 +22,15 @@ namespace ItirafEt.Api.Data.Entities
         public virtual Comment Comment { get; set; }
 
         [Required]
-        public int ReportTypeId { get; set; }
+        public int PostId { get; set; }
 
-        [ForeignKey(nameof(ReportTypeId))]
+        [ForeignKey(nameof(PostId))]
+        public virtual Post Post { get; set; }
+
+        [Required]
+        public string ReportTypeName { get; set; }
+
+        [ForeignKey(nameof(ReportTypeName))]
         public virtual ReportType ReportType { get; set; }
 
         [MaxLength(1024)]
@@ -31,5 +38,15 @@ namespace ItirafEt.Api.Data.Entities
 
         [Required]
         public DateTime CreatedDate { get; set; }
+
+        [Required]
+        public ReportStatusEnum Status { get; set; } = ReportStatusEnum.Pending;
+        public Guid? ReviewedAdminId { get; set; }
+
+        [ForeignKey(nameof(ReviewedAdminId))]
+        public virtual User? ReviewedAdmin { get; set; }
+        public DateTime? ReviewedDate { get; set; }
+
+
     }
 }
