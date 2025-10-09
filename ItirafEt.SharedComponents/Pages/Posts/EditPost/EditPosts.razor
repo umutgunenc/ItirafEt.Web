@@ -6,67 +6,71 @@
 
 
 
-	@if (!_canUserEditMessage || _haveError)
-	{
-		<div class="alert alert-danger mt-3">
-			<strong>Hata!</strong><br />
-			<span>@_errorMessage</span>
+@if (!_canUserEditMessage || _haveError)
+{
+	<div class="alert alert-danger mt-3">
+		<strong>Hata!</strong><br />
+		<span>@_errorMessage</span>
+	</div>
+}
+else
+{
+	<EditForm Model="_editPostModel" OnValidSubmit="() => EditPostAsync(_editPostModel)">
+		<DataAnnotationsValidator />
+		<div class="my-3">
+			<label class="form-label">Kategori : </label>
+
+			<AutoCompleteComponent TItemType="CategoryViewModel"
+								   DisplayedItemsList="_categories"
+								   SelectedItem="_selectedCategory"
+								   SelectedItemChanged="CategoryChanged"
+								   StaticPlaceholder="Kategori Seçiniz"
+								   DisplayProperty="@(x => x.CategoryName)">
+			</AutoCompleteComponent>
 		</div>
-	}
-	else
-	{
-			<EditForm Model="_editPostModel" OnValidSubmit="() => EditPostAsync(_editPostModel)">
-				<DataAnnotationsValidator />
-				<div class="my-3">
-					<label class="form-label">Kategori : </label>
+		<ValidationMessage For="() => _editPostModel.CategoryId" />
 
-					<AutoCompleteComponent TItemType="CategoryViewModel"
-										   DisplayedItemsList="_categories"
-										   SelectedItem="_selectedCategory"
-										   SelectedItemChanged="CategoryChanged"
-										   StaticPlaceholder="Kategori Seçiniz"
-										   DisplayProperty="@(x => x.CategoryName)">
-					</AutoCompleteComponent>
+
+
+		<div class="my-3 form-floating">
+			<InputText @bind-Value="_editPostModel.Title" class="form-control" placeholder="" id="title" />
+			<label for="title">Başlık</label>
+
+			<ValidationMessage For="()=> _editPostModel.Title" />
+		</div>
+		<div class="my-3 form-floating">
+			<InputTextArea @bind-Value="_editPostModel.Content" class="form-control" placeholder="" id="content" style="min-height: 150px;"  />
+			<label for="content">İçerik</label>
+
+			<ValidationMessage For="()=> _editPostModel.Content" />
+		</div>
+
+		<div class="row mx-auto">
+			<button type="submit" class="btn btn-custom text-white fw-semibold" disabled="@_isBusy">
+				Düzenle <i class="bi bi-pen ms-2"></i>
+			</button>
+		</div>
+		@if (_isSucces != null)
+		{
+			@if (_isSucces == true)
+			{
+				<div class="alert alert-success mt-3">
+					<strong>Başarılı!</strong><br />
+					İtirafınız başarıyla düzenlendi.
 				</div>
-				<ValidationMessage For="() => _editPostModel.CategoryId" />
-
-				<div class="my-3">
-					<label class="form-label">Başlık : </label>
-					<InputText @bind-Value="_editPostModel.Title" class="form-control" />
-					<ValidationMessage For="() => _editPostModel.Title" />
+			}
+			else
+			{
+				<div class="alert alert-danger mt-3">
+					<strong>Hata!</strong><br />
+					<span>@_editErrorMessage</span>
 				</div>
-				<div class="my-3">
-					<label class="form-label">İçerik: </label>
-					<InputTextArea @bind-Value="_editPostModel.Content" class="form-control" rows="6" />
-					<ValidationMessage For="() => _editPostModel.Content" />
-				</div>
-
-				<div class="row mx-auto">
-					<button type="submit" class="btn btn-custom text-white fw-semibold" disabled="@_isBusy">
-						Düzenle <i class="bi bi-pen ms-2"></i>
-					</button>
-				</div>
-				@if (_isSucces != null)
-				{
-					@if (_isSucces == true)
-					{
-						<div class="alert alert-success mt-3">
-							<strong>Başarılı!</strong><br />
-							İtirafınız başarıyla düzenlendi.
-						</div>
-					}
-					else
-					{
-						<div class="alert alert-danger mt-3">
-							<strong>Hata!</strong><br />
-							<span>@_editErrorMessage</span>
-						</div>
-					}
-				}
+			}
+		}
 
 
-			</EditForm>
-	}
+	</EditForm>
+}
 
 
 

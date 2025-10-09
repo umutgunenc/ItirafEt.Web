@@ -88,31 +88,6 @@
 			}
 
 
-
-@* <EditForm Model="@changeUser" OnValidSubmit="ChangeUserRoleAsync">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label class="form-label">Kullanıcı Adı veya ID</label>
-        <InputText class="form-control" @bind-Value="changeUser.UserNameOrUserId" />
-        <ValidationMessage For="@(() => changeUser.UserNameOrUserId)" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Rol Seçiniz</label>
-        <InputSelect class="form-select" @bind-Value="changeUser.SelectedRoleName">
-            <option value="">-- Rol Seçiniz --</option>
-            @foreach (var role in changeUser.RolesNames)
-            {
-                <option value="@role">@role</option>
-            }
-        </InputSelect>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-</EditForm> *@
-
 @code {
 
 	private bool _isSelectUserBussy = false;
@@ -123,12 +98,6 @@
 	private string _successMessage = string.Empty;
 	private ChangeUserRoleViewModel _model = new();
 	private string MinDate => DateTime.Today.ToString("yyyy-MM-dd");
-
-	// protected override async Task OnInitializedAsync()
-	// {
-	// 	_model.RolesNames = new List<string> { "SuperAdmin", "Admin", "Moderator" };
-	// 	_model.SelectedRoleName = "Admin";
-	// }
 
 
 	private async Task ChangeUserRoleAsync()

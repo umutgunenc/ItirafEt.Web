@@ -302,6 +302,10 @@ namespace ItirafEt.Api.Services
 
             if (user == null)
                 return ApiResponses.Fail("Kullanıcı bulunamadı.");
+
+            if(model.NewPassword is null || model.NewPasswordConfirm is null)
+                return ApiResponses.Fail("Şifre alanı boş olamaz.");
+
             if (model.NewPassword != model.NewPasswordConfirm)
                 return ApiResponses.Fail("Şifreler eşleşmiyor.");
             if (model.NewPassword.Length < 8)
@@ -327,6 +331,9 @@ namespace ItirafEt.Api.Services
 
             if (passwordResetToken.ExpTime < DateTime.UtcNow)
                 return ApiResponses.Fail("Şifre sıfırlama linkiniz süresi dolmuş. Lütfen yeni bir talep oluşturun.");
+
+            if(model.Token is null)
+                return ApiResponses.Fail("Şifre sıfırlama linkiniz geçersiz. Lütfen tekrar talep oluşturun.");
 
             bool isTokenValid = PasswordResetTokenHelperService.VerifyToken(model.Token, passwordResetToken.TokenHash);
 

@@ -1,27 +1,20 @@
 ﻿@inherits LayoutComponentBase
-@inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject ISignalRService SignalRService
 @inject IDeviceService DeviceService
 @inject IJSRuntime JSRuntime
-@implements IAsyncDisposable
 
 
 <div class="page bg-secondary-subtle container-fluid p-0">
 	<NavMenu />
 	<div class="position-relative flex-grow-1" style="min-height: calc(100vh - 56px);">
-		@if (AuthStateProvider.IsInitializing)
-		{
-			<p>Initializing State ... </p>
-		}
-		else
-		{
+
 			<div class="container-fluid h-100 p-0">
 				<div class="d-flex h-100">
-					@if (_showVerticalAds)
-					{
-						<div class="col-2 d-none d-lg-flex justify-content-center position-relative">
-							<div style="position: fixed;
+				@if (_showVerticalAds)
+				{
+								<div class="col-2 d-none d-lg-flex justify-content-center position-relative">
+									<div style="position: fixed;
 										top: 50%;
 										transform: translateY(-50%);
 										height: calc(100dvh - 120px);
@@ -30,22 +23,22 @@
 										display: flex;
 										justify-content: center;
 										align-items: center;">
-								<div class="h-100 d-flex flex-column justify-content-center align-items-center">
-									<img src="_content/ItirafEt.SharedComponents/Ads/Adsiz.png" />
+										<div class="h-100 d-flex flex-column justify-content-center align-items-center">
+											<img src="_content/ItirafEt.SharedComponents/Ads/Adsiz.png" />
+										</div>
+									</div>
 								</div>
-							</div>
-						</div>
 
-					}
+				}
 					<div class="col-12 col-lg-8 p-0 mx-auto" style="padding-bottom:@(!_showBottomAds ? "0" : "100px !important")">
 						<div class="col mx-auto px-2 px-lg-0">
-							@Body
+						@Body
 						</div>
 					</div>
-					@if (_showVerticalAds)
-					{
-						<div class="col-2 d-none d-lg-flex justify-content-center position-relative">
-							<div style="position: fixed;
+				@if (_showVerticalAds)
+				{
+								<div class="col-2 d-none d-lg-flex justify-content-center position-relative">
+									<div style="position: fixed;
 										top: 50%;
 										transform: translateY(-50%);
 										height: calc(100dvh - 120px);
@@ -54,16 +47,16 @@
 										display: flex;
 										justify-content: center;
 										align-items: center;">
-								<div class="h-100 d-flex flex-column justify-content-center align-items-center">
-									<img src="_content/ItirafEt.SharedComponents/Ads/Adsiz.png" />
+										<div class="h-100 d-flex flex-column justify-content-center align-items-center">
+											<img src="_content/ItirafEt.SharedComponents/Ads/Adsiz.png" />
+										</div>
+									</div>
 								</div>
-							</div>
-						</div>
-					}
+				}
 
 				</div>
 			</div>
-		}
+
 	</div>
 
 
@@ -73,30 +66,30 @@
 			Ads Footer
 		</div> *@
 
-		<!-- Footer reklam: laptop ve üstü -->
+				<!-- Footer reklam: laptop ve üstü -->
 		@if (!_isMobile)
 		{
-			<div class="d-flex justify-content-center fixed-bottom" style="z-index: 1030;">
-				<div class="bg-dark text-white text-center"
-					 style="
+							<div class="d-flex justify-content-center fixed-bottom" style="z-index: 1030;">
+								<div class="bg-dark text-white text-center"
+									 style="
 					width: 970px;
 					height: 90px;
 					line-height: 90px;">
-					Ads Footer
-				</div>
-			</div>
+									Ads Footer
+								</div>
+							</div>
 		}
 		else
 		{
-			<div class="d-flex justify-content-center fixed-bottom" style="z-index: 1030;">
-				<div class="bg-dark text-white text-center"
-					 style="
+							<div class="d-flex justify-content-center fixed-bottom" style="z-index: 1030;">
+								<div class="bg-dark text-white text-center"
+									 style="
 					width: 320px;
 					height: 100px;
 					line-height: 100px;">
-					Ads Footer
-				</div>
-			</div>
+									Ads Footer
+								</div>
+							</div>
 		}
 	}
 </div>
@@ -104,9 +97,6 @@
 
 @code {
 
-	private HubConnection? _userBanHubConnection;
-	private AuthenticationStateChangedHandler? _authStateChangedHandler;
-	private CancellationTokenSource _cts = new();
 	private string _currentPath = "";
 	private string _previousPath = "";
 	private int _adsCounter = 1;
@@ -114,117 +104,22 @@
 	private bool _showVerticalAds = false;
 	private bool _showBottomAds = false;
 	private bool _isMobile = false;
-	private bool _isUserLoggedId = false;
-	private string _userRole = "";
-	private List<string> NoAddsRoles = new() { RoleNames.SuperAdmin, RoleNames.Admin, RoleNames.Moderator, RoleNames.SuperUser };
 
 
 	protected override async Task OnInitializedAsync()
 	{
-		_authStateChangedHandler = new AuthenticationStateChangedHandler(OnAuthStateChanged);
-		AuthStateProvider.AuthenticationStateChanged += _authStateChangedHandler;
-
-		while (AuthStateProvider.IsInitializing)
-			await Task.Delay(500);
-
-		if (AuthStateProvider.IsLoggedIn)
-		{
-			_isUserLoggedId = true;
-			_userRole = AuthStateProvider.User?.roleId ?? "";
-			await StartUserBanHubConnection();
-		}
 
 		AdjustAdsDisplay();
 
 		await DeviceService.InitializeAsync();
 		_isMobile = DeviceService.IsMobile;
 
-
-		UpdateCurrentPath(); // ilk path
+		UpdateCurrentPath();
 		_previousPath = _currentPath;
 
 		NavigationManager.LocationChanged += OnLocationChanged;
 
 		await InvokeAsync(StateHasChanged);
-	}
-
-	private async Task StartUserBanHubConnection()
-	{
-		try
-		{
-			if (_cts.IsCancellationRequested)
-				return;
-
-			_userBanHubConnection = await SignalRService.ConfigureHubConnectionAsync(HubType.BanUser, PageType.Layout);
-
-			if (_cts.IsCancellationRequested)
-				return;
-			_userBanHubConnection?.On<Guid>("UserBannedAsync", async (bannedUserId) =>
-			{
-				if (AuthStateProvider?.User?.id == bannedUserId.ToString())
-				{
-					await AuthStateProvider.SetLogoutAsync();
-					NavigationManager.NavigateTo("/", replace: true);
-				}
-			});
-
-			if (_cts.IsCancellationRequested)
-				return;
-
-			if (_userBanHubConnection.State == HubConnectionState.Disconnected)
-				await _userBanHubConnection.StartAsync(_cts.Token);
-
-			await _userBanHubConnection.SendAsync("JoinBanUserGroup", AuthStateProvider?.User?.id, _cts.Token);
-		}
-		catch (OperationCanceledException)
-		{
-			return;
-		}
-		catch (Exception ex)
-		{
-			await JSRuntime.InvokeVoidAsync("console.error", $"PostView Hub Start Error: {ex.Message}");
-		}
-
-	}
-	private void OnAuthStateChanged(Task<AuthenticationState> task)
-	{
-		_ = HandleAuthStateChangedAsync(task);
-	}
-
-	private async Task HandleAuthStateChangedAsync(Task<AuthenticationState> task)
-	{
-		var authState = await task;
-
-		if (authState.User.Identity?.IsAuthenticated == false)
-		{
-			_isUserLoggedId = false;
-			_userRole = "";
-			await DisposeAsync();
-		}
-		else
-		{
-			_cts.Dispose();
-			_cts = new CancellationTokenSource();
-			await StartUserBanHubConnection();
-			_userRole = AuthStateProvider.User?.roleId ?? "";
-			_isUserLoggedId = true;
-		}
-		AdjustAdsDisplay();
-		await InvokeAsync(StateHasChanged);
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		_cts.Cancel();
-
-		if (_userBanHubConnection is not null)
-		{
-			if (_userBanHubConnection.State == HubConnectionState.Connected)
-				await SignalRService.StopAsync(PageType.Layout, HubType.BanUser);
-			await SignalRService.DisposeAsync(PageType.Layout, HubType.BanUser);
-			_userBanHubConnection = null;
-		}
-		_cts.Dispose();
 	}
 
 	private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
@@ -247,30 +142,11 @@
 			.TrimEnd('/')
 			.ToLowerInvariant();
 
-		_hideAdsInSpecialPages = _currentPath.Contains("inbox") || _currentPath.Contains("conversation");
 	}
 
 	private void AdjustAdsDisplay()
 	{
-
-		if (_isUserLoggedId && NoAddsRoles.Contains(_userRole))
-		{
-			_showVerticalAds = false;
-			_showBottomAds = false;
-			return;
-		}
-		else
-		{
-			if (_hideAdsInSpecialPages)
-			{
-				_showVerticalAds = false;
-				_showBottomAds = false;
-			}
-			else
-			{
-				_showBottomAds = true;
-				_showVerticalAds = !_isMobile;
-			}
-		}
+		_showBottomAds = true;
+		_showVerticalAds = !_isMobile;
 	}
 }

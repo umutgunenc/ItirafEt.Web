@@ -181,7 +181,7 @@
 		}
 		catch (Exception ex)
 		{
-			await JSRuntime.InvokeVoidAsync("console.error", $"PostView Hub Start Error: {ex.Message}");
+			await JSRuntime.InvokeVoidAsync("console.error", $"UserBanHub Start Error: {ex.Message}");
 		}
 
 	}
@@ -214,16 +214,51 @@
 
 	public async ValueTask DisposeAsync()
 	{
-		_cts.Cancel();
+		// _cts.Cancel();
 
-		if (_userBanHubConnection is not null)
+		// if (_userBanHubConnection is not null)
+		// {
+		// 	if (_userBanHubConnection.State == HubConnectionState.Connected)
+		// 		await SignalRService.StopAsync(PageType.Layout, HubType.BanUser);
+		// 	await SignalRService.DisposeAsync(PageType.Layout, HubType.BanUser);
+		// 	_userBanHubConnection = null;
+		// }
+		// _cts.Dispose();
+
+		try
 		{
-			if (_userBanHubConnection.State == HubConnectionState.Connected)
-				await SignalRService.StopAsync(PageType.Layout, HubType.BanUser);
-			await SignalRService.DisposeAsync(PageType.Layout, HubType.BanUser);
-			_userBanHubConnection = null;
+			if (_cts != null && !_cts.IsCancellationRequested)
+			{
+				_cts.Cancel();
+			}
+
+			if (_userBanHubConnection is not null)
+			{
+				if (_userBanHubConnection.State == HubConnectionState.Connected)
+					await SignalRService.StopAsync(PageType.Layout, HubType.BanUser);
+
+				await SignalRService.DisposeAsync(PageType.Layout, HubType.BanUser);
+				_userBanHubConnection = null;
+			}
 		}
-		_cts.Dispose();
+		catch (ObjectDisposedException)
+		{
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("console.error", $"DisposeAsync Error1: {ex.Message}");
+		}
+		finally
+		{
+			try
+			{
+				_cts?.Dispose();
+			}
+			catch (Exception ex)
+			{
+				await JSRuntime.InvokeVoidAsync("console.error", $"DisposeAsync Error2: {ex.Message}");
+			}
+		}
 	}
 
 	private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)

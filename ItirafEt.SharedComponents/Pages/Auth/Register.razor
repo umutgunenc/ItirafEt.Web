@@ -5,165 +5,163 @@
 @inject NavigationManager NavigationManager
 
 <div class="px-2 px-lg-0">
-			<div class="mt-3">
-				<h1 class="text-center h3">Kayıt Ol</h1>
-			</div>
-			<hr />
+	<div class="mt-3">
+		<h1 class="text-center h3">Kayıt Ol</h1>
+	</div>
+	<hr />
 
-			<EditForm Model="_registerModel"
-			OnValidSubmit="RegisterAsync">
-				<DataAnnotationsValidator />
+	<EditForm Model="_registerModel"
+			  OnValidSubmit="RegisterAsync">
+		<DataAnnotationsValidator />
 
-				<div class="my-3 form-floating">
-		<InputText @bind-Value="_registerModel.UserName" class="form-control" placeholder="" id="userName"/>
-		<label for="userName">Kullanıcı Adı</label>
+		<div class="my-3 form-floating">
+			<InputText @bind-Value="_registerModel.UserName" class="form-control" placeholder="" id="userName" />
+			<label for="userName">Kullanıcı Adı</label>
 
-					<ValidationMessage For="()=> _registerModel.UserName" />
-				</div>
-
-	<div class="my-3 form-floating">
-		<InputText @bind-Value="_registerModel.Email" type="email" class="form-control" id="eMail" placeholder="" />
-		<label for="eMail">E-Mail</label>
-
-					<ValidationMessage For="()=> _registerModel.Email" />
-				</div>
-
-	<div class="my-3 form-floating">
-		<InputDate @bind-Value="_registerModel.BirthDate" max="@MaxBirthDate" class="form-control" placeholder="" id="birthDate"/>
-		<label for="birthDate">Dogum Tarihi</label>
-
-					<ValidationMessage For="()=> _registerModel.BirthDate" />
-				</div>
-
-	<div class="my-3 form-floating">
-					<InputSelect @bind-Value="_registerModel.GenderId" class="form-select" id="selectBox">
-		<option value="" disabled hidden selected> </option>  
-						<option value="@( (int)GenderEnum.Male )">Erkek</option>
-						<option value="@( (int)GenderEnum.Female )">Kadın</option>
-					</InputSelect>
-		<label for="selectBox">Cinsiyet seçiniz</label>
-
-					<ValidationMessage For="() => _registerModel.GenderId" />
-				</div>
-
-<div class=" mb-3">
-	<div class="input-group">
-		<div class="form-floating">
-			<InputText @bind-Value="_registerModel.Password"
-					   class="form-control"
-					   type="@(_showPassword ? "text" : "password")"
-					   id="password"
-					   placeholder="" />
-			<label for="password">Şifre</label>
+			<ValidationMessage For="()=> _registerModel.UserName" />
 		</div>
-<i class="input-group-text px-3 fs-5 @( _showPassword ? "bi-eye-slash" : "bi-eye")"
-   style="
+
+		<div class="my-3 form-floating">
+			<InputText @bind-Value="_registerModel.Email" type="email" class="form-control" id="eMail" placeholder="" />
+			<label for="eMail">E-Mail</label>
+
+			<ValidationMessage For="()=> _registerModel.Email" />
+		</div>
+
+		<div class="my-3 form-floating">
+			<InputDate @bind-Value="_registerModel.BirthDate" max="@MaxBirthDate" class="form-control" placeholder="" id="birthDate" />
+			<label for="birthDate">Dogum Tarihi</label>
+
+			<ValidationMessage For="()=> _registerModel.BirthDate" />
+		</div>
+
+		<div class="my-3 form-floating">
+			<InputSelect @bind-Value="_registerModel.GenderId" class="form-select" id="selectBox">
+				<option value="" disabled hidden selected> </option>
+				<option value="@( (int)GenderEnum.Male )">Erkek</option>
+				<option value="@( (int)GenderEnum.Female )">Kadın</option>
+			</InputSelect>
+			<label for="selectBox">Cinsiyet seçiniz</label>
+
+			<ValidationMessage For="() => _registerModel.GenderId" />
+		</div>
+
+		<div class=" mb-3">
+			<div class="input-group">
+				<div class="form-floating">
+					<InputText @bind-Value="_registerModel.Password"
+							   class="form-control"
+							   type="@(_showPassword ? "text" : "password")"
+							   id="password"
+							   placeholder="" />
+					<label for="password">Şifre</label>
+				</div>
+				<i class="input-group-text px-3 fs-5 @( _showPassword ? "bi-eye-slash" : "bi-eye")"
+				   style="
        cursor:pointer;
        color:@(_showPassword ? "white" : "#6c757d");
        background:@(_showPassword ? "linear-gradient(135deg, #4b6cb7 0%, #182848 100%)" : "#fff");
    "
-   @onclick="TogglePasswordVisibility">
-</i>
+				   @onclick="TogglePasswordVisibility">
+				</i>
 
-	</div>
-	<ValidationMessage For="()=> _registerModel.Password" />
+			</div>
+			<ValidationMessage For="()=> _registerModel.Password" />
 
-	</div>
-
-<div class=" mb-3">
-	<div class="input-group">
-		<div class="form-floating">
-			<InputText @bind-Value="_registerModel.PasswordConfirm"
-					   class="form-control"
-					   type="@(_showPasswordConfirm ? "text" : "password")"
-					   id="passwordConfirm"
-					   placeholder="" />
-			<label for="passwordConfirm">Şifre Tekrarı</label>
 		</div>
-<i class="input-group-text px-3 fs-5 @( _showPasswordConfirm ? "bi-eye-slash" : "bi-eye")"
-   style="
+
+		<div class=" mb-3">
+			<div class="input-group">
+				<div class="form-floating">
+					<InputText @bind-Value="_registerModel.PasswordConfirm"
+							   class="form-control"
+							   type="@(_showPasswordConfirm ? "text" : "password")"
+							   id="passwordConfirm"
+							   placeholder="" />
+					<label for="passwordConfirm">Şifre Tekrarı</label>
+				</div>
+				<i class="input-group-text px-3 fs-5 @( _showPasswordConfirm ? "bi-eye-slash" : "bi-eye")"
+				   style="
        cursor:pointer;
        color:@(_showPasswordConfirm ? "white" : "#6c757d");
        background:@(_showPasswordConfirm ? "linear-gradient(135deg, #4b6cb7 0%, #182848 100%)" : "#fff");
    "
-   @onclick="TogglePasswordConfirmVisibility">
-</i>
+				   @onclick="TogglePasswordConfirmVisibility">
+				</i>
 
 
-@* 		<button type="button" class="btn btn-outline-secondary" @onclick="TogglePasswordConfirmVisibility">
-			<i class="@(_showPasswordConfirm ? "bi bi-eye-slash" : "bi bi-eye")"></i>
-		</button> *@
 
-	</div>
-	<ValidationMessage For="()=> _registerModel.PasswordConfirm" />
 
-	</div>
+			</div>
+			<ValidationMessage For="()=> _registerModel.PasswordConfirm" />
 
-				<div class="form-check mb-3">
-					<InputCheckbox @bind-Value="_registerModel.isTermsAccepted" class="form-check-input" />
-					<label class="form-check-label">
-						<small style="cursor:pointer" @onclick="ToggleTermsOfUse">Kullanım Koşulları ve Gizlilik Politikasını okudum, kabul ediyorum.</small>
-						<small style="cursor:pointer; color:darkblue; font-weight:600; text-decoration:underline" @onclick=_termOfUserModal.Open>Kullanım Koşulları</small>
-						<span>  |  </span>
-						<small style="cursor:pointer; color:darkblue; font-weight:600; text-decoration:underline" @onclick=_privacyModal.Open>Gizlilik Politikası</small>
-					</label>
+		</div>
 
-					<ValidationMessage For="()=> _registerModel.isTermsAccepted" />
-				</div>
+		<div class="form-check mb-3">
+			<InputCheckbox @bind-Value="_registerModel.isTermsAccepted" class="form-check-input" />
+			<label class="form-check-label">
+				<small style="cursor:pointer" @onclick="ToggleTermsOfUse">Kullanım Koşulları ve Gizlilik Politikasını okudum, kabul ediyorum.</small>
+				<small style="cursor:pointer; color:darkblue; font-weight:600; text-decoration:underline" @onclick=_termOfUserModal.Open>Kullanım Koşulları</small>
+				<span>  |  </span>
+				<small style="cursor:pointer; color:darkblue; font-weight:600; text-decoration:underline" @onclick=_privacyModal.Open>Gizlilik Politikası</small>
+			</label>
+
+			<ValidationMessage For="()=> _registerModel.isTermsAccepted" />
+		</div>
 
 
 		@if (_errorMessage != null)
 		{
-										<div class="mb-3 text-bg-danger text-white p-2 rounded">
-											<p class="mb-0">@_errorMessage</p>
-										</div>
+			<div class="mb-3 text-bg-danger text-white p-2 rounded">
+				<p class="mb-0">@_errorMessage</p>
+			</div>
 		}
 
 		@if (_isRegistered)
 		{
-										<div class="alert alert-success d-flex align-items-center justify-content-between shadow rounded p-4 mb-4">
-											<div>
-												<h5 class="mb-2"><i class="bi bi-check-circle-fill me-2"></i> Kayıt Başarılı</h5>
-												<p class="mb-1">Kayıt işleminiz başarıyla tamamlandı.</p>
-												<p class="mb-1"><strong>@_timeout</strong> saniye sonra otomatik olarak giriş sayfasına yönlendirileceksiniz.</p>
-												<p class="mb-0">
-													<a href="/login" class="btn btn-custom text-white btn-sm">Hemen Giriş Yap</a>
-												</p>
-											</div>
-										</div>
+			<div class="alert alert-success d-flex align-items-center justify-content-between shadow rounded p-4 mb-4">
+				<div>
+					<h5 class="mb-2"><i class="bi bi-check-circle-fill me-2"></i> Kayıt Başarılı</h5>
+					<p class="mb-1">Kayıt işleminiz başarıyla tamamlandı.</p>
+					<p class="mb-1"><strong>@_timeout</strong> saniye sonra otomatik olarak giriş sayfasına yönlendirileceksiniz.</p>
+					<p class="mb-0">
+						<a href="/login" class="btn btn-custom text-white btn-sm">Hemen Giriş Yap</a>
+					</p>
+				</div>
+			</div>
 		}
 
-				<div class="d-grid mb-3">
+		<div class="d-grid mb-3">
 			@if (!_isBusy)
 			{
-											<button type="submit" class="btn btn-custom text-white">Kayıt Ol</button>
+				<button type="submit" class="btn btn-custom text-white">Kayıt Ol</button>
 			}
 			else
 			{
-											<button class="btn btn-custom text-white" type="button" disabled>
-												<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-												Kayıt İşlemi Devam Ediyor
-											</button>
+				<button class="btn btn-custom text-white" type="button" disabled>
+					<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+					Kayıt İşlemi Devam Ediyor
+				</button>
 			}
-				</div>
+		</div>
 
-				<hr />
+		<hr />
 
-				<div class="d-grid mb-3">
-					<button type="button" class="btn btn-google w-100 mb-3">
-						<i class="bi bi-google"></i> Google ile Kayıt Ol
-					</button>
-					<button type="button" class="btn btn-facebook w-100">
-						<i class="bi bi-facebook"></i> Facebook ile Kayıt Ol
-					</button>
-				</div>
+		<div class="d-grid mb-3">
+			<button type="button" class="btn btn-google w-100 mb-3">
+				<i class="bi bi-google"></i> Google ile Kayıt Ol
+			</button>
+			<button type="button" class="btn btn-facebook w-100">
+				<i class="bi bi-facebook"></i> Facebook ile Kayıt Ol
+			</button>
+		</div>
 
-				<div class="text-center">
-					<small>Zaten hesabınız var mı? <a href="/login">Giriş Yap</a></small>
-				</div>
-			</EditForm>
+		<div class="text-center">
+			<small>Zaten hesabınız var mı? <a href="/login">Giriş Yap</a></small>
+		</div>
+	</EditForm>
 
-				</div>
+</div>
 
 <ModalComponent @ref="_privacyModal" Title="Gizlik Politikası" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>

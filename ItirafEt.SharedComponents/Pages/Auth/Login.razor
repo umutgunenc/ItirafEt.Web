@@ -19,24 +19,39 @@
 		  OnValidSubmit="LoginAsync">
 	<DataAnnotationsValidator />
 
-	<div class="my-3">
-		<InputText @bind-Value="_model.EmailOrUserName" class="form-control" placeholder="Kullanıcı Adı veya E-Mail Adresi" />
+	<div class="my-3 form-floating">
+		<InputText @bind-Value="_model.EmailOrUserName" class="form-control" placeholder="" id="userName" />
+		<label for="userName">Kullanıcı Adı veya E-Mail Adresi</label>
+
 		<ValidationMessage For="()=> _model.EmailOrUserName" />
 	</div>
-	<div class="my-3">
-		<div class="input-group">
 
-			<InputText @bind-Value="_model.Password"
-					   class="form-control"
-					   type="@(_showPassword ? "text" : "password")"
-					   placeholder="Şifre" />
-			<button type="button" class="btn btn-outline-secondary" @onclick="TogglePasswordVisibility">
-				<i class="@(_showPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
-			</button>
+	<div class=" mb-3">
+		<div class="input-group">
+			<div class="form-floating">
+				<InputText @bind-Value="_model.Password"
+						   class="form-control"
+						   type="@(_showPassword ? "text" : "password")"
+						   id="password"
+						   placeholder="" />
+				<label for="password">Şifre</label>
+			</div>
+			<i class="input-group-text px-3 fs-5 @( _showPassword ? "bi-eye-slash" : "bi-eye")"
+			   style="
+       cursor:pointer;
+       color:@(_showPassword ? "white" : "#6c757d");
+       background:@(_showPassword ? "linear-gradient(135deg, #4b6cb7 0%, #182848 100%)" : "#fff");
+   "
+			   @onclick="TogglePasswordVisibility">
+			</i>
+
 		</div>
 		<ValidationMessage For="()=> _model.Password" />
 
 	</div>
+
+
+
 
 	@if (_errorMessage != null)
 	{

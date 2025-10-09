@@ -7,94 +7,98 @@
 
 
 
-	@if (!_isCategoryLoaded)
-	{
-			<div class="mt-3">
-				<h1 class="text-center h3">İtiraf Et</h1>
+@if (!_isCategoryLoaded)
+{
+	<div class="mt-3">
+		<h1 class="text-center h3">İtiraf Et</h1>
+	</div>
+	<hr />
+	<div class="alert alert-danger">
+		<p>Kategoriler yüklenirken bir hata oluştu.</p>
+		<p>@_errorMessage</p>
+		<p>
+			(<a href="/">Ana Sayfaya Dönmek İçin Tıklayın</a>)
+		</p>
+	</div>
+}
+else
+{
+
+	<div class="mt-3">
+		<h1 class="text-center h3">İtiraf Et</h1>
+	</div>
+	<hr />
+	<EditForm Model="_postModel" OnValidSubmit="() => CreatePostAsync(_postModel)">
+		<DataAnnotationsValidator />
+		<div class="my-3">
+			<AutoCompleteComponent TItemType="CategoryViewModel"
+								   DisplayedItemsList="_categories"
+								   SelectedItem="_selectedCategory"
+								   SelectedItemChanged="CategorySelected"
+								   StaticPlaceholder="Kategori Seçiniz"
+								   DisplayProperty="@(x => x.CategoryName)">
+			</AutoCompleteComponent>
+		</div>
+		<ValidationMessage For="() => _postModel.CategoryId" />
+		@if (_selectedCategory != null)
+		{
+
+			<div class="my-3 form-floating">
+				<InputText @bind-Value="_postModel.Title" class="form-control" placeholder="" id="title" />
+				<label for="title">Başlık</label>
+
+				<ValidationMessage For="()=> _postModel.Title" />
 			</div>
-			<hr />
-			<div class="alert alert-danger">
-				<p>Kategoriler yüklenirken bir hata oluştu.</p>
-				<p>@_errorMessage</p>
+			<div class="my-3 form-floating">
+				<InputTextArea @bind-Value="_postModel.Content" class="form-control" placeholder="" id="content" style="min-height: 150px;"  />
+				<label for="content">İçerik</label>
+
+				<ValidationMessage For="()=> _postModel.Content" />
+			</div>
+
+
+			@if (_errorMessage != null)
+			{
+				<div class="mb-3 text-bg-danger text-white p-2">
+					<p>@_errorMessage</p>
+				</div>
+			}
+
+			<div class="row mb-3 mx-auto">
+				@if (!_isBusy && !_isSuccess)
+				{
+					<button type="submit" class="btn blue text-white fw-semibold">İtiraf Et</button>
+				}
+				else if (_isSuccess)
+				{
+					<button class="btn blue text-white fw-semibold" type="button" disabled>
+						İtiraf Et
+					</button>
+				}
+				else
+				{
+					<button class="btn blue text-white fw-semibold" type="button" disabled>
+						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+						İtiraf ediliyor.
+					</button>
+				}
+			</div>
+		}
+	</EditForm>
+
+	<div class="my-3">
+		@if (_isSuccess)
+		{
+			<div class="alert alert-success">
+				<p>İtirafınız başarıyla gönderildi.</p>
+				<p>@_successMessage</p>
 				<p>
-					(<a href="/">Ana Sayfaya Dönmek İçin Tıklayın</a>)
+					(<a href="@($"/posts/{_latestPostId}")">Hemen Gitmek İçin Tıklayın</a>)
 				</p>
 			</div>
-	}
-	else
-	{
-
-			<div class="mt-3">
-				<h1 class="text-center h3">İtiraf Et</h1>
-			</div>
-			<hr />
-			<EditForm Model="_postModel" OnValidSubmit="() => CreatePostAsync(_postModel)">
-				<DataAnnotationsValidator />
-				<div class="my-3">
-					<AutoCompleteComponent TItemType="CategoryViewModel"
-										   DisplayedItemsList="_categories"
-										   SelectedItem="_selectedCategory"
-										   SelectedItemChanged="CategorySelected"
-										   StaticPlaceholder="Kategori Seçiniz"
-										   DisplayProperty="@(x => x.CategoryName)">
-					</AutoCompleteComponent>
-				</div>
-				<ValidationMessage For="() => _postModel.CategoryId" />
-				@if (_selectedCategory != null)
-				{
-					<div class="my-3">
-						<label class="form-label">Başlık : </label>
-						<InputText @bind-Value="_postModel.Title" class="form-control" />
-						<ValidationMessage For="() => _postModel.Title" />
-					</div>
-					<div class="my-3">
-						<label class="form-label">İçerik: </label>
-						<InputTextArea @bind-Value="_postModel.Content" class="form-control" rows="6" />
-						<ValidationMessage For="() => _postModel.Content" />
-					</div>
-
-					@if (_errorMessage != null)
-					{
-						<div class="mb-3 text-bg-danger text-white p-2">
-							<p>@_errorMessage</p>
-						</div>
-					}
-
-					<div class="row mb-3 mx-auto">
-						@if (!_isBusy && !_isSuccess)
-						{
-							<button type="submit" class="btn blue text-white fw-semibold">İtiraf Et</button>
-						}
-						else if (_isSuccess)
-						{
-							<button class="btn blue text-white fw-semibold" type="button" disabled>
-								İtiraf Et
-							</button>
-						}
-						else
-						{
-							<button class="btn blue text-white fw-semibold" type="button" disabled>
-								<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-								İtiraf ediliyor.
-							</button>
-						}
-					</div>
-				}
-			</EditForm>
-
-			<div class="my-3">
-				@if (_isSuccess)
-				{
-					<div class="alert alert-success">
-						<p>İtirafınız başarıyla gönderildi.</p>
-						<p>@_successMessage</p>
-						<p>
-							(<a href="@($"/posts/{_latestPostId}")">Hemen Gitmek İçin Tıklayın</a>)
-						</p>
-					</div>
-				}
-			</div>
-	}
+		}
+	</div>
+}
 
 
 @code {
