@@ -22,6 +22,21 @@
     border: none;
 }
 
+.btn-custom-green {
+    background: linear-gradient(135deg, #28a745 0%, #145c32 100%);
+    color: white;
+    border-radius: 8px;
+    transition: all 0.1s ease;
+    padding: 8px 16px;
+    border: none;
+}
+
+    .btn-custom-green:hover {
+        background: linear-gradient(135deg, #45c261 0%, #1e7d3b 100%);
+        box-shadow: 0 4px 15px rgba(72, 201, 176, 0.3);
+        transform: translateY(-1px);
+    }
+
 .btn-custom-circle {
     background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
     color: white;

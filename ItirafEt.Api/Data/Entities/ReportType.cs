@@ -16,6 +16,13 @@ namespace ItirafEt.Api.Data.Entities
         [Key, Required, MaxLength(64)]
         public string Name { get; set; }
 
+        [Required]
+        public bool IsActive { get; set; }
+
+        [MaxLength(128)]
+        public string? IconUrl { get; set; }
+
+
         public virtual ICollection<CommentReport> CommentReports { get; set; }
         public virtual ICollection<MessageReport> MessageReports { get; set; }
         public virtual ICollection<PostReport> PostReports { get; set; }
