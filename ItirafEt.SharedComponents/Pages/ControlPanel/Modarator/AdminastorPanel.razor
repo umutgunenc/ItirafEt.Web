@@ -1,104 +1,140 @@
 ﻿@page "/admin/adminastorPanel"
 
 
-								<div class="mt-3">
+<div class="mt-3">
 
-		<h1 class="mb-0 fw-bold text-dark-emphasis text-center">
-			<i class="bi bi-person-gear me-2"></i>
-			Yönetici Paneli
-		</h1>			</div>	<hr />
-	<AuthorizeView Context="Categories">
-		<Authorized>
-			<AuthorizeView Roles="@SuperAdminAdmin">
-				<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToggleCategory">
-					<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
-						<i class="bi bi-folder2-open me-2"></i>
-						Kategori İşlemleri
-						<i class="bi ms-auto @(isCategoryVisible ? "bi-chevron-up" : "bi-chevron-down") fs-5 text-muted"></i>
-					</h3>
-				</div>
+	<h1 class="mb-0 fw-bold text-dark-emphasis text-center">
+		<i class="bi bi-person-gear me-2"></i>
+		Yönetici Paneli
+	</h1>
+</div>
+<hr />
+<AuthorizeView Context="Categories">
+	<Authorized>
+		<AuthorizeView Roles="@SuperAdminAdmin">
+			<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToggleCategory">
+				<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
+					<i class="bi bi-folder2-open me-2"></i>
+					Kategori İşlemleri
+					<i class="bi ms-auto @(isCategoryVisible ? "bi-chevron-up" : "bi-chevron-down") fs-5 text-muted"></i>
+				</h3>
+			</div>
 
-				@if (isCategoryVisible)
-				{
+			@if (isCategoryVisible)
+			{
 
-						<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
+				<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
 
-							<NavLink class="text-decoration-none" href="admin/createcategory">
-								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
-									<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Ekle</span>
-								</div>
-							</NavLink>
-							<NavLink class="text-decoration-none" href="admin/editcategory">
-								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-									<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
-									<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Düzenle</span>
-								</div>
-							</NavLink>
-
+					<NavLink class="text-decoration-none" href="admin/createcategory">
+						<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+							<i class="bi bi-plus-circle text-primary  fs-4 me-3"></i>
+							<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Ekle</span>
 						</div>
+					</NavLink>
+					<NavLink class="text-decoration-none" href="admin/editcategory">
+						<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+								<i class="bi bi-pencil-square text-primary  fs-4 me-3"></i>
+							<span class="fs-6 fw-semibold text-dark-emphasis">Kategori Düzenle</span>
+						</div>
+					</NavLink>
 
-				}
-			</AuthorizeView>
-		</Authorized>
-	</AuthorizeView>
-
-	<AuthorizeView Context="Users">
-		<Authorized>
-			<AuthorizeView Roles="@SuperAdminAdminModerator">
-				<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToggleUsers">
-					<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
-						<i class="bi bi-people me-2"></i>
-						Kullanıcı İşlemleri
-						<i class="bi ms-auto @(isUsersVisible ? "bi-chevron-up" : "bi-chevron-down") fs-5 text-muted"></i>
-					</h3>
 				</div>
 
-				@if (isUsersVisible)
-				{
+			}
+		</AuthorizeView>
+	</Authorized>
+</AuthorizeView>
 
-					<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
-						<AuthorizeView Roles="@SuperAdminAdminModerator" Context="SuperAdminAdminModerator">
+<AuthorizeView Context="Users">
+	<Authorized>
+		<AuthorizeView Roles="@SuperAdminAdminModerator">
+			<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToggleUsers">
+				<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
+					<i class="bi bi-people me-2"></i>
+					Kullanıcı İşlemleri
+					<i class="bi ms-auto @(isUsersVisible ? "bi-chevron-up" : "bi-chevron-down") fs-5 text-muted"></i>
+				</h3>
+			</div>
 
-							<NavLink class="text-decoration-none" href="admin/banUsers">
-								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-									<i class="bi bi-pencil-square text-primary fs-4 me-3"></i>
-									<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıyı Banla</span>
-								</div>
-							</NavLink>
+			@if (isUsersVisible)
+			{
 
-							<NavLink class="text-decoration-none" href="admin/checkComplaint">
-								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
-									<span class="fs-6 fw-semibold text-dark-emphasis">Şikayetleri Gör</span>
-								</div>
-							</NavLink>
-						</AuthorizeView>
-						<AuthorizeView Roles="@SuperAdmin" Context="SuperAdmin">
-							<NavLink class="text-decoration-none" href="admin/changeUserRole">
-								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
-									<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcı Rolünü Değiştir</span>
-								</div>
-							</NavLink>
-							<NavLink class="text-decoration-none" href="admin/usersWithRoles">
-								<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
-									<i class="bi bi-plus-circle text-success fs-4 me-3"></i>
-									<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıları Gör</span>
-								</div>
-							</NavLink>
-						</AuthorizeView>
-					</div>
-				}
-			</AuthorizeView>
-		</Authorized>
-	</AuthorizeView>
+				<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
+					<AuthorizeView Roles="@SuperAdminAdminModerator" Context="SuperAdminAdminModerator">
 
+						<NavLink class="text-decoration-none" href="admin/banUsers">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-pencil-square text-primary  fs-4 me-3"></i>
+								<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıyı Banla</span>
+							</div>
+						</NavLink>
+
+					</AuthorizeView>
+					<AuthorizeView Roles="@SuperAdmin" Context="SuperAdmin">
+						<NavLink class="text-decoration-none" href="admin/changeUserRole">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+								<i class="bi bi-recycle text-primary  fs-4 me-3"></i>
+								<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcı Rolünü Değiştir</span>
+							</div>
+						</NavLink>
+						<NavLink class="text-decoration-none" href="admin/usersWithRoles">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+										<i class="bi bi-search text-primary  fs-4 me-3"></i>
+								<span class="fs-6 fw-semibold text-dark-emphasis">Kullanıcıları Gör</span>
+							</div>
+						</NavLink>
+					</AuthorizeView>
+				</div>
+			}
+		</AuthorizeView>
+	</Authorized>
+</AuthorizeView>
+
+
+<AuthorizeView Context="Reports">
+	<Authorized>
+		<AuthorizeView Roles="@SuperAdminAdminModerator">
+			<div class="border-start border-5 border-danger ps-3 py-2 mb-4 blue" @onclick="ToogleReports">
+				<h3 class="mb-0 fw-bold text-white d-flex align-items-center" style="cursor: pointer;">
+					<i class="bi bi-exclamation-circle me-2"></i>
+					Şikayet İşlemleri
+					<i class="bi ms-auto @(isReportsVisible ? "bi-chevron-up" : "bi-chevron-down") fs-5 text-muted"></i>
+				</h3>
+			</div>
+
+			@if (isReportsVisible)
+			{
+
+				<div class="d-flex flex-column gap-3 mb-4 transition-opacity">
+					<AuthorizeView Roles="@SuperAdminAdminModerator" Context="SuperAdminAdminModerator">
+
+						<NavLink class="text-decoration-none" href="admin/CheckReports">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-search text-primary  fs-4 me-3"></i>
+								<span class="fs-6 fw-semibold text-dark-emphasis">Şikayetleri Gör</span>
+							</div>
+						</NavLink>
+
+					</AuthorizeView>
+					<AuthorizeView Roles="@SuperAdminAdmin" Context="SuperAdminAdmin">
+						<NavLink class="text-decoration-none" href="admin/CreateReportType">
+							<div class="card shadow-md border-0 bg-light-subtle d-flex flex-row align-items-center p-2 rounded-3">
+									<i class="bi bi-hammer text-primary  fs-4 me-3"></i>
+								<span class="fs-6 fw-semibold text-dark-emphasis">Şikayet Türü Oluştur</span>
+							</div>
+						</NavLink>
+					</AuthorizeView>
+				</div>
+			}
+		</AuthorizeView>
+	</Authorized>
+</AuthorizeView>
 
 
 @code {
 	private bool isCategoryVisible = false;
 	private bool isUsersVisible = false;
+	private bool isReportsVisible = false;
 
 	private string SuperAdminAdminModerator = string.Join(",",
 		nameof(UserRoleEnum.SuperAdmin),
@@ -120,6 +156,11 @@
 	private void ToggleUsers()
 	{
 		isUsersVisible = !isUsersVisible;
+	}
+
+	private void ToogleReports()
+	{
+		isReportsVisible = !isReportsVisible;
 	}
 
 

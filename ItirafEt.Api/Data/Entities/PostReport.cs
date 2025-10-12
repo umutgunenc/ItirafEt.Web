@@ -22,9 +22,9 @@ namespace ItirafEt.Api.Data.Entities
         public virtual Post Post { get; set; }
 
         [Required]
-        public string ReportTypeName { get; set; }
+        public int ReportTypeId { get; set; }
 
-        [ForeignKey(nameof(ReportTypeName))]
+        [ForeignKey(nameof(ReportTypeId))]
         public virtual ReportType ReportType { get; set; }
 
         [MaxLength(1024)]

@@ -1,0 +1,240 @@
+﻿@page "/admin/CreateReportType"
+@inject IReportApi ReportApi
+
+<div class="px-1">
+	<div class="mt-3">
+		<h1 class="text-center h3">Sikayet  Ekle</h1>
+	</div>
+	<hr />
+
+	<EditForm Model="_model"
+	OnValidSubmit="async () => await SaveReportAsync()">
+
+		<DataAnnotationsValidator />
+
+
+		<div class="my-3 form-floating">
+			<InputText @bind-Value="_model.Name" class="form-control" placeholder="" id="name" />
+			<label for="name">Şikayet Adı</label>
+
+			<ValidationMessage For="()=> _model.Name" />
+		</div>
+
+		<div class="my-3 form-floating">
+			<InputText @bind-Value="_model.IconUrl" class="form-control" placeholder="" id="icon" />
+			<label for="icon">İkon</label>
+
+			<ValidationMessage For="()=> _model.IconUrl" />
+		</div>
+
+
+		<div class="my-3">
+			@if (_successMessage != null)
+			{
+					<div class="alert alert-success col">
+					@_successMessage
+					</div>
+			}
+			@if (_errorMessage != null)
+			{
+					<div class="alert alert-danger col">
+					@_errorMessage
+					</div>
+			}
+		</div>
+
+		<div class="mb-3">
+			<button type="submit" class="btn-custom col-12" disabled="@_isBusy">
+				@if (!_isBusy)
+				{
+						<i class="bi bi-save2"></i>
+						<span>Kaydet</span>
+				}
+				else
+				{
+						<div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+						<span>Kayıt ediliyor...</span>
+				}
+			</button>
+
+		</div>
+	</EditForm>
+	<hr />
+
+
+	<div class="text-center overflow-x-auto" style="white-space: nowrap;">
+
+		<div class="row fw-bold p-0 m-0 mb-3 flex-nowrap text-nowrap border-bottom pb-1">
+			<div class="col-4 p-1" style="min-width: 220px;">Şikayet Adı</div>
+			<div class="col-2 p-1" style="min-width: 110px;">Aktif Mi</div>
+			<div class="col-4 p-1" style="min-width: 220px;">Icon Url</div>
+			<div class="col-2 p-1" style="min-width: 110px;"></div>
+		</div>
+
+		@foreach (var reportType in _reportTypeList)
+		{
+				<EditForm Model="reportType"
+				OnValidSubmit="async () => await SaveChangesReportType(reportType)">
+					<DataAnnotationsValidator />
+
+					<div class="row align-items-center p-0 m-0 mb-1 flex-nowrap text-nowrap">
+
+						<InputNumber class="d-none" @bind-Value="reportType.Id"></InputNumber>
+
+						<div class="col-4 p-1" style="min-width: 220px;">
+							<InputText @bind-Value="reportType.Name" class="form-control" />
+						</div>
+
+						<div class="col-2 text-center p-1" style="min-width: 110px;">
+						@if (reportType.IsActive)
+						{
+									<button type="button"
+									class="btn-custom-red"
+									@onclick="() => ToggleActiveStatus(reportType)">
+										Pasif Yap
+									</button>
+						}
+						else
+						{
+									<button type="button"
+									class="btn-custom"
+									@onclick="() => ToggleActiveStatus(reportType)">
+										Aktif Yap
+									</button>
+						}
+
+							<InputCheckbox class="d-none" @bind-Value="reportType.IsActive" />
+						</div>
+
+						<div class="col-4 p-1" style="min-width: 220px;">
+							<div class="d-grid gap-2" style="grid-template-columns: auto auto 1fr; align-items: center;">
+								<NavLink href="https://icons.getbootstrap.com/"
+								target="_blank"
+								class="text-decoration-none"
+								title="Bootstrap ikonlarını aç">
+									<i class="bi bi-question-diamond"></i>
+								</NavLink>
+
+								<i class="@reportType.IconUrl fs-5"></i>
+
+								<InputText class="form-control form-control"
+								@bind-Value="reportType.IconUrl" />
+							</div>
+						</div>
+
+						<div class="col-2 d-flex justify-content-end p-1 pe-0" style="min-width: 110px;">
+							<button type="submit" class="btn-custom-green">Kaydet</button>
+						</div>
+
+					</div>
+
+					<div class="text-start ps-1">
+						<ValidationMessage For="@(() => reportType.Name)" />
+						<ValidationMessage For="@(() => reportType.IconUrl)" />
+					</div>
+				</EditForm>
+		}
+	</div>
+
+</div>
+
+
+@code {
+
+	private CreateReportViewModel _model = new();
+	private List<CreateReportViewModel> _reportTypeList = new();
+	private bool _isBusy = false;
+	private string? _errorMessage = null;
+	private string? _successMessage = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadReportTypesAsync();
+	}
+
+
+	private async Task SaveReportAsync()
+	{
+		_isBusy = true;
+		_errorMessage = null;
+		_successMessage = null;
+		await InvokeAsync(StateHasChanged);
+		try
+		{
+			var response = await ReportApi.CreateReportTypeAsync(_model);
+			if (response.IsSuccess)
+			{
+				_reportTypeList.Add(response.Data);
+				_successMessage = $"{response.Data.Name} şikayeti başarı ile eklendi.";
+			}
+			else
+				_errorMessage = response.ErrorMessage;
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+			_successMessage = null;
+		}
+		finally
+		{
+			_isBusy = false;
+			_model = new();
+			await InvokeAsync(StateHasChanged);
+		}
+
+	}
+
+	private async Task SaveChangesReportType(CreateReportViewModel report)
+	{
+		_errorMessage = null;
+		_successMessage = null;
+		try
+		{
+			var response = await ReportApi.EditReportTypeAsync(report);
+			if (response.IsSuccess)
+			{
+				report = response.Data;
+				_successMessage = $"Şikayet bilgileri değiştirildi.";
+			}
+			else
+				_errorMessage = response.ErrorMessage;
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+			_successMessage = null;
+		}
+		finally
+		{
+			await InvokeAsync(StateHasChanged);
+		}
+
+	}
+
+	private void ToggleActiveStatus(CreateReportViewModel report)
+	{
+		report.IsActive = !report.IsActive;
+	}
+
+	private async Task LoadReportTypesAsync()
+	{
+		_errorMessage = null;
+		try
+		{
+			var response = await ReportApi.GetAllReportTypeAsync();
+
+			if (response.IsSuccess)
+				_reportTypeList = response.Data;
+			else
+				_errorMessage = response.ErrorMessage;
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+		}
+		finally
+		{
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+}

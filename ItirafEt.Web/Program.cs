@@ -86,6 +86,9 @@ static void ConfigureRefit(IServiceCollection services)
     services.AddRefitClient<IUserRoleApi>(GetRefitSettings)
         .ConfigureHttpClient(SetHttpClient);
 
+    services.AddRefitClient<IReportApi>(GetRefitSettings)
+        .ConfigureHttpClient(SetHttpClient);
+
     void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
 
     static RefitSettings GetRefitSettings(IServiceProvider sp)

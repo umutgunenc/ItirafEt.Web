@@ -9,6 +9,7 @@ namespace ItirafEt.Shared.ViewModels
 {
     public class CreateReportViewModel
     {
+        public int Id { get; set; } 
 
         [Required (ErrorMessage ="Lütfen Şikayet Adını Giriniz"), MaxLength(64,ErrorMessage ="Şikayet Adı Maksimum 64 karakter uzunluğunda olabilir.")]
         public string Name { get; set; }

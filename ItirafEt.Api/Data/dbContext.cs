@@ -160,7 +160,7 @@ namespace ItirafEt.Api.Data
             modelBuilder.Entity<CommentReport>()
                 .HasOne(cr => cr.ReportType)
                 .WithMany(rt => rt.CommentReports)
-                .HasForeignKey(cr => cr.ReportTypeName)
+                .HasForeignKey(cr => cr.ReportTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<MessageReport>()

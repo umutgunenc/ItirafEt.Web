@@ -116,19 +116,20 @@ builder.Services.AddHostedService<MessageSenderConsumer>();
 builder.Services.AddHostedService<MessageReaderConsumer>();
 
 //SignedUrl Service
-builder.Services.AddSingleton<SignedUrl>();
+builder.Services.AddScoped<SignedUrl>();
 
-builder.Services.AddTransient<AuthService>();
-builder.Services.AddTransient<CategoryService>();
-builder.Services.AddTransient<BanUserService>();
-builder.Services.AddTransient<PostService>();
-builder.Services.AddTransient<CommentService>();
-builder.Services.AddTransient<ReactionService>();
-builder.Services.AddTransient<PostViewService>();
-builder.Services.AddTransient<MessageService>();
-builder.Services.AddTransient<UserSettingService>();
-builder.Services.AddTransient<UserProfileService>();
-builder.Services.AddTransient<UserRoleService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<BanUserService>();
+builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<CommentService>();
+builder.Services.AddScoped<ReactionService>();
+builder.Services.AddScoped<PostViewService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<UserSettingService>();
+builder.Services.AddScoped<UserProfileService>();
+builder.Services.AddScoped<UserRoleService>();
+builder.Services.AddScoped<ReportService>();
 
 
 builder.Services.AddTransient<ReactionHubService>();
@@ -195,6 +196,7 @@ app.MapMessageEndpoints();
 app.MapUserSettingsEndpoints();
 app.MapUserProfileEndpoints();
 app.MapUserRoleEndPoints();
+app.MapReportEndpoints();
 
 
 using (var scope = app.Services.CreateScope())

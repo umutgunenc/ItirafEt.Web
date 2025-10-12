@@ -112,6 +112,9 @@ namespace ItirafEt.Mobile
             services.AddRefitClient<IUserRoleApi>(GetRefitSettings)
                 .ConfigureHttpClient(SetHttpClient);
 
+            services.AddRefitClient<IReportApi>(GetRefitSettings)
+                .ConfigureHttpClient(SetHttpClient);
+
             //static void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(baseUrl);
             void SetHttpClient(HttpClient httpClient) => httpClient.BaseAddress = new Uri(apiBaseUrl);
 
