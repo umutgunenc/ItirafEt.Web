@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ItirafEt.Shared.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace ItirafEt.Api.Data.Entities
 {
@@ -8,9 +10,7 @@ namespace ItirafEt.Api.Data.Entities
 
         public ReportType()
         {
-            CommentReports = new HashSet<CommentReport>();
-            MessageReports = new HashSet<MessageReport>();
-            PostReports = new HashSet<PostReport>();
+            Reports = new HashSet<Report>();
         }
 
 
@@ -23,13 +23,16 @@ namespace ItirafEt.Api.Data.Entities
         [Required]
         public bool IsActive { get; set; }
 
+        [Required]
+        public ReportClassEnum ReportClass{ get; set; }
+
         [MaxLength(128)]
         public string? IconUrl { get; set; }
 
-
-        public virtual ICollection<CommentReport> CommentReports { get; set; }
-        public virtual ICollection<MessageReport> MessageReports { get; set; }
-        public virtual ICollection<PostReport> PostReports { get; set; }
+        public virtual ICollection<Report> Reports { get; set; }
 
     }
+
+
+
 }

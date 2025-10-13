@@ -24,12 +24,8 @@ namespace ItirafEt.Api.Data.Entities
             ActivateAccountTokens = new HashSet<ActivateAccountToken>();
             Roles = new HashSet<UserRoles>();
             UserLoginAttempts = new HashSet<UserLoginAttempt>();
-            MessageReports = new HashSet<MessageReport>();
-            CommentReports = new HashSet<CommentReport>();
-            PostReports = new HashSet<PostReport>();
-            ReviewedCommentReports = new HashSet<CommentReport>();
-            ReviewedMessageReports = new HashSet<MessageReport>();
-            ReviewedPostReports = new HashSet<PostReport>();
+            Reports = new HashSet<Report>();
+            ReviewedReports = new HashSet<Report>();
         }
         [Key]
         public Guid Id { get; set; }
@@ -88,14 +84,10 @@ namespace ItirafEt.Api.Data.Entities
         public virtual ICollection<MessageReaction> MessageReactions { get; set; }
         // Kullanıcı tarafından yapılmış yorum şikayetleri
 
-        public virtual ICollection<MessageReport> MessageReports { get; set; }
-        public virtual ICollection<CommentReport> CommentReports { get; set; }
-        public virtual ICollection<PostReport> PostReports { get; set; }
+        public virtual ICollection<Report> Reports { get; set; }
 
         // Admin olarak incelediği yorum şikayetleri
-        public virtual ICollection<CommentReport> ReviewedCommentReports { get; set; }
-        public virtual ICollection<MessageReport> ReviewedMessageReports { get; set; }
-        public virtual ICollection<PostReport> ReviewedPostReports { get; set; }
+        public virtual ICollection<Report> ReviewedReports { get; set; }
 
         public virtual ICollection<Message> SentMessages { get; set; }
         public virtual ICollection<UserBlock> BlockedUsers { get; set; } // Bu kullanıcı kimi engelledi

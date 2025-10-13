@@ -11,8 +11,15 @@ namespace ItirafEt.Api.EndPoints
         {
             app.MapPost("/api/createReportType", async (CreateReportViewModel model, ReportService reportService) => 
             {
+                try
+                {
+                    return Results.Ok(await reportService.CreateReportTypeAsync(model));
 
-                return Results.Ok(await reportService.CreateReportTypeAsync(model));
+                }
+                catch (Exception ex)
+                {
+                    return Results.Ok(ApiResponses<CreateReportViewModel>.Fail(ex.Message));
+                }
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin),nameof(UserRoleEnum.Admin)));
 

@@ -4,7 +4,7 @@ using ItirafEt.Shared.Enums;
 
 namespace ItirafEt.Api.Data.Entities
 {
-    public class MessageReport
+    public class Report
     {
         [Key]
         public int Id { get; set; }
@@ -15,17 +15,15 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(ReportingUserId))]
         public virtual User ReportingUser { get; set; }
 
-        [Required]
-        public int MessageId { get; set; }
+        public int? PostId { get; set; }
 
-        [ForeignKey(nameof(MessageId))]
-        public virtual Message Message { get; set; }
+        [ForeignKey(nameof(PostId))]
+        public virtual Post? Post { get; set; }
 
-        [Required]
-        public Guid ConversationId { get; set; }
+        public int? ComemntId { get; set; }
 
-        [ForeignKey(nameof(ConversationId))]
-        public virtual Conversation Conversation { get; set; }
+        [ForeignKey(nameof(ComemntId))]
+        public virtual Comment? Comment { get; set; }
 
         [Required]
         public int ReportTypeId { get; set; }

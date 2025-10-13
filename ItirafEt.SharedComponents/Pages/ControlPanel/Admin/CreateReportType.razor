@@ -8,7 +8,7 @@
 	<hr />
 
 	<EditForm Model="_model"
-	OnValidSubmit="async () => await SaveReportAsync()">
+			  OnValidSubmit="async () => await SaveReportAsync()">
 
 		<DataAnnotationsValidator />
 
@@ -27,19 +27,33 @@
 			<ValidationMessage For="()=> _model.IconUrl" />
 		</div>
 
+		<div class="form-floating my-3">
+			<InputSelect class="form-select" @bind-Value="_model.ReportClass" id="floatingSelect" TValue="ReportClassEnum?">
+				<option value="" disabled hidden selected> </option>
+				@foreach (var item in Enum.GetValues(typeof(ReportClassEnum)).Cast<ReportClassEnum>())
+				{
+					<option value="@item">@EnumService.GetDisplayName(item)</option>
+				}
+			</InputSelect>
+
+			  <label for="floatingSelect">Şikayet Seçiniz</label>
+						  <ValidationMessage For="()=> _model.ReportClass" />
+
+		</div>
+
 
 		<div class="my-3">
 			@if (_successMessage != null)
 			{
-					<div class="alert alert-success col">
+				<div class="alert alert-success col">
 					@_successMessage
-					</div>
+				</div>
 			}
 			@if (_errorMessage != null)
 			{
-					<div class="alert alert-danger col">
+				<div class="alert alert-danger col">
 					@_errorMessage
-					</div>
+				</div>
 			}
 		</div>
 
@@ -47,13 +61,13 @@
 			<button type="submit" class="btn-custom col-12" disabled="@_isBusy">
 				@if (!_isBusy)
 				{
-						<i class="bi bi-save2"></i>
-						<span>Kaydet</span>
+					<i class="bi bi-save2"></i>
+					<span>Kaydet</span>
 				}
 				else
 				{
-						<div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-						<span>Kayıt ediliyor...</span>
+					<div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+					<span>Kayıt ediliyor...</span>
 				}
 			</button>
 
@@ -65,74 +79,86 @@
 	<div class="text-center overflow-x-auto" style="white-space: nowrap;">
 
 		<div class="row fw-bold p-0 m-0 mb-3 flex-nowrap text-nowrap border-bottom pb-1">
-			<div class="col-4 p-1" style="min-width: 220px;">Şikayet Adı</div>
+			<div class="col-3 p-1" style="min-width: 220px;">Şikayet Adı</div>
+			<div class="col-2 p-1" style="min-width: 110px;">Şikayet Türü</div>
 			<div class="col-2 p-1" style="min-width: 110px;">Aktif Mi</div>
-			<div class="col-4 p-1" style="min-width: 220px;">Icon Url</div>
+			<div class="col-3 p-1" style="min-width: 220px;">Icon Url</div>
 			<div class="col-2 p-1" style="min-width: 110px;"></div>
 		</div>
 
 		@foreach (var reportType in _reportTypeList)
 		{
-				<EditForm Model="reportType"
-				OnValidSubmit="async () => await SaveChangesReportType(reportType)">
-					<DataAnnotationsValidator />
+			<EditForm Model="reportType"
+					  OnValidSubmit="async () => await SaveChangesReportType(reportType)">
+				<DataAnnotationsValidator />
 
-					<div class="row align-items-center p-0 m-0 mb-1 flex-nowrap text-nowrap">
+				<div class="row align-items-center p-0 m-0 mb-1 flex-nowrap text-nowrap">
 
-						<InputNumber class="d-none" @bind-Value="reportType.Id"></InputNumber>
+					<InputNumber class="d-none" @bind-Value="reportType.Id"></InputNumber>
 
-						<div class="col-4 p-1" style="min-width: 220px;">
-							<InputText @bind-Value="reportType.Name" class="form-control" />
-						</div>
+					<div class="col-3 p-1" style="min-width: 220px;">
+						<InputText @bind-Value="reportType.Name" class="form-control" />
+					</div>
 
-						<div class="col-2 text-center p-1" style="min-width: 110px;">
+					<div class="col-2 p-1" style="min-width: 110px;">
+						<InputSelect class="form-select" @bind-Value="reportType.ReportClass">
+							<option value="">-- Seçiniz --</option>
+							@foreach (var item in Enum.GetValues(typeof(ReportClassEnum)).Cast<ReportClassEnum>())
+							{
+								<option value="@item">@EnumService.GetDisplayName(item)</option>
+							}
+						</InputSelect>
+					</div>
+
+
+					<div class="col-2 text-center p-1" style="min-width: 110px;">
 						@if (reportType.IsActive)
 						{
-									<button type="button"
+							<button type="button"
 									class="btn-custom-red"
 									@onclick="() => ToggleActiveStatus(reportType)">
-										Pasif Yap
-									</button>
+								Pasif Yap
+							</button>
 						}
 						else
 						{
-									<button type="button"
+							<button type="button"
 									class="btn-custom"
 									@onclick="() => ToggleActiveStatus(reportType)">
-										Aktif Yap
-									</button>
+								Aktif Yap
+							</button>
 						}
 
-							<InputCheckbox class="d-none" @bind-Value="reportType.IsActive" />
-						</div>
-
-						<div class="col-4 p-1" style="min-width: 220px;">
-							<div class="d-grid gap-2" style="grid-template-columns: auto auto 1fr; align-items: center;">
-								<NavLink href="https://icons.getbootstrap.com/"
-								target="_blank"
-								class="text-decoration-none"
-								title="Bootstrap ikonlarını aç">
-									<i class="bi bi-question-diamond"></i>
-								</NavLink>
-
-								<i class="@reportType.IconUrl fs-5"></i>
-
-								<InputText class="form-control form-control"
-								@bind-Value="reportType.IconUrl" />
-							</div>
-						</div>
-
-						<div class="col-2 d-flex justify-content-end p-1 pe-0" style="min-width: 110px;">
-							<button type="submit" class="btn-custom-green">Kaydet</button>
-						</div>
-
+						<InputCheckbox class="d-none" @bind-Value="reportType.IsActive" />
 					</div>
 
-					<div class="text-start ps-1">
-						<ValidationMessage For="@(() => reportType.Name)" />
-						<ValidationMessage For="@(() => reportType.IconUrl)" />
+					<div class="col-3 p-1" style="min-width: 220px;">
+						<div class="d-grid gap-2" style="grid-template-columns: auto auto 1fr; align-items: center;">
+							<NavLink href="https://icons.getbootstrap.com/"
+									 target="_blank"
+									 class="text-decoration-none"
+									 title="Bootstrap ikonlarını aç">
+								<i class="bi bi-question-diamond"></i>
+							</NavLink>
+
+							<i class="@reportType.IconUrl fs-5"></i>
+
+							<InputText class="form-control form-control"
+									   @bind-Value="reportType.IconUrl" />
+						</div>
 					</div>
-				</EditForm>
+
+					<div class="col-2 d-flex justify-content-end p-1 pe-0" style="min-width: 110px;">
+						<button type="submit" class="btn-custom-green">Kaydet</button>
+					</div>
+
+				</div>
+
+				<div class="text-start ps-1">
+					<ValidationMessage For="@(() => reportType.Name)" />
+					<ValidationMessage For="@(() => reportType.IconUrl)" />
+				</div>
+			</EditForm>
 		}
 	</div>
 

@@ -9,7 +9,7 @@ namespace ItirafEt.Api.Data.Entities
         {
             Replies = new HashSet<Comment>();
             CommentReactions = new HashSet<CommentReaction>();
-            CommentReports = new HashSet<CommentReport>();
+            Reports = new HashSet<Report>();
         }
 
         [Key]
@@ -49,8 +49,7 @@ namespace ItirafEt.Api.Data.Entities
 
         public virtual ICollection<Comment> Replies { get; set; }
         public virtual ICollection<CommentReaction> CommentReactions { get; set; }
-        public virtual ICollection<CommentReport> CommentReports { get; set; }
-
+        public virtual ICollection<Report> Reports { get; set; }
 
     }
 }

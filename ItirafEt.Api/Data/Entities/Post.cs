@@ -9,8 +9,8 @@ namespace ItirafEt.Api.Data.Entities
         {
             Comments = new HashSet<Comment>();
             PostReactions = new HashSet<PostReaction>();
-            PostReports = new HashSet<PostReport>();
             Readers = new HashSet<UserReadPost>();
+            Reports = new HashSet<Report>();
         }
 
         [Key]
@@ -50,8 +50,9 @@ namespace ItirafEt.Api.Data.Entities
         public virtual Category Category { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<PostReaction> PostReactions { get; set; }
-        public virtual ICollection<PostReport> PostReports { get; set; }
         public virtual ICollection<UserReadPost> Readers { get; set; }
+
+        public virtual ICollection<Report> Reports { get; set; }
 
     }
 }

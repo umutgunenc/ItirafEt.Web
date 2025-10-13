@@ -23,17 +23,15 @@ namespace ItirafEt.Api.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<CommentReaction> CommentReactions { get; set; }
-        public DbSet<CommentReport> CommentReports { get; set; }
         public DbSet<CommentHistory> CommentHistories { get; set; }
         public DbSet<GenderType> Genders { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<PostHistory> PostHistories { get; set; }
         public DbSet<PostReaction> PostReaction { get; set; }
-        public DbSet<PostReport> PostReports { get; set; }
+        public DbSet<Report> Reports { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageReaction> MessageReactions { get; set; }
-        public DbSet<MessageReport> MessageReports { get; set; }
         public DbSet<UserReadPost> UserReadPosts { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         public DbSet<ActivateAccountToken> ActivateAccountTokens { get; set; }
@@ -133,41 +131,20 @@ namespace ItirafEt.Api.Data
                 .HasForeignKey(mr => mr.ReactingUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<PostReport>()
-                .HasOne(pr => pr.ReportingUser)
-                .WithMany(u => u.PostReports)
-                .HasForeignKey(pr => pr.ReportingUserId)
+
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.ReportingUser)
+                .WithMany(u => u.Reports)
+                .HasForeignKey(r => r.ReportingUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CommentReport>()
-                .HasOne(cr => cr.ReportingUser)
-                .WithMany(u => u.CommentReports)
-                .HasForeignKey(cr => cr.ReportingUserId)
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.ReviewedAdmin)
+                .WithMany(u => u.ReviewedReports)
+                .HasForeignKey(r => r.ReviewedAdminId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CommentReport>()
-                .HasOne(cr => cr.Comment)
-                .WithMany(c => c.CommentReports)
-                .HasForeignKey(cr => cr.CommentId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CommentReport>()
-                .HasOne(cr => cr.ReviewedAdmin)
-                .WithMany()
-                .HasForeignKey(cr => cr.ReviewedAdminId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<CommentReport>()
-                .HasOne(cr => cr.ReportType)
-                .WithMany(rt => rt.CommentReports)
-                .HasForeignKey(cr => cr.ReportTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MessageReport>()
-                .HasOne(mr => mr.ReportingUser)
-                .WithMany(u => u.MessageReports)
-                .HasForeignKey(mr => mr.ReportingUserId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.Post)
