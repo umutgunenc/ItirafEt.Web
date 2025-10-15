@@ -69,17 +69,17 @@ namespace ItirafEt.SharedComponents.ClientServices
 
         public async Task<List<InboxItemViewModel>?> GetUserConversationsAsync()
         {
-            return await _storageService.GetItemAsync<List<InboxItemViewModel>>("UserConversations");
+            return await _storageService.GetItemAsync<List<InboxItemViewModel>>("UserConversations", false);
         }
 
         public async Task RemoveConversationsFromLocalStorageAsync()
         {
-            await _storageService.RemoveItemAsync("UserConversations");
+            await _storageService.RemoveItemAsync("UserConversations", false);
         }
 
         public async Task SetUserConversationsToLocalStorageAsync(List<InboxItemViewModel> Conversations)
         {
-            await _storageService.SetItemAsync("UserConversations", Conversations);
+            await _storageService.SetItemAsync("UserConversations", Conversations,false);
         }
 
         public async Task ClearAsync()

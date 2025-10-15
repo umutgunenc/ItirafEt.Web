@@ -10,39 +10,55 @@ namespace ItirafEt.Mobile.Services
 {
     public class StorageService : IStorageService
     {
-        public ValueTask<T?> GetItemAsync<T>(string key)
+        public async ValueTask<T?> GetItemAsync<T>(string key, bool isSecure = false)
         {
-            var json = Preferences.Default.Get<string>(key,null);
+            string? json = null;
+
+            if (isSecure)
+                json = await SecureStorage.Default.GetAsync(key);
+            else
+                json = Preferences.Default.Get<string>(key, null);
+
 
             if (string.IsNullOrWhiteSpace(json))
-                return ValueTask.FromResult<T?>(default);
+                return default;
 
             try
             {
-                var result = JsonSerializer.Deserialize<T>(json);
-                return ValueTask.FromResult<T?>(result);
+                return JsonSerializer.Deserialize<T>(json);
             }
             catch
             {
-                return ValueTask.FromResult<T?>(default);
+                return default;
             }
         }
 
-        public ValueTask SetItemAsync<T>(string key, T value)
+        public async ValueTask SetItemAsync<T>(string key, T value, bool isSecure = false)
         {
             var json = JsonSerializer.Serialize(value);
-            Preferences.Default.Set(key, json);
-            return ValueTask.CompletedTask;
+
+            if (isSecure)
+                await SecureStorage.Default.SetAsync(key, json);
+            else
+                Preferences.Default.Set(key, json);
+
         }
 
-        public ValueTask RemoveItemAsync(string key)
+        public ValueTask RemoveItemAsync(string key, bool isSecure = false)
         {
-            Preferences.Default.Remove(key);
+
+            if (isSecure)
+                SecureStorage.Default.Remove(key);
+            else
+                Preferences.Default.Remove(key);
+
             return ValueTask.CompletedTask;
+
         }
 
         public ValueTask ClearItemsAsync()
         {
+            SecureStorage.Default.RemoveAll();
             Preferences.Default.Clear();
             return ValueTask.CompletedTask;
         }

@@ -42,7 +42,7 @@ namespace ItirafEt.Mobile.Services
             _connections.TryAdd(connectionId, newConnection);
 
             var key = GetKey(pageType, hubType);
-            await _storageService.SetItemAsync(key, connectionId);
+            await _storageService.SetItemAsync(key, connectionId,false);
 
             return newConnection;
         }

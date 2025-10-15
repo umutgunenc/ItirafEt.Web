@@ -140,8 +140,8 @@ else
 		await StartPostViewHubConnectionAsync();
 		await StartReactionHubConnectionAsync();
 
-		var cachedItems = await StorageService.GetItemAsync<List<PostInfoViewModel>>($"cat-{CategoryId}-items");
-		var cachedCursor = await StorageService.GetItemAsync<CursorViewModel>($"cat-{CategoryId}-cursor");
+		var cachedItems = await StorageService.GetItemAsync<List<PostInfoViewModel>>($"cat-{CategoryId}-items", false);
+		var cachedCursor = await StorageService.GetItemAsync<CursorViewModel>($"cat-{CategoryId}-cursor", false);
 
 		if (cachedItems?.Any() == true && cachedCursor != null)
 			await GetItemsFromCacheAsync(cachedItems, cachedCursor);
@@ -182,24 +182,24 @@ else
 
 
 
-		_isDateOrdered = await StorageService.GetItemAsync<bool>($"cat-{CategoryId}-dateOrdered");
-		_isCountOrdered = await StorageService.GetItemAsync<bool>($"cat-{CategoryId}-countOrdered");
-		_isLikeOrdered = await StorageService.GetItemAsync<bool>($"cat-{CategoryId}-likeOrdered");
-		_categoryName = await StorageService.GetItemAsync<string?>($"cat-{CategoryId}-categoryName");
+		_isDateOrdered = await StorageService.GetItemAsync<bool>($"cat-{CategoryId}-dateOrdered",false);
+		_isCountOrdered = await StorageService.GetItemAsync<bool>($"cat-{CategoryId}-countOrdered",false);
+		_isLikeOrdered = await StorageService.GetItemAsync<bool>($"cat-{CategoryId}-likeOrdered", false);
+		_categoryName = await StorageService.GetItemAsync<string?>($"cat-{CategoryId}-categoryName", false);
 	}
 	private async Task SetItemsToCacheAsync()
 	{
 		var scrollY = await ScrollHelper.GetScrollYAsync();
 		State.ScrollY = scrollY;
-		await StorageService.SetItemAsync($"cat-{CategoryId}-items", State.Items);
+		await StorageService.SetItemAsync($"cat-{CategoryId}-items", State.Items, false);
 		var cursor = new CursorViewModel { Page = State.CurrentPage, ScrollY = scrollY };
 
 
 
-		await StorageService.SetItemAsync($"cat-{CategoryId}-cursor", cursor);
-		await StorageService.SetItemAsync<bool>($"cat-{CategoryId}-dateOrdered", _isDateOrdered);
-		await StorageService.SetItemAsync<bool>($"cat-{CategoryId}-countOrdered", _isCountOrdered);
-		await StorageService.SetItemAsync<bool>($"cat-{CategoryId}-likeOrdered", _isLikeOrdered);
+		await StorageService.SetItemAsync($"cat-{CategoryId}-cursor", cursor, false);
+		await StorageService.SetItemAsync<bool>($"cat-{CategoryId}-dateOrdered", _isDateOrdered, false);
+		await StorageService.SetItemAsync<bool>($"cat-{CategoryId}-countOrdered", _isCountOrdered, false);
+		await StorageService.SetItemAsync<bool>($"cat-{CategoryId}-likeOrdered", _isLikeOrdered, false);
 	}
 	private void ResetCache()
 	{
@@ -363,8 +363,8 @@ else
 		_isLikeOrdered = orderByLikeCount;
 		ResetCache();
 
-		await StorageService.RemoveItemAsync($"cat-{CategoryId}-items");
-		await StorageService.RemoveItemAsync($"cat-{CategoryId}-cursor");
+		await StorageService.RemoveItemAsync($"cat-{CategoryId}-items", false);
+		await StorageService.RemoveItemAsync($"cat-{CategoryId}-cursor", false);
 		await LoadMorePostsAsync();
 	}
 
@@ -391,7 +391,7 @@ else
 
 	private async Task SetCategoryNameToLocalStorageAsync()
 	{
-		await StorageService.SetItemAsync($"cat-{CategoryId}-categoryName", _categoryName);
+		await StorageService.SetItemAsync($"cat-{CategoryId}-categoryName", _categoryName, false);
 	}
 
 	private async Task UpdateReactionsAsync(int postId, int likeCount)
@@ -428,8 +428,8 @@ else
 
 	private async Task UpdateCacheAsync()
 	{
-		await StorageService.RemoveItemAsync($"cat-{CategoryId}-items");
-		await StorageService.SetItemAsync($"cat-{CategoryId}-items", State.Items);
+		await StorageService.RemoveItemAsync($"cat-{CategoryId}-items",false);
+		await StorageService.SetItemAsync($"cat-{CategoryId}-items", State.Items,false);
 	}
 
 

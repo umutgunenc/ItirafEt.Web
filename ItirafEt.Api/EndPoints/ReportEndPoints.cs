@@ -37,9 +37,9 @@ namespace ItirafEt.Api.EndPoints
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin)));
 
-            app.MapGet("/api/getAllActiveReportTypes", async (ReportService reportService) =>
+            app.MapGet("/api/getAllActiveReportTypes/{reportClass}", async (ReportService reportService, ReportClassEnum reportClass) =>
             {
-                return Results.Ok(await reportService.GetAllReportTypesAsync());
+                return Results.Ok(await reportService.GetAllActiveReportTypesAsync(reportClass));
 
             }).RequireAuthorization(p => p.RequireRole(nameof(UserRoleEnum.SuperAdmin), nameof(UserRoleEnum.Admin), nameof(UserRoleEnum.User), nameof(UserRoleEnum.SuperUser), nameof(UserRoleEnum.Moderator)));
 

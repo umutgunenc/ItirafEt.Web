@@ -61,7 +61,7 @@ namespace ItirafEt.SharedComponents.Services
                 if (connection != null)
                 {
                     await connection.DisposeAsync();
-                    await _storageService.RemoveItemAsync(GetKey(pageType, hubType));
+                    await _storageService.RemoveItemAsync(GetKey(pageType, hubType),false);
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace ItirafEt.SharedComponents.Services
         {
 
             var key = GetKey(pageType, hubType);
-            return await _storageService.GetItemAsync<Guid?>(key);
+            return await _storageService.GetItemAsync<Guid?>(key, false);
         }
 
         protected string GetKey(PageType pageType, HubType hubType)
@@ -88,14 +88,14 @@ namespace ItirafEt.SharedComponents.Services
                 foreach (var hubType in Enum.GetValues<HubType>())
                 {
                     var key = GetKey(pageType, hubType);
-                    var connectionId = await _storageService.GetItemAsync<Guid?>(key);
+                    var connectionId = await _storageService.GetItemAsync<Guid?>(key, false);
                     if (connectionId.HasValue)
                     {
                         if (_connections.TryRemove(connectionId.Value, out var connection))
                         {
                             await connection.StopAsync();
                             await connection.DisposeAsync();
-                            await _storageService.RemoveItemAsync(key);
+                            await _storageService.RemoveItemAsync(key, false);
                         }
                     }
                 }

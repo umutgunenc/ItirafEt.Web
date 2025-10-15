@@ -40,7 +40,7 @@ namespace ItirafEt.SharedComponents.Auth
             User = user;
             SetAuthStateTask();
             NotifyAuthenticationStateChanged(_authStateTask);
-            await _storageService.SetItemAsync(UserDataKey, user.ToJson());
+            await _storageService.SetItemAsync(UserDataKey, user.ToJson(),true);
 
         }
         public async Task SetLogoutAsync()
@@ -58,7 +58,7 @@ namespace ItirafEt.SharedComponents.Auth
         {
             try
             {
-                var uData = await _storageService.GetItemAsync<string>(UserDataKey);
+                var uData = await _storageService.GetItemAsync<string>(UserDataKey,true);
 
                 if (string.IsNullOrWhiteSpace(uData))
                     return;
@@ -168,7 +168,7 @@ namespace ItirafEt.SharedComponents.Auth
 
             User = updatedUser;
 
-            await _storageService.SetItemAsync(UserDataKey, updatedUser.ToJson());
+            await _storageService.SetItemAsync(UserDataKey, updatedUser.ToJson(), true);
 
             var identity = new ClaimsIdentity(updatedUser.ToClaims(), AuthType);
             var principal = new ClaimsPrincipal(identity);
