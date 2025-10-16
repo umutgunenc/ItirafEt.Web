@@ -15,6 +15,11 @@ namespace ItirafEt.Api.Data.Entities
         [ForeignKey(nameof(ReportingUserId))]
         public virtual User ReportingUser { get; set; }
 
+        public Guid? ReportedUserId { get; set; }
+
+        [ForeignKey(nameof(ReportedUserId))]
+        public virtual User? ReportedUser { get; set; }
+
         public int? PostId { get; set; }
 
         [ForeignKey(nameof(PostId))]

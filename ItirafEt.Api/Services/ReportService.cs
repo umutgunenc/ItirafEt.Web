@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ItirafEt.Api.Data;
 using ItirafEt.Api.Data.Entities;
 using ItirafEt.Shared.Enums;
 using ItirafEt.Shared.Services.ClientServices;
 using ItirafEt.Shared.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client.Exceptions;
 
 namespace ItirafEt.Api.Services
 {
@@ -118,8 +120,153 @@ namespace ItirafEt.Api.Services
             return ApiResponses<List<CreateReportViewModel>>.Success(reportTypes);
         }
 
+        public async Task<ApiResponses> SendReportAsync(SendReportViewModel model)
+        {
+            if (!Enum.IsDefined(typeof(ReportClassEnum), model.ReportClass))
+                return ApiResponses.Fail("Geçersiz şikayet türü.");
+
+            if (model.ReportClass == ReportClassEnum.Post && model.PostId == null && model.ReportedUserId == null)
+                return ApiResponses.Fail("Şikayet talebiniz geçersiz.");
+
+            if (model.ReportClass == ReportClassEnum.Comment && model.ComemntId == null && model.PostId == null && model.ReportedUserId == null)
+                return ApiResponses.Fail("Şikayet talebiniz geçersiz.");
+
+            if (model.ReportClass == ReportClassEnum.User && model.ReportedUserId == null)
+                return ApiResponses.Fail("Şikayet talebiniz geçersiz.");
+
+            if (model.ReportExplanation?.Trim().Length > 1024)
+                return ApiResponses.Fail("Şikayet açıklaması maksimum 1024 karakter uzunluğunda olabilir.");
+
+            var isThereReportingUser = await _context.Users
+                .AsNoTracking()
+                .AnyAsync(u => u.Id == model.ReportingUserId);
+            if (!isThereReportingUser)
+                return ApiResponses.Fail("Şikayet talebiniz geçersiz.");
+
+
+
+
+            if (model.ReportClass == ReportClassEnum.Post)
+            {
+                var isTherePost = await _context.Posts
+                    .AsNoTracking()
+                    .AnyAsync(p => p.Id == model.PostId && !p.IsDeletedByUser && !p.IsDeletedByAdmin);
+
+                if (!isTherePost)
+                    return ApiResponses.Fail("Şikayet edilen gönderi bulunamadı. Gönderi silinmiş olabilir.");
+
+                var allReadyReported = await _context.Reports
+                    .AsNoTracking()
+                    .AnyAsync(r => r.PostId == model.PostId && r.ReportingUserId == model.ReportingUserId && r.Status == ReportStatusEnum.Pending);
+                if (allReadyReported)
+                    return ApiResponses.Fail("Bu gönderi için zaten bir şikayetiniz bulunmakta. Şikayetiniz incelenene kadar yeni bir şikayet oluşturamazsınız.");
+
+
+            }
+
+            if (model.ReportClass == ReportClassEnum.Comment)
+            {
+                var isThereComment = await _context.Comments
+                    .AsNoTracking()
+                    .AnyAsync(c => c.Id == model.ComemntId && !c.IsActive);
+                if (!isThereComment)
+                    return ApiResponses.Fail("Şikayet edilen yorum bulunamadı. Sikayet ettiğiniz yorum silinmiş olabilir.");
+
+                var allReadyReported = await _context.Reports
+                    .AsNoTracking()
+                    .AnyAsync(r => r.ComemntId == model.ComemntId && r.ReportingUserId == model.ReportingUserId && r.Status == ReportStatusEnum.Pending);
+
+                if (allReadyReported)
+                    return ApiResponses.Fail("Bu yorum için zaten bir şikayetiniz bulunmakta. Şikayetiniz incelenene kadar yeni bir şikayet oluşturamazsınız.");
+
+            }
+
+            if (model.ReportClass == ReportClassEnum.User)
+            {
+                var isThereReportedUser = await _context.Users
+                    .AsNoTracking()
+                    .AnyAsync(u => u.Id == model.ReportedUserId && !u.IsBanned && !u.IsDeleted);
+                if (!isThereReportedUser)
+                    return ApiResponses.Fail("Şikayet edilen kullanıcı bulunamadı. Kullanıcı banlanmış veya silinmiş olabliir.");
+
+                var allReadyReported = await _context.Reports
+                    .AsNoTracking()
+                    .AnyAsync(r => r.ReportedUserId == model.ReportedUserId && r.ReportingUserId == model.ReportingUserId && r.Status == ReportStatusEnum.Pending);
+
+                if (allReadyReported)
+                    return ApiResponses.Fail("Bu kullanıcı için zaten bir şikayetiniz bulunmakta. Şikayetiniz incelenene kadar yeni bir şikayet oluşturamazsınız.");
+            }
+
+            var report = CreateReport(model);
+            await _context.Reports.AddAsync(report);
+            await _context.SaveChangesAsync();
+
+            return ApiResponses.Success();
+
+        }
+
+        public async Task<List<ReportsViewModel>> GetReportedItemsAsync( ReportStatusEnum? status = null, ReportClassEnum? reportClass = null)
+        {
+            var query = _context.Reports
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (status.HasValue)
+                query = query.Where(r => r.Status == status);
+
+            if (reportClass.HasValue)
+                query = query.Where(r => r.ReportType.ReportClass == reportClass);
+
+            var groupedReports = await query
+                .GroupBy(r => new
+                {
+                    r.ReportType.ReportClass,
+                    r.PostId,
+                    r.ComemntId,
+                    r.ReportedUserId,
+                    r.Status
+                })
+                .Select(g => new ReportsViewModel
+                {
+                    ReportClass = g.Key.ReportClass,
+                    PostId = g.Key.PostId,
+                    CommentId = g.Key.ComemntId,
+                    ReportedUserId = g.Key.ReportedUserId,
+                    Status = g.Key.Status,
+                    ReportCount = g.Count()
+                })
+                .OrderByDescending(r => r.ReportCount)
+                .ToListAsync();
+
+            return groupedReports;
+        }
+
+        private Report CreateReport(SendReportViewModel model)
+        {
+            return new Report
+            {
+                ReportingUserId = model.ReportingUserId,
+                PostId = model.PostId,
+                ComemntId = model.ComemntId,
+                ReportedUserId = model.ReportingUserId,
+                ReportTypeId = model.ReportTypeId,
+                ReportExplanation = model.ReportExplanation?.Trim(),
+                CreatedDate = DateTime.UtcNow,
+                Status = ReportStatusEnum.Pending
+            };
+        }
+
     }
 
+    public class ReportsViewModel
+    {
+        public int ReportCount { get; set; }
+        public int? PostId { get; set; }
+        public int? CommentId { get; set; }
+        public Guid? ReportedUserId { get; set; }
+        public ReportClassEnum ReportClass { get; set; }
+        public ReportStatusEnum Status { get; set; }
 
+    }
 }
 
