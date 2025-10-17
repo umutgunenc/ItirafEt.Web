@@ -19,23 +19,23 @@ namespace ItirafEt.Api.Services
             _context = context;
         }
 
-        public async Task<ApiResponses<CreateReportViewModel>> CreateReportTypeAsync(CreateReportViewModel model)
+        public async Task<ApiResponses<CreateReportTypeViewModel>> CreateReportTypeAsync(CreateReportTypeViewModel model)
         {
 
             if (string.IsNullOrEmpty(model.Name.Trim()))
-                return ApiResponses<CreateReportViewModel>.Fail("Şikayet adı boş olamaz.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Şikayet adı boş olamaz.");
 
             if (model.Name.Trim().Length > 64)
-                return ApiResponses<CreateReportViewModel>.Fail("Şikayet adı maksimum 64 karakter uzunluğunda olabilir.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Şikayet adı maksimum 64 karakter uzunluğunda olabilir.");
 
             if (model.IconUrl?.Trim().Length > 128)
-                return ApiResponses<CreateReportViewModel>.Fail("Şikayet icon URLi maksimum 128 karakter uzunluğunda olabilir.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Şikayet icon URLi maksimum 128 karakter uzunluğunda olabilir.");
 
             if (await _context.ReportTypes.AsNoTracking().AnyAsync(rt => rt.Name.ToLower() == model.Name.Trim().ToLower() && rt.ReportClass == model.ReportClass))
-                return ApiResponses<CreateReportViewModel>.Fail("Bu isimde zaten bir şikayet türü mevcut.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Bu isimde zaten bir şikayet türü mevcut.");
 
             if (!Enum.IsDefined(typeof(ReportClassEnum), model.ReportClass))
-                return ApiResponses<CreateReportViewModel>.Fail("Geçersiz şikayet türü.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Geçersiz şikayet türü.");
 
             var reportType = new ReportType
             {
@@ -49,31 +49,31 @@ namespace ItirafEt.Api.Services
             await _context.SaveChangesAsync();
             model.Id = reportType.Id;
 
-            return ApiResponses<CreateReportViewModel>.Success(model);
+            return ApiResponses<CreateReportTypeViewModel>.Success(model);
 
 
         }
 
-        public async Task<ApiResponses<CreateReportViewModel>> EditReportTypeAsync(CreateReportViewModel model)
+        public async Task<ApiResponses<CreateReportTypeViewModel>> EditReportTypeAsync(CreateReportTypeViewModel model)
         {
             if (string.IsNullOrEmpty(model.Name.Trim()))
-                return ApiResponses<CreateReportViewModel>.Fail("Şikayet adı boş olamaz.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Şikayet adı boş olamaz.");
             if (model.Name.Trim().Length > 64)
-                return ApiResponses<CreateReportViewModel>.Fail("Şikayet adı maksimum 64 karakter uzunluğunda olabilir.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Şikayet adı maksimum 64 karakter uzunluğunda olabilir.");
             if (model.IconUrl?.Trim().Length > 128)
-                return ApiResponses<CreateReportViewModel>.Fail("Şikayet icon URLi maksimum 128 karakter uzunluğunda olabilir.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Şikayet icon URLi maksimum 128 karakter uzunluğunda olabilir.");
 
             if (!Enum.IsDefined(typeof(ReportClassEnum), model.ReportClass))
-                return ApiResponses<CreateReportViewModel>.Fail("Geçersiz şikayet türü.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Geçersiz şikayet türü.");
 
             var reportType = await _context.ReportTypes
                 .FirstOrDefaultAsync(rt => rt.Id == model.Id);
 
             if (reportType == null)
-                return ApiResponses<CreateReportViewModel>.Fail("Böyle bir şikayet türü bulunamadı.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Böyle bir şikayet türü bulunamadı.");
 
             if (await _context.ReportTypes.AsNoTracking().AnyAsync(rt => rt.Id != model.Id && rt.Name.ToLower() == model.Name.Trim().ToLower() && rt.ReportClass == model.ReportClass))
-                return ApiResponses<CreateReportViewModel>.Fail("Bu isimde zaten bir şikayet türü mevcut.");
+                return ApiResponses<CreateReportTypeViewModel>.Fail("Bu isimde zaten bir şikayet türü mevcut.");
 
             reportType.IsActive = model.IsActive;
             reportType.IconUrl = model.IconUrl?.Trim();
@@ -83,14 +83,14 @@ namespace ItirafEt.Api.Services
             _context.ReportTypes.Update(reportType);
             await _context.SaveChangesAsync();
 
-            return ApiResponses<CreateReportViewModel>.Success(model);
+            return ApiResponses<CreateReportTypeViewModel>.Success(model);
         }
 
-        public async Task<ApiResponses<List<CreateReportViewModel>>> GetAllReportTypesAsync()
+        public async Task<ApiResponses<List<CreateReportTypeViewModel>>> GetAllReportTypesAsync()
         {
             var reportTypes = await _context.ReportTypes
                 .AsNoTracking()
-                .Select(rt => new CreateReportViewModel
+                .Select(rt => new CreateReportTypeViewModel
                 {
                     Id = rt.Id,
                     Name = rt.Name,
@@ -99,15 +99,15 @@ namespace ItirafEt.Api.Services
                     ReportClass = rt.ReportClass,
                 })
                 .ToListAsync();
-            return ApiResponses<List<CreateReportViewModel>>.Success(reportTypes);
+            return ApiResponses<List<CreateReportTypeViewModel>>.Success(reportTypes);
         }
 
-        public async Task<ApiResponses<List<CreateReportViewModel>>> GetAllActiveReportTypesAsync(ReportClassEnum reportClassEnum)
+        public async Task<ApiResponses<List<CreateReportTypeViewModel>>> GetAllActiveReportTypesAsync(ReportClassEnum reportClassEnum)
         {
             var reportTypes = await _context.ReportTypes
                 .AsNoTracking()
                 .Where(rt => rt.IsActive && rt.ReportClass == reportClassEnum)
-                .Select(rt => new CreateReportViewModel
+                .Select(rt => new CreateReportTypeViewModel
                 {
                     Id = rt.Id,
                     Name = rt.Name,
@@ -117,7 +117,7 @@ namespace ItirafEt.Api.Services
                 })
                 .ToListAsync();
 
-            return ApiResponses<List<CreateReportViewModel>>.Success(reportTypes);
+            return ApiResponses<List<CreateReportTypeViewModel>>.Success(reportTypes);
         }
 
         public async Task<ApiResponses> SendReportAsync(SendReportViewModel model)
@@ -125,17 +125,24 @@ namespace ItirafEt.Api.Services
             if (!Enum.IsDefined(typeof(ReportClassEnum), model.ReportClass))
                 return ApiResponses.Fail("Geçersiz şikayet türü.");
 
-            if (model.ReportClass == ReportClassEnum.Post && model.PostId == null && model.ReportedUserId == null)
+            if (model.ReportClass ==(int)ReportClassEnum.Post && model.PostId == null && model.ReportedUserId == null)
                 return ApiResponses.Fail("Şikayet talebiniz geçersiz.");
 
-            if (model.ReportClass == ReportClassEnum.Comment && model.ComemntId == null && model.PostId == null && model.ReportedUserId == null)
+            if (model.ReportClass == (int)ReportClassEnum.Comment && model.ComemntId == null && model.PostId == null && model.ReportedUserId == null)
                 return ApiResponses.Fail("Şikayet talebiniz geçersiz.");
 
-            if (model.ReportClass == ReportClassEnum.User && model.ReportedUserId == null)
+            if (model.ReportClass == (int)ReportClassEnum.User && model.ReportedUserId == null)
                 return ApiResponses.Fail("Şikayet talebiniz geçersiz.");
 
             if (model.ReportExplanation?.Trim().Length > 1024)
                 return ApiResponses.Fail("Şikayet açıklaması maksimum 1024 karakter uzunluğunda olabilir.");
+
+            if(model.ReportTypeId is null)
+                return ApiResponses.Fail("Lütfen şikayet türü seçiniz.");
+
+            if(!await _context.ReportTypes.AsNoTracking().AnyAsync(rt => rt.Id == model.ReportTypeId))
+                return ApiResponses.Fail("Lütfen geçerli bir şikayet türü seçiniz.");
+
 
             var isThereReportingUser = await _context.Users
                 .AsNoTracking()
@@ -146,7 +153,7 @@ namespace ItirafEt.Api.Services
 
 
 
-            if (model.ReportClass == ReportClassEnum.Post)
+            if (model.ReportClass == (int)ReportClassEnum.Post)
             {
                 var isTherePost = await _context.Posts
                     .AsNoTracking()
@@ -164,11 +171,11 @@ namespace ItirafEt.Api.Services
 
             }
 
-            if (model.ReportClass == ReportClassEnum.Comment)
+            if (model.ReportClass == (int)ReportClassEnum.Comment)
             {
                 var isThereComment = await _context.Comments
                     .AsNoTracking()
-                    .AnyAsync(c => c.Id == model.ComemntId && !c.IsActive);
+                    .AnyAsync(c => c.Id == model.ComemntId && c.IsActive);
                 if (!isThereComment)
                     return ApiResponses.Fail("Şikayet edilen yorum bulunamadı. Sikayet ettiğiniz yorum silinmiş olabilir.");
 
@@ -181,7 +188,7 @@ namespace ItirafEt.Api.Services
 
             }
 
-            if (model.ReportClass == ReportClassEnum.User)
+            if (model.ReportClass == (int)ReportClassEnum.User)
             {
                 var isThereReportedUser = await _context.Users
                     .AsNoTracking()
@@ -205,13 +212,13 @@ namespace ItirafEt.Api.Services
 
         }
 
-        public async Task<List<ReportsViewModel>> GetReportedItemsAsync( ReportStatusEnum? status = null, ReportClassEnum? reportClass = null)
+        public async Task<ApiResponses<List<ReportListViewModel>>> GetReportedItemsAsync( ReportStatusEnum status , ReportClassEnum? reportClass = null)
         {
             var query = _context.Reports
                 .AsNoTracking()
                 .AsQueryable();
 
-            if (status.HasValue)
+            if(status != ReportStatusEnum.All)
                 query = query.Where(r => r.Status == status);
 
             if (reportClass.HasValue)
@@ -226,21 +233,21 @@ namespace ItirafEt.Api.Services
                     r.ReportedUserId,
                     r.Status
                 })
-                .Select(g => new ReportsViewModel
+                .Select(g => new ReportListViewModel
                 {
                     ReportClass = g.Key.ReportClass,
                     PostId = g.Key.PostId,
                     CommentId = g.Key.ComemntId,
                     ReportedUserId = g.Key.ReportedUserId,
+                    ReportedUserName = _context.Users.AsNoTracking().Where(u => u.Id == g.Key.ReportedUserId).Select(u => u.UserName).FirstOrDefault(),
                     Status = g.Key.Status,
                     ReportCount = g.Count()
                 })
                 .OrderByDescending(r => r.ReportCount)
                 .ToListAsync();
 
-            return groupedReports;
+            return ApiResponses<List<ReportListViewModel>>.Success(groupedReports);
         }
-
         private Report CreateReport(SendReportViewModel model)
         {
             return new Report
@@ -248,8 +255,8 @@ namespace ItirafEt.Api.Services
                 ReportingUserId = model.ReportingUserId,
                 PostId = model.PostId,
                 ComemntId = model.ComemntId,
-                ReportedUserId = model.ReportingUserId,
-                ReportTypeId = model.ReportTypeId,
+                ReportedUserId = model.ReportedUserId,
+                ReportTypeId = (int)model.ReportTypeId,
                 ReportExplanation = model.ReportExplanation?.Trim(),
                 CreatedDate = DateTime.UtcNow,
                 Status = ReportStatusEnum.Pending
@@ -258,15 +265,5 @@ namespace ItirafEt.Api.Services
 
     }
 
-    public class ReportsViewModel
-    {
-        public int ReportCount { get; set; }
-        public int? PostId { get; set; }
-        public int? CommentId { get; set; }
-        public Guid? ReportedUserId { get; set; }
-        public ReportClassEnum ReportClass { get; set; }
-        public ReportStatusEnum Status { get; set; }
-
-    }
 }
 

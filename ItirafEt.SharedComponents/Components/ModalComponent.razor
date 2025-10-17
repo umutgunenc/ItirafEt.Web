@@ -1,16 +1,17 @@
 ﻿﻿@using Microsoft.AspNetCore.Components
 
 <div class="@htmlClass @ModalClass" @ref="modalElement" tabindex="-1" role="dialog" style="display:@display">
-    <div class="modal-dialog modal-fullscreen modal-dialog-centered" role="document">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header my-3 @HeaderClass">
+    <div class="modal-dialog @classFullScreen" role="document">
+
+        <div class="modal-content shadow-lg @classBGColor @classPadding pb-0">
+            <div class="modal-header p-0 @HeaderClass">
                 <h5 class="modal-title @TitleClass">@Title</h5>
                 @*                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="Close"></button>
  *@            </div>
-            <div class="@ChildClass">
+            <div class="modal-body p-0 py-0 @classPadding @ChildClass">
                 @ChildContent
             </div>
-            <div class="@FooterClass">
+            <div class="modal-footer p-0 py-0 @classPadding @FooterClass">
                 @FooterContent
             </div>
         </div>
@@ -20,19 +21,19 @@
 @code {
     [Parameter]
     public string Title { get; set; } 
-    
+
     [Parameter]
     public string HeaderClass { get; set; }
 
     [Parameter]
     public string TitleClass { get; set; }    
-    
+
     [Parameter]
     public string ModalClass { get; set; }    
-    
+
     [Parameter]
     public string ChildClass { get; set; }
-    
+
     [Parameter]
     public string FooterClass { get; set; }
     [Parameter]
@@ -40,15 +41,31 @@
     [Parameter]
     public RenderFragment FooterContent { get; set; }
 
+    [Parameter]
+    public bool IsFullScreen { get; set; } = false;
+
     public string display = "none";
     public string htmlClass = "modal fade";
-
+    private string classFullScreen = "";
+    private string classPadding = "";
+    private string classBGColor = "";
     private ElementReference modalElement;
 
     public void Open()
     {
         display = "block";
         htmlClass = "modal fade show ";
+        if (!IsFullScreen){
+            classFullScreen = "modal-fullscreen-lg-down modal-dialog-centered modal-dialog-scrollable";
+            classBGColor = "bg-secondary-subtle";
+            classPadding = "p-2";
+        }
+        else{
+            classPadding = "";
+            classBGColor = "";
+            classFullScreen = "modal-fullscreen modal-dialog-centered";
+        }
+		
     }
 
     public void Close()

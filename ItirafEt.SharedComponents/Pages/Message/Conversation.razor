@@ -14,44 +14,44 @@
 
 @if (_isLoading)
 {
-	<div class="d-flex justify-content-center align-items-center"
-		 style="height:75vh">
-		<div class="spinner-border text-primary" role="status">
-			<span class="visually-hidden">Loading...</span>
+		<div class="d-flex justify-content-center align-items-center"
+			 style="height:75vh">
+			<div class="spinner-border text-primary" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
 		</div>
-	</div>
 }
 else if (_isError)
 {
-	<div class="col-lg-7 mx-auto py-5">
-		<div class="alert alert-danger" role="alert">
+		<div class="col-lg-7 mx-auto py-5">
+			<div class="alert alert-danger" role="alert">
 			@_errorMessage
+			</div>
 		</div>
-	</div>
 
 }
 else
 {
-	<div class="chat-container mx-auto">
-		<!-- Header -->
-		<div class="chat-header d-flex align-items-center">
-			<div class="position-relative me-3">
-				<img src="@(string.IsNullOrEmpty(_conversationDto?.ResponderUser.ProfilePictureUrl) ? "/anonymousIcon.png" : _conversationDto.ResponderUser.ProfilePictureUrl)"
-					 class="profile-photo rounded-circle"
-					 width="56"
-					 height="56"
-					 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-					 alt="Profile Resmi">
-			</div>
-			<div>
-				<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto?.ResponderUser.UserName</h5>
+		<div class="chat-container mx-auto">
+			<!-- Header -->
+			<div class="chat-header d-flex align-items-center">
+				<div class="position-relative me-3">
+					<img src="@(string.IsNullOrEmpty(_conversationDto?.ResponderUser.ProfilePictureUrl) ? "/anonymousIcon.png" : _conversationDto.ResponderUser.ProfilePictureUrl)"
+						 class="profile-photo rounded-circle"
+						 width="56"
+						 height="56"
+						 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+						 alt="Profile Resmi">
+				</div>
+				<div>
+					<h5 class="mb-0" style="cursor:pointer" @onclick="NavigateToUserProfile">@_conversationDto?.ResponderUser.UserName</h5>
 				@* <small class="text-muted">Çevrimiçi</small> *@
+				</div>
 			</div>
-		</div>
 
-		<!-- Mesajlar -->
+			<!-- Mesajlar -->
 
-		<div class="chat-messages bg-light-subtle reverse" @ref="_messagesDiv" id="messageDiv">
+			<div class="chat-messages bg-light-subtle reverse" @ref="_messagesDiv" id="messageDiv">
 			@if (_model?.Model?.Items != null)
 			{
 				@foreach (var message in _model.Model.Items)
@@ -60,30 +60,30 @@ else
 					var baseClass = isMine ? "message-out" : "message-in bg-primary-subtle";
 					var fullClass = $"{baseClass} chat-message d-flex flex-column";
 
-					<div id="message-@message.Id" class="d-flex flex-column @fullClass">
+								<div id="message-@message.Id" class="d-flex flex-column @fullClass">
 						@if (!string.IsNullOrEmpty(message.PhotoId))
 						{
-							<div class="message-photo mb-2">
+											<div class="message-photo mb-2">
 
 								@if (!string.IsNullOrEmpty(message.SignedThumbnailUrl))
 								{
-									<img src="@($"{ApiBaseUrl.BaseUrl}/api/message/thumbnail?token={message.SignedThumbnailUrl}")"
-										 alt="Thumbnail"
-										 style="max-width:150px; border-radius:10px; cursor:pointer"
-										 @onclick="async () => await ShowFullImage(message)" />
+														<img src="@($"{ApiBaseUrl.BaseUrl}/api/message/thumbnail?token={message.SignedThumbnailUrl}")"
+															 alt="Thumbnail"
+															 style="max-width:150px; border-radius:10px; cursor:pointer"
+															 @onclick="async () => await ShowFullImage(message)" />
 								}
 								else
 								{
-									<span>Yükleniyor...</span>
+														<span>Yükleniyor...</span>
 								}
 
-							</div>
+											</div>
 						}
 
-						<div class="message-content" style="white-space:pre-line">@message.Content</div>
+									<div class="message-content" style="white-space:pre-line">@message.Content</div>
 
-						<div class="message-meta d-flex justify-content-between align-items-end mt-1">
-							<small class="message-time pe-3 @(isMine ? "text-white-50" : "text-muted")">
+									<div class="message-meta d-flex justify-content-between align-items-end mt-1">
+										<small class="message-time pe-3 @(isMine ? "text-white-50" : "text-muted")">
 								@if (message.CreatedDate.Date < DateTime.Now.Date)
 								{
 									@message.CreatedDate.ToString("dd MMMM yyyy HH:mm")
@@ -92,90 +92,91 @@ else
 								{
 									@message.CreatedDate.ToString("HH:mm")
 								}
-							</small>
+										</small>
 
 							@if (isMine)
 							{
-								<div class="read-status">
+												<div class="read-status">
 									@if (message.IsRead)
 									{
-										<i class="bi bi-check2-all text-white"></i>
+															<i class="bi bi-check2-all text-white"></i>
 									}
 									else
 									{
-										<i class="bi bi-check2"></i>
+															<i class="bi bi-check2"></i>
 									}
-								</div>
+												</div>
 							}
-						</div>
-					</div>
+									</div>
+								</div>
 				}
 			}
 
-		</div>
+			</div>
 
-		<div class="message-input p-3">
+			<div class="message-input p-3">
 
-			<div class="chat-composer d-flex align-items-end">
+				<div class="chat-composer d-flex align-items-end">
 
-				<!-- Sol: Fotoğraf butonu -->
-				<div class="me-3">
-					<InputFile id="uploadPhoto"
-							   accept="image/*"
-							   style="display: none;"
-							   OnChange="OnFileSelected" />
+					<!-- Sol: Fotoğraf butonu -->
+					<div class="me-3">
+						<InputFile id="uploadPhoto"
+								   accept="image/*"
+								   style="display: none;"
+								   OnChange="OnFileSelected" />
 
-					<label for="uploadPhoto"
-						   class="btn-custom-circle"
-						   style="cursor: pointer;">
-						<i class="bi bi-image text-white"></i>
-					</label>
-				</div>
+						<label for="uploadPhoto"
+							   class="btn-custom-circle"
+							   style="cursor: pointer;">
+							<i class="bi bi-image text-white"></i>
+						</label>
+					</div>
 
-				<textarea id="@ChatInputId"
-						  @ref="_messageInput"
-						  class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
-						  placeholder="Bir mesaj yazın..."
-						  @bind="_messageDto.Content"
-						  disabled="@_isSendMessageBusy"
-						  rows="1" />
-				<!-- Sağ: Gönder butonu -->
-				<div class="ms-3">
-					<button class="btn-custom-circle"
-							@onclick="async () => await SendMessageAsync(_messageDto)"
-							disabled="@_isSendMessageBusy">
+					<textarea id="@ChatInputId"
+							  @ref="_messageInput"
+							  class="form-control message-textarea @(_isSendMessageBusy ?"bg-secondary" : "bg-primary") bg-opacity-10 border border-primary p-2 border-opacity-25"
+							  placeholder="Bir mesaj yazın..."
+							  @bind="_messageDto.Content"
+							  disabled="@_isSendMessageBusy"
+							  rows="1" />
+					<!-- Sağ: Gönder butonu -->
+					<div class="ms-3">
+						<button class="btn-custom-circle"
+								@onclick="async () => await SendMessageAsync(_messageDto)"
+								disabled="@_isSendMessageBusy">
 
 						@if (_isSendMessageBusy)
 						{
-							<div class="spinner-border spinner-border-sm text-white" role="status">
-								<span class="visually-hidden">Gönderiliyor...</span>
-							</div>
+									<div class="spinner-border spinner-border-sm text-white" role="status">
+										<span class="visually-hidden">Gönderiliyor...</span>
+									</div>
 						}
 						else
 						{
-							<i class="bi bi-send-check text-white"></i>
+									<i class="bi bi-send-check text-white"></i>
 						}
-					</button>
+						</button>
+					</div>
 				</div>
-			</div>
 
 			@if (_messageErrorMessage != null)
 			{
-				<div class="text-danger mx-2 my-2">
+						<div class="text-danger mx-2 my-2">
 					@_messageErrorMessage
-				</div>
+						</div>
 			}
 
+			</div>
 		</div>
-	</div>
 }
 
 <ModalComponent @ref="_sendPhotoModal"
 				Title="Fotoğraf Gönder"
 				TitleClass="d-none"
 				HeaderClass="d-none my-0"
-				FooterClass="modal-footer mb-3 px-md-5 px-1 d-none"
-				ChildClass="modal-body px-md-5 p-0 d-flex flex-column h-100">
+				FooterClass="modal-footer mb-3 px-1 d-none"
+				ChildClass="modal-body p-0 d-flex flex-column h-100"
+				IsFullScreen="true">
 	<ChildContent>
 		<div class="d-flex flex-column h-100">
 			<!-- Image container with dynamic sizing -->
@@ -205,13 +206,13 @@ else
 
 							@if (_isSendMessageBusy)
 							{
-								<div class="spinner-border spinner-border-sm text-white" role="status">
-									<span class="visually-hidden">Gönderiliyor...</span>
-								</div>
+									<div class="spinner-border spinner-border-sm text-white" role="status">
+										<span class="visually-hidden">Gönderiliyor...</span>
+									</div>
 							}
 							else
 							{
-								<i class="bi bi-send-check text-white"></i>
+									<i class="bi bi-send-check text-white"></i>
 							}
 						</button>
 					</div>
@@ -223,9 +224,9 @@ else
 
 				@if (_messageErrorMessage != null)
 				{
-					<div class="text-danger mx-2 my-2">
+						<div class="text-danger mx-2 my-2">
 						@_messageErrorMessage
-					</div>
+						</div>
 				}
 
 			</div>
@@ -237,7 +238,8 @@ else
 				TitleClass="d-none"
 				HeaderClass="d-none my-0"
 				FooterClass="d-none"
-				ChildClass="modal-body p-0 d-flex flex-column h-100">
+				ChildClass="modal-body p-0 d-flex flex-column h-100"
+				IsFullScreen="true">
 	<ChildContent>
 		<div class="d-flex flex-column h-100">
 
@@ -246,14 +248,14 @@ else
 				 style="min-height:0; overflow:hidden;">
 				@if (!string.IsNullOrEmpty(_selectedPhotoUrl))
 				{
-					<img src="@_selectedPhotoUrl"
-						 class="w-100"
-						 style="max-height:100%; max-width:100%; object-fit:contain;"
-						 @onclick="_showPhotoModal.Close" />
+						<img src="@_selectedPhotoUrl"
+							 class="w-100"
+							 style="max-height:100%; max-width:100%; object-fit:contain;"
+							 @onclick="_showPhotoModal.Close" />
 				}
 				else
 				{
-					<div class="text-white">Fotoğraf yükleniyor...</div>
+						<div class="text-white">Fotoğraf yükleniyor...</div>
 				}
 			</div>
 		</div>

@@ -9,7 +9,7 @@ using ItirafEt.Shared.Enums;
 
 namespace ItirafEt.Shared.ViewModels
 {
-    public class CreateReportViewModel
+    public class CreateReportTypeViewModel
     {
         public int Id { get; set; } 
 

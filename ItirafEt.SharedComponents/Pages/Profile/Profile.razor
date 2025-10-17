@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @inject IUserProfileApi UserProfileApi
 @inject IDateTimeHelperService DateTimeHelperService
+@inject IReportApi ReportApi
 
 
 @if (_haveError)
@@ -55,6 +56,14 @@ else
 										<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
 											<i class="bi bi-gender-female me-1"></i>Kadın
 										</span>
+									}
+									@if (_currentUserId != userId)
+									{
+										<div class="d-flex align-items-center" @onclick="async () => await ReportAsync(ReportClassEnum.User, _userId,null,null)">
+											<button class="btn-report" style="height:30px; width:30px">
+												<i class="bi bi-exclamation-circle" style="height:25px;"></i>
+											</button>
+										</div>
 									}
 								</div>
 							</div>
@@ -185,6 +194,108 @@ else
 	</div>
 }
 
+<ModalComponent @ref="_sendReportModal" Title="Şikayet Et" TitleClass="mx-auto" ChildClass="mb-2">
+	<ChildContent>
+
+		@if (!string.IsNullOrEmpty(_reportError))
+		{
+			<div class="alert alert-danger m-0 mt-2" role="alert">
+				@_reportError
+			</div>
+		}
+
+		@if (!string.IsNullOrEmpty(_reportsuccessMessage))
+		{
+			<div class="alert alert-success m-0 mt-2" role="alert">
+				@_reportsuccessMessage
+			</div>
+		}
+
+		<EditForm Model="_reportModel" OnValidSubmit="async () => await SendReportAsync()">
+			<DataAnnotationsValidator />
+
+
+			@* 
+			<div class="form-floating mt-0 mb-2">
+				<InputSelect class="form-select" @bind-Value="_reportModel.ReportTypeId" id="floatingSelect">
+					<option value="" disabled hidden selected> </option>
+					@foreach (var reportType in _reportTypes)
+					{
+						<option value="@reportType.Id"><i class="@reportType.IconUrl">@reportType.Name</i></option>
+					}
+				</InputSelect>
+
+				<label for="floatingSelect">Şikayet Türü Seçiniz</label>
+				<ValidationMessage For="()=> _reportModel.ReportTypeId" />
+
+			</div> *@
+
+
+
+			@* <div class="btn-group-vertical" role="group" aria-label="Vertical radio toggle button group">
+				@foreach (var reportType in _reportTypes)
+				{
+			<input type="radio"
+				   class="btn-check"
+				   name="vbtn-radio"
+				   id="reportType_@reportType.Id"
+				   autocomplete="off"
+				   @bind-value="_reportModel.ReportTypeId" />
+
+			<label class="btn btn-outline-danger" for="reportType_@reportType.Id">
+				<i class="@reportType.IconUrl me-2"></i>
+				<span>@reportType.Name</span>
+			</label>
+				}
+
+	<ValidationMessage For="@(() => _reportModel.ReportTypeId)" />
+</div>
+ *@
+			<div class="btn-group-vertical w-100 py-2" role="group" aria-label="Vertical radio toggle button group">
+				@foreach (var reportType in _reportTypes)
+				{
+					<input type="radio"
+						   class="btn-check"
+						   name="vbtn-radio"
+						   id="reportType_@reportType.Id"
+						   autocomplete="off"
+						   @onclick="() => _reportModel.ReportTypeId = reportType.Id"
+						   @bind-value="_reportModel.ReportTypeId" />
+
+					<label class="ps-1 fs-5 btn btn-outline-dark rounded-0 border border-0 text-start d-flex align-items-center mb-1"
+						   for="reportType_@reportType.Id">
+						<i class="@reportType.IconUrl me-2"></i>
+						<span>@reportType.Name</span>
+					</label>
+				}
+
+				<ValidationMessage For="@(() => _reportModel.ReportTypeId)" />
+
+			</div>
+
+
+
+
+
+
+			<div class="form-floating mt-0 mb-2">
+				<InputTextArea @bind-Value="_reportModel.ReportExplanation" class="form-control" placeholder="" id="name" style="min-height: 120px;" />
+				<label for="name">Açıklama</label>
+
+				<ValidationMessage For="()=> _reportModel.ReportExplanation" />
+			</div>
+
+			<div class="d-flex gap-2">
+				<button type="submit" class="btn-custom">Gönder</button>
+				<button type="button" class="btn-custom-red" @onclick="_sendReportModal.Close">Kapat</button>
+			</div>
+
+		</EditForm>
+
+	</ChildContent>
+
+</ModalComponent>
+
 
 @code {
 
@@ -194,6 +305,8 @@ else
 
 	private string? _errorMessage;
 	private string? _currentUserId;
+	private string? _reportsuccessMessage;
+	private string? _reportError;
 	private int _currentPage = PageNumber.ProfilePageNo;
 	private int _size = 5;
 	private int _totalPages = 1;
@@ -202,10 +315,13 @@ else
 	private bool _isDateOrdered = true;
 	private bool _isCountOrdered = false;
 	private bool _isLikeOrdered = false;
-	// private bool _isAuthorized = false;
 	private UserProfileViewModel _userProfileViewModel = new();
 	private UserPostsViewModel _userPostsViewModel = new();
 	private string _userTimeZone = string.Empty;
+
+	private ModalComponent? _sendReportModal;
+	private List<CreateReportTypeViewModel>? _reportTypes = new();
+	private SendReportViewModel _reportModel = new();
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -222,15 +338,8 @@ else
 		await GetUserInformetions();
 	}
 
-	// private void IsUserAuthorized()
-	// {
-	// 	_isAuthorized = AuthStateProvider.IsLoggedIn;
-	// }
-
 	private async Task GetUserInformetions()
 	{
-		// if (!_isAuthorized)
-		// 	return;
 
 		try
 		{
@@ -286,10 +395,8 @@ else
 		return age;
 	}
 
-
 	private void GetCurrentUserId()
 	{
-
 		_currentUserId = AuthStateProvider.User?.id;
 	}
 
@@ -386,6 +493,67 @@ else
 	private DateTime ToLocal(DateTime dateTime)
 	{
 		return DateTimeHelperService.ToLocal(dateTime, _userTimeZone);
+	}
+
+	private async Task ReportAsync(ReportClassEnum reportClass, Guid reportedUserId, int? postId, int? commentId)
+	{
+		// if (!_isUserLoggedIn)
+		// 	NavigateToLogin();
+
+		_reportError = null;
+		_reportsuccessMessage = null;
+
+		try
+		{
+			var response = await ReportApi.GetAllActiveReportTypeAsync(reportClass);
+			if (response.IsSuccess)
+			{
+				_reportTypes = response.Data;
+				_reportModel = new();
+				_reportModel.ReportClass = (int)reportClass;
+				_reportModel.ReportedUserId = reportedUserId;
+				_reportModel.PostId = postId;
+				_reportModel.ComemntId = commentId;
+				_reportModel.ReportingUserId = Guid.Parse(_currentUserId);
+
+			}
+			else
+				_reportError = response.ErrorMessage;
+
+		}
+		catch (Exception ex)
+		{
+			_reportError = ex.Message;
+		}
+		finally
+		{
+			_sendReportModal?.Open();
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+	private async Task SendReportAsync()
+	{
+		_reportError = null;
+		_reportsuccessMessage = null;
+
+		try
+		{
+			var response = await ReportApi.CreateReportAsync(_reportModel);
+
+			if (!response.IsSuccess)
+				_reportError = response.ErrorMessage;
+			else
+				_reportsuccessMessage = "Şikayetiniz başarıyla iletildi. Teşekkür ederiz.";
+		}
+		catch (Exception ex)
+		{
+			_reportError = ex.Message;
+		}
+		finally
+		{
+			await InvokeAsync(StateHasChanged);
+		}
+
 	}
 
 }

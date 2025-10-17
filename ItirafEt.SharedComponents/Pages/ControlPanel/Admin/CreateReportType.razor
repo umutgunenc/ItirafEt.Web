@@ -197,9 +197,9 @@
 
 @code {
 
-	private CreateReportViewModel _model = new();
-	private List<CreateReportViewModel> _reportTypeList = new();
-	private List<CreateReportViewModel> _displayedReportTypeList = new();
+	private CreateReportTypeViewModel _model = new();
+	private List<CreateReportTypeViewModel> _reportTypeList = new();
+	private List<CreateReportTypeViewModel> _displayedReportTypeList = new();
 	private bool _isBusy = false;
 	private string? _errorMessage = null;
 	private string? _successMessage = null;
@@ -243,7 +243,7 @@
 
 	}
 
-	private async Task SaveChangesReportType(CreateReportViewModel report)
+	private async Task SaveChangesReportType(CreateReportTypeViewModel report)
 	{
 		_errorMessage = null;
 		_successMessage = null;
@@ -277,7 +277,7 @@
 
 	}
 
-	private void ToggleActiveStatus(CreateReportViewModel report)
+	private void ToggleActiveStatus(CreateReportTypeViewModel report)
 	{
 		report.IsActive = !report.IsActive;
 	}

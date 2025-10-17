@@ -19,15 +19,13 @@ namespace ItirafEt.Shared.ViewModels
 
         public Guid? ReportedUserId { get; set; }
 
-        public int ReportTypeId { get; set; }
+        [Required(ErrorMessage = "Lütfen şikayet türü seçiniz.")]
+        public int? ReportTypeId { get; set; }
 
         [MaxLength(1024, ErrorMessage = "Şikayet açıklması Maksimum 1024 karakter uzunluğunda olmalıdır.")]
         public string? ReportExplanation { get; set; }
 
-        public DateTime CreatedDate { get; set; }
-
-        public ReportStatusEnum Status { get; set; } = ReportStatusEnum.Pending;
-        public ReportClassEnum ReportClass { get; set; }
+        public int ReportClass { get; set; }
 
     }
 }

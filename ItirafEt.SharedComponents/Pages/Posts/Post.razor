@@ -5,6 +5,7 @@
 @inject ICommentApi CommentApi
 @inject IPostViewApi PostViewApi
 @inject IMessageApi MessageApi
+@inject IReportApi ReportApi
 @inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject ISignalRService SignalRService
@@ -18,221 +19,185 @@
 <div class="card shadow-lg rounded-0 border-1 my-lg-3 text-bg-light">
 	@if (_isPostHaveError)
 	{
-		<div class="alert alert-danger m-3" role="alert">
+			<div class="alert alert-danger m-3" role="alert">
 			@_errorMessage
-		</div>
+			</div>
 	}
 	else
 	{
 		@if (_isBusy)
 		{
-			<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
-				<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
-					<span class="visually-hidden">Loading...</span>
-				</div>
-			</div>
+					<div class="d-flex justify-content-center align-items-center" style="height: 20vh;">
+						<div class="spinner-border text-primary fs-5" role="status" style="width: 3rem; height: 3rem;">
+							<span class="visually-hidden">Loading...</span>
+						</div>
+					</div>
 		}
 		else
 		{
 
-			<div class="card-body">
-				<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
+					<div class="card-body">
+						<h5 class="card-title fw-bold text-break">@_postDto.Title</h5>
 
-				<p class="card-text text-break"
-				   style="text-align: justify;
+						<p class="card-text text-break"
+						   style="text-align: justify;
 					text-justify: inter-word;
 					white-space: pre-wrap;">
 					@_postDto.Content
-				</p>
+						</p>
 
-				<div class="d-flex flex-column flex-lg-row justify-content-between">
+						<div class="d-flex flex-column flex-lg-row justify-content-between">
 
-					<!-- Web (lg-) -->
-					<div class="d-none d-lg-flex gap-2 align-items-start">
-						<div class="d-flex align-items-center  gap-2 ">
-							<button class="@($"btn-like{(_isAlreadyLiked ? " liked" :"")}")" style="height:30px; width:30px" @onclick="LikePostAsync">
-								<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
-							</button>
-							<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
+							<!-- Web (lg-) -->
+							<div class="d-none d-lg-flex gap-2 align-items-start">
+								<div class="d-flex align-items-center  gap-2 ">
+									<button class="@($"btn-like{(_isAlreadyLiked ? " liked" :"")}")" style="height:30px; width:30px" @onclick="LikePostAsync">
+										<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
+									</button>
+									<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 								@_likeCount
-							</span>
-						</div>
-						<div class="d-flex align-items-center  gap-2 ">
-							<button class="@($"btn-dislike{(_isAlreadyDisliked ? " disliked" :"")}")" style="height:30px; width:30px" @onclick="DislikePostAsync">
-								<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
-							</button>
-							<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
+									</span>
+								</div>
+								<div class="d-flex align-items-center  gap-2 ">
+									<button class="@($"btn-dislike{(_isAlreadyDisliked ? " disliked" :"")}")" style="height:30px; width:30px" @onclick="DislikePostAsync">
+										<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
+									</button>
+									<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 								@_dislikeCount
-							</span>
-						</div>
+									</span>
+								</div>
 						@if (!_isPostOwner)
 						{
-							<div class="d-flex align-items-center" @onclick="ReportPost">
-								<button class="btn-report" style="height:30px; width:30px">
-									<i class="bi bi-exclamation-circle" style="height:25px;"></i>
-								</button>
-							</div>
+										<div class="d-flex align-items-center" @onclick="async () => await ReportAsync(ReportClassEnum.Post,_postDto.UserId,postId,null)">
+											<button class="btn-report" style="height:30px; width:30px">
+												<i class="bi bi-exclamation-circle" style="height:25px;"></i>
+											</button>
+										</div>
 						}
-					</div>
+							</div>
 
-					<!-- Right Section (Always) -->
-					<div class="order-lg-2 mb-2 mb-lg-0 text-end">
-						<!-- Tarih -->
-						<div class="text-muted small">
+							<!-- Right Section (Always) -->
+							<div class="order-lg-2 mb-2 mb-lg-0 text-end">
+								<!-- Tarih -->
+								<div class="text-muted small">
 							@_postDto.CreatedDate.ToString("dd/MM/yyyy HH:mm")
 							@if (_postDto.UpdatedDate.HasValue)
 							{
 								@($" - {_postDto.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}")
 							}
-						</div>
-						<!-- Görüntülenme -->
-						<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViwers">
-							<i class="bi bi-eye me-1"></i>@_postViewCount
-						</div>
-					</div>
+								</div>
+								<!-- Görüntülenme -->
+								<div class="text-muted small mt-2" style="cursor:pointer" @onclick="ShowViwers">
+									<i class="bi bi-eye me-1"></i>@_postViewCount
+								</div>
+							</div>
 
-					<!-- Mobile (lg-) -->
-					<div class="d-flex d-lg-none justify-content-end gap-2 mt-2 order-3">
-						<!-- Beğeni -->
-						<div class="d-flex align-items-center gap-2 ">
-							<button class="btn-like" style="height:30px; width:30px" @onclick="LikePostAsync">
-								<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
-							</button>
-							<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
+							<!-- Mobile (lg-) -->
+							<div class="d-flex d-lg-none justify-content-end gap-2 mt-2 order-3">
+								<!-- Beğeni -->
+								<div class="d-flex align-items-center gap-2 ">
+									<button class="btn-like" style="height:30px; width:30px" @onclick="LikePostAsync">
+										<i class="@($"bi bi-heart{(_isAlreadyLiked ? "-fill":"")}")" style="height:20px;"></i>
+									</button>
+									<span class="text-muted small" style="cursor:pointer" @onclick="ShowLikes">
 								@_likeCount
-							</span>
-						</div>
-						<div class="d-flex align-items-center  gap-2 ">
-							<button class="btn-dislike" style="height:30px; width:30px" @onclick="DislikePostAsync">
-								<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
-							</button>
-							<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
+									</span>
+								</div>
+								<div class="d-flex align-items-center  gap-2 ">
+									<button class="btn-dislike" style="height:30px; width:30px" @onclick="DislikePostAsync">
+										<i class="@($"bi bi-heartbreak{(_isAlreadyDisliked ? "-fill":"")}")" style="height:20px;"></i>
+									</button>
+									<span class="text-muted small" style="cursor:pointer" @onclick="ShowDislikes">
 								@_dislikeCount
-							</span>
-						</div>
+									</span>
+								</div>
 						@if (!_isPostOwner)
 						{
-							<div class="d-flex align-items-center" @onclick="ReportPost">
-								<button class="btn-report" style="height:30px; width:30px">
-									<i class="bi bi-exclamation-circle" style="height:25px;"></i>
-								</button>
-							</div>
+										<div class="d-flex align-items-center" @onclick="async () => await ReportAsync(ReportClassEnum.Post, _postDto.UserId,_postDto.Id,null)">
+											<button class="btn-report" style="height:30px; width:30px">
+												<i class="bi bi-exclamation-circle" style="height:25px;"></i>
+											</button>
+										</div>
 						}
-					</div>
-				</div>
-
-				<hr />
-
-				<div class="d-flex flex-column gap-2 mb-4">
-					<!-- Üst Bilgi Satırı -->
-					<div class="d-flex align-items-center gap-3">
-						<!-- Profil Fotoğrafı -->
-						<img src="@(string.IsNullOrEmpty(_postDto.UserProfileImageUrl)? "/anonymousIcon.png" : _postDto.UserProfileImageUrl)"
-							 class="profile-photo rounded-circle"
-							 width="56" height="56">
-
-						<!-- Kullanıcı Bilgileri -->
-						<div class="d-flex flex-column">
-							<div class="d-flex align-items-center gap-2 mb-2">
-								<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="ShowUserProfile">@_postDto.UserName</h5>
 							</div>
+						</div>
 
-							<div class="d-flex  align-items-center justify-content-between">
+						<hr />
 
-								<div class="d-flex align-items-center gap-2">
-									<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+						<div class="d-flex flex-column gap-2 mb-4">
+							<!-- Üst Bilgi Satırı -->
+							<div class="d-flex align-items-center gap-3">
+								<!-- Profil Fotoğrafı -->
+								<img src="@(string.IsNullOrEmpty(_postDto.UserProfileImageUrl)? "/anonymousIcon.png" : _postDto.UserProfileImageUrl)"
+									 class="profile-photo rounded-circle"
+									 width="56" height="56">
+
+								<!-- Kullanıcı Bilgileri -->
+								<div class="d-flex flex-column">
+									<div class="d-flex align-items-center gap-2 mb-2">
+										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="ShowUserProfile">@_postDto.UserName</h5>
+									</div>
+
+									<div class="d-flex  align-items-center justify-content-between">
+
+										<div class="d-flex align-items-center gap-2">
+											<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
 										@_postDto.UserAge
-									</span>
+											</span>
 									@if (_postDto.UserGenderId == (int)GenderEnum.Male)
 									{
-										<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-											<i class="bi bi-gender-male me-1"></i>Erkek
-										</span>
+													<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+														<i class="bi bi-gender-male me-1"></i>Erkek
+													</span>
 									}
 									else if (_postDto.UserGenderId == (int)GenderEnum.Female)
 									{
-										<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-											<i class="bi bi-gender-female me-1"></i>Kadın
-										</span>
+													<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+														<i class="bi bi-gender-female me-1"></i>Kadın
+													</span>
 									}
 									@if (_currentUserId != _postDto.UserId)
 									{
-										<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(_postDto.UserId)">
-											<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-										</a>
+													<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(_postDto.UserId)">
+														<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+													</a>
 									}
+															@if (!_isPostOwner)
+						{
+													<div class="d-flex align-items-center" @onclick="async () => await ReportAsync(ReportClassEnum.User, _postDto.UserId,null,null)">
+											<button class="btn-report" style="height:30px; width:30px">
+												<i class="bi bi-exclamation-circle" style="height:25px;"></i>
+											</button>
+										</div>
+						}
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>
 
-				<div class="mt-4">
-					<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
-						Yorumlar @($"({_comments?.Count ?? 0})")
-						<i class="bi @(_showComments ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+						<div class="mt-4">
+							<h6 class="fw-bold" @onclick="ShowComments" style="cursor:pointer">
+								Yorumlar @($"({_comments?.Count ?? 0})")
+								<i class="bi @(_showComments ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
 
-					</h6>
-				</div>
+							</h6>
+						</div>
 				@if (_showComments)
 				{
-					<div class="my-4">
+								<div class="my-4">
 						@if (_comments?.Count > 0)
 						{
 
-							<EditForm Model="_commentModel"
-									  OnValidSubmit="async () => await AddCommentAsync()">
-								<DataAnnotationsValidator />
-								<div class="d-flex align-items-end mt-3">
-
-									<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-												   placeholder="Yorum yazın..."
-												   rows="4"
-												   @bind-Value="_commentModel.Content">
-									</InputTextArea>
-
-									<div class="mx-2">
-										<button class="btn-custom-circle" disabled="@_isApiBusy">
-											<i class="bi bi-send-check text-white"></i>
-										</button>
-									</div>
-
-
-								</div>
-								<ValidationMessage For="@(() => _commentModel.Content)" />
-
-							</EditForm>
-
-							<div class="card mt-3 shadow-sm">
-								<div class="card-body p-2">
-									<!-- Yorum listesi -->
-									@foreach (var comment in _comments)
-									{
-										<div>
-											<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
-												 class="profile-photo rounded-circle"
-												 width="40" height="40" />
-											<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
-
-										</div>
-										<small class="text-muted" style="font-size:12px;">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(comment.UpdatedDate != null ? $"- {comment.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "")</small>
-
-										@if (!comment.IsCommentEditing)
-										{
-											<p class="m-0 my-2 @(!comment.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@comment.Content</p>
-										}
-										else
-										{
-
-											<EditForm Model="comment"
-													  OnValidSubmit="async () => await EditCommentAsync(comment.Id)">
+											<EditForm Model="_commentModel"
+													  OnValidSubmit="async () => await AddCommentAsync()">
 												<DataAnnotationsValidator />
 												<div class="d-flex align-items-end mt-3">
 
 													<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-																   placeholder="Yorumunuzu düzenleyin..."
+																   placeholder="Yorum yazın..."
 																   rows="4"
-																   @bind-Value="comment.Content">
+																   @bind-Value="_commentModel.Content">
 													</InputTextArea>
 
 													<div class="mx-2">
@@ -240,66 +205,110 @@
 															<i class="bi bi-send-check text-white"></i>
 														</button>
 													</div>
-													<div class="me-2">
-														<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)">
-															<i class="bi bi-arrow-counterclockwise"></i>
-														</button>
-													</div>
+
+
 												</div>
-												<ValidationMessage For="@(() => comment.Content)" />
+												<ValidationMessage For="@(() => _commentModel.Content)" />
 
 											</EditForm>
+
+											<div class="card mt-3 shadow-sm">
+												<div class="card-body p-2">
+													<!-- Yorum listesi -->
+									@foreach (var comment in _comments)
+									{
+															<div>
+																<img src="@(string.IsNullOrEmpty(comment.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : comment.CommentUserProfilPhotoUrl)"
+																	 class="profile-photo rounded-circle"
+																	 width="40" height="40" />
+																<strong class="ms-2" @onclick="()=>NavigateToUserProfile(comment.UserId)" style="cursor:pointer">@comment.UserName</strong>
+
+															</div>
+															<small class="text-muted" style="font-size:12px;">@comment.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(comment.UpdatedDate != null ? $"- {comment.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "")</small>
+
+										@if (!comment.IsCommentEditing)
+										{
+																	<p class="m-0 my-2 @(!comment.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@comment.Content</p>
 										}
-										<div class="d-flex justify-content-start m-0 my-2 gap-2">
+										else
+										{
+
+																	<EditForm Model="comment"
+																			  OnValidSubmit="async () => await EditCommentAsync(comment.Id)">
+																		<DataAnnotationsValidator />
+																		<div class="d-flex align-items-end mt-3">
+
+																			<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+																						   placeholder="Yorumunuzu düzenleyin..."
+																						   rows="4"
+																						   @bind-Value="comment.Content">
+																			</InputTextArea>
+
+																			<div class="mx-2">
+																				<button class="btn-custom-circle" disabled="@_isApiBusy">
+																					<i class="bi bi-send-check text-white"></i>
+																				</button>
+																			</div>
+																			<div class="me-2">
+																				<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)">
+																					<i class="bi bi-arrow-counterclockwise"></i>
+																				</button>
+																			</div>
+																		</div>
+																		<ValidationMessage For="@(() => comment.Content)" />
+
+																	</EditForm>
+										}
+															<div class="d-flex justify-content-start m-0 my-2 gap-2">
 
 											@if (comment.IsActive)
 											{
-												<div class="d-flex gap-2 align-items-start">
-													<div class="d-flex align-items-center  gap-2 ">
+																		<div class="d-flex gap-2 align-items-start">
+																			<div class="d-flex align-items-center  gap-2 ">
 														@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
 														{
-															<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
-																<i class="bi bi-heart-fill" style="height:20px;"></i>
-															</button>
+																						<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
+																							<i class="bi bi-heart-fill" style="height:20px;"></i>
+																						</button>
 														}
 														else
 														{
-															<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
-																<i class="bi bi-heart" style="height:20px;"></i>
-															</button>
+																						<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(comment.Id)">
+																							<i class="bi bi-heart" style="height:20px;"></i>
+																						</button>
 														}
 
-														<span class="text-muted small" style="cursor:pointer">@comment.LikeCount</span>
-													</div>
+																				<span class="text-muted small" style="cursor:pointer">@comment.LikeCount</span>
+																			</div>
 
-													<div class="d-flex align-items-center  gap-2 ">
+																			<div class="d-flex align-items-center  gap-2 ">
 
 														@if (comment.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
 														{
 
-															<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
-																<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
-															</button>
+																						<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
+																							<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
+																						</button>
 														}
 														else
 														{
 
-															<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
-																<i class="bi bi-heartbreak" style="height:20px;"></i>
-															</button>
+																						<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(comment.Id)">
+																							<i class="bi bi-heartbreak" style="height:20px;"></i>
+																						</button>
 														}
-														<span class="text-muted small" style="cursor:pointer">@comment.DislikeCount</span>
-													</div>
+																				<span class="text-muted small" style="cursor:pointer">@comment.DislikeCount</span>
+																			</div>
 
 													@if (comment.UserId != _currentUserId)
 													{
-														<div class="d-flex align-items-center">
-															<button class="btn-report" style="height:30px; width:30px">
-																<i class="bi bi-exclamation-circle"></i>
-															</button>
-														</div>
+																					<div class="d-flex align-items-center">
+																						<button class="btn-report" style="height:30px; width:30px" @onclick="async () => await ReportAsync(ReportClassEnum.Comment, comment.UserId,_postDto.Id,comment.Id)">
+																							<i class="bi bi-exclamation-circle"></i>
+																						</button>
+																					</div>
 													}
-												</div>
+																		</div>
 											}
 
 
@@ -307,53 +316,232 @@
 											{
 												@if (comment.UserId == _currentUserId)
 												{
-													<div>
-														<button class="btn-custom-orange-circle" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" style="height:30px; width:30px">
-															<i class="bi bi-pen"></i>
-														</button>
-													</div>
+																				<div>
+																					<button class="btn-custom-orange-circle" @onclick="async ()=> await DisplayCommentEditingAsync(comment.Id)" style="height:30px; width:30px">
+																						<i class="bi bi-pen"></i>
+																					</button>
+																				</div>
 												}
 
-												<div>
-													<button class="btn-custom-red-circle" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)" style="height:30px; width:30px">
-														<i class="bi bi-trash-fill"></i>
-													</button>
-												</div>
+																		<div>
+																			<button class="btn-custom-red-circle" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)" style="height:30px; width:30px">
+																				<i class="bi bi-trash-fill"></i>
+																			</button>
+																		</div>
 											}
 											@if (comment.IsActive)
 											{
-												<button class="btn-custom-circle" @onclick="() => ToggleReplyBox(comment.Id)" style="height:30px; width:30px">
-													<i class="bi bi-chat-right-quote" style="height:20px;"></i>
-												</button>
+																		<button class="btn-custom-circle" @onclick="() => ToggleReplyBox(comment.Id)" style="height:30px; width:30px">
+																			<i class="bi bi-chat-right-quote" style="height:20px;"></i>
+																		</button>
 											}
 
-										</div>
+															</div>
 										@if (comment.ShowDeleteWarning)
 										{
-											<div role="alert">
-												<div>
-													Yorumunuzu silmek istediğinize emin misiniz?
-												</div>
-												<div class="d-flex justify-content-start my-1 gap-2">
-													<button class="btn-custom" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">Hayır</button>
-													<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(comment.Id)">Evet</button>
-												</div>
-											</div>
+																	<div role="alert">
+																		<div>
+																			Yorumunuzu silmek istediğinize emin misiniz?
+																		</div>
+																		<div class="d-flex justify-content-start my-1 gap-2">
+																			<button class="btn-custom" @onclick="async ()=> await DisplayCommentDeleteWarningAsync(comment.Id)">Hayır</button>
+																			<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(comment.Id)">Evet</button>
+																		</div>
+																	</div>
 
 										}
-										<!-- Reply input -->
+															<!-- Reply input -->
 										@if (_replyToCommentId == comment.Id)
 										{
 
-											<EditForm Model="_replyModel"
-													  OnValidSubmit="async () => await AddReplyAsync(comment.Id)">
+																	<EditForm Model="_replyModel"
+																			  OnValidSubmit="async () => await AddReplyAsync(comment.Id)">
+																		<DataAnnotationsValidator />
+																		<div class="d-flex align-items-end mt-3">
+
+																			<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+																						   placeholder="Cevabınızı yazın..."
+																						   rows="4"
+																						   @bind-Value="_replyModel.Content">
+																			</InputTextArea>
+
+																			<div class="mx-2">
+																				<button class="btn-custom-circle" disabled="@_isApiBusy">
+																					<i class="bi bi-send-check text-white"></i>
+																				</button>
+																			</div>
+																		</div>
+																		<ValidationMessage For="@(() => _replyModel.Content)" />
+
+																	</EditForm>
+										}
+															<!-- Alt yorumlar (replies) -->
+															<div class="mt-2 d-flex align-items-end justify-content-between">
+											@if (comment.CommentReplies?.Any() == true)
+											{
+																		<h6 class="fw-semibold"
+																			@onclick="() => ShowCommentReplies(comment)"
+																			style="cursor:pointer">
+																			Cevaplar (@comment.CommentReplies.Count)
+																			<i class="bi @(comment.ShowReplies ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+																		</h6>
+											}
+											else
+											{
+																		<h6 class="fw-semibold">
+																			Cevaplar (0)
+																		</h6>
+											}
+
+															</div>
+										@if (comment.CommentReplies?.Any() == true && comment.ShowReplies)
+										{
+																	<div class="ms-5">
+												@foreach (var reply in comment.CommentReplies)
+												{
+																				<div class="mb-1 bg-light border-1">
+																					<div class="card-text py-2 ps-2">
+																						<div class="d-flex justify-content-between">
+																							<div>
+																								<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
+																									 class="profile-photo rounded-circle" width="40" height="40" />
+																								<strong class="ms-2" @onclick="()=>NavigateToUserProfile(reply.UserId)" style="cursor:pointer">@reply.UserName</strong>
+																							</div>
+																						</div>
+																						<small class="text-muted" style="font-size:12px;">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(reply.UpdatedDate != null ? $"- {reply.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "") </small>
+															@if (!reply.IsCommentEditing)
+															{
+																								<p class="m-0 mt-2  @(!reply.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@reply.Content</p>
+															}
+															else
+															{
+
+																								<EditForm Model="reply"
+																										  OnValidSubmit="async () => await EditCommentAsync(reply.Id)">
+																									<DataAnnotationsValidator />
+																									<div class="d-flex align-items-end mt-3">
+
+																										<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
+																													   placeholder="Yorumunuzu düzenleyin..."
+																													   rows="4"
+																													   @bind-Value="reply.Content">
+																										</InputTextArea>
+
+																										<div class="mx-2">
+																											<button class="btn-custom-circle" disabled="@_isApiBusy">
+																												<i class="bi bi-send-check text-white"></i>
+																											</button>
+																										</div>
+																										<div class="me-2">
+																											<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																												<i class="bi bi-arrow-counterclockwise"></i>
+																											</button>
+																										</div>
+																									</div>
+																									<ValidationMessage For="@(() => reply.Content)" />
+
+																								</EditForm>
+															}
+															@if (reply.IsActive)
+															{
+																								<div class="d-flex justify-content-start gap-2 mt-2">
+
+																									<div class="d-flex align-items-center  gap-2 ">
+																		@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
+																		{
+																												<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
+																													<i class="bi bi-heart-fill" style="height:20px;"></i>
+																												</button>
+																		}
+																		else
+																		{
+																												<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
+																													<i class="bi bi-heart" style="height:20px;"></i>
+																												</button>
+																		}
+																										<span class="text-muted small" style="cursor:pointer">@reply.LikeCount</span>
+																									</div>
+
+																									<div class="d-flex align-items-center  gap-2 ">
+																		@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
+																		{
+																												<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
+																													<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
+																												</button>
+																		}
+																		else
+																		{
+																												<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
+																													<i class="bi bi-heartbreak" style="height:20px;"></i>
+																												</button>
+																		}
+																										<span class="text-muted small" style="cursor:pointer">@reply.DislikeCount</span>
+																									</div>
+
+																	@if (comment.UserId != _currentUserId)
+																	{
+																											<div class="d-flex align-items-center">
+																																																							<button class="btn-report" style="height:30px; width:30px"  @onclick="async () => await ReportAsync(ReportClassEnum.Comment, reply.UserId,_postDto.Id,reply.Id)">
+																													<i class="bi bi-exclamation-circle"></i>
+																												</button>
+																											</div>
+																	}
+																	@if (reply.UserId == _currentUserId && comment.IsActive || adminRoles.Contains(_userRoleId))
+																	{
+																											<div>
+																												<button class="btn-custom-orange-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
+																													<i class="bi bi-pen"></i>
+																												</button>
+																											</div>
+
+																											<div>
+																												<button class="btn-custom-red-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
+																													<i class="bi bi-trash-fill"></i>
+																												</button>
+																											</div>
+																	}
+
+
+
+																								</div>
+															}
+
+															@if (reply.ShowDeleteWarning)
+															{
+																								<div class="" role="alert">
+																									<div>
+																										Yorumunuzu silmek istediğinize emin misiniz?
+																									</div>
+																									<div class="d-flex justify-content-start my-1 gap-2">
+																										<button class="btn-custom" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">Hayır</button>
+																										<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(reply.Id)">Evet</button>
+																									</div>
+																								</div>
+															}
+																					</div>
+																				</div>
+												}
+																	</div>
+										}
+															<hr />
+									}
+												</div>
+											</div>
+						}
+						@if (_comments?.Count == null)
+						{
+											<div class="alert alert-info" role="alert">
+								@_commentErrorMessage
+											</div>
+
+											<EditForm Model="_commentModel"
+													  OnValidSubmit="async () => await AddCommentAsync()">
 												<DataAnnotationsValidator />
 												<div class="d-flex align-items-end mt-3">
-
 													<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-																   placeholder="Cevabınızı yazın..."
+																   placeholder="Yorum yazın..."
 																   rows="4"
-																   @bind-Value="_replyModel.Content">
+																   @bind-Value="_commentModel.Content">
 													</InputTextArea>
 
 													<div class="mx-2">
@@ -361,205 +549,26 @@
 															<i class="bi bi-send-check text-white"></i>
 														</button>
 													</div>
+
 												</div>
-												<ValidationMessage For="@(() => _replyModel.Content)" />
+												<ValidationMessage For="@(() => _commentModel.Content)" />
 
 											</EditForm>
-										}
-										<!-- Alt yorumlar (replies) -->
-										<div class="mt-2 d-flex align-items-end justify-content-between">
-											@if (comment.CommentReplies?.Any() == true)
-											{
-												<h6 class="fw-semibold"
-													@onclick="() => ShowCommentReplies(comment)"
-													style="cursor:pointer">
-													Cevaplar (@comment.CommentReplies.Count)
-													<i class="bi @(comment.ShowReplies ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
-												</h6>
-											}
-											else
-											{
-												<h6 class="fw-semibold">
-													Cevaplar (0)
-												</h6>
-											}
-
-										</div>
-										@if (comment.CommentReplies?.Any() == true && comment.ShowReplies)
-										{
-											<div class="ms-5">
-												@foreach (var reply in comment.CommentReplies)
-												{
-													<div class="mb-1 bg-light border-1">
-														<div class="card-text py-2 ps-2">
-															<div class="d-flex justify-content-between">
-																<div>
-																	<img src="@(string.IsNullOrEmpty(reply.CommentUserProfilPhotoUrl)? "/anonymousIcon.png" : reply.CommentUserProfilPhotoUrl)"
-																		 class="profile-photo rounded-circle" width="40" height="40" />
-																	<strong class="ms-2" @onclick="()=>NavigateToUserProfile(reply.UserId)" style="cursor:pointer">@reply.UserName</strong>
-																</div>
-															</div>
-															<small class="text-muted" style="font-size:12px;">@reply.CreatedDate.ToString("dd/MM/yyyy HH:mm") @(reply.UpdatedDate != null ? $"- {reply.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")}" : "") </small>
-															@if (!reply.IsCommentEditing)
-															{
-																<p class="m-0 mt-2  @(!reply.IsActive ? "text-decoration-line-through" : "")" style="white-space: pre-wrap;">@reply.Content</p>
-															}
-															else
-															{
-
-																<EditForm Model="reply"
-																		  OnValidSubmit="async () => await EditCommentAsync(reply.Id)">
-																	<DataAnnotationsValidator />
-																	<div class="d-flex align-items-end mt-3">
-
-																		<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-																					   placeholder="Yorumunuzu düzenleyin..."
-																					   rows="4"
-																					   @bind-Value="reply.Content">
-																		</InputTextArea>
-
-																		<div class="mx-2">
-																			<button class="btn-custom-circle" disabled="@_isApiBusy">
-																				<i class="bi bi-send-check text-white"></i>
-																			</button>
-																		</div>
-																		<div class="me-2">
-																			<button class="btn-custom-red-circle" disabled="@_isApiBusy" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
-																				<i class="bi bi-arrow-counterclockwise"></i>
-																			</button>
-																		</div>
-																	</div>
-																	<ValidationMessage For="@(() => reply.Content)" />
-
-																</EditForm>
-															}
-															@if (reply.IsActive)
-															{
-																<div class="d-flex justify-content-start gap-2 mt-2">
-
-																	<div class="d-flex align-items-center  gap-2 ">
-																		@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Like) == true)
-																		{
-																			<button class="btn-like liked" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
-																				<i class="bi bi-heart-fill" style="height:20px;"></i>
-																			</button>
-																		}
-																		else
-																		{
-																			<button class="btn-like" style="height:30px; width:30px" @onclick="async () => await LikeCommentAsync(reply.Id)">
-																				<i class="bi bi-heart" style="height:20px;"></i>
-																			</button>
-																		}
-																		<span class="text-muted small" style="cursor:pointer">@reply.LikeCount</span>
-																	</div>
-
-																	<div class="d-flex align-items-center  gap-2 ">
-																		@if (reply.CommentReactions?.Any(cr => cr.ReactingUserId == _currentUserId && cr.ReactionTypeId == (int)ReactionTypeEnum.Dislike) == true)
-																		{
-																			<button class="btn-dislike disliked" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
-																				<i class="bi bi-heartbreak-fill" style="height:20px;"></i>
-																			</button>
-																		}
-																		else
-																		{
-																			<button class="btn-dislike" style="height:30px; width:30px" @onclick="async () => await DislikeCommentAsync(reply.Id)">
-																				<i class="bi bi-heartbreak" style="height:20px;"></i>
-																			</button>
-																		}
-																		<span class="text-muted small" style="cursor:pointer">@reply.DislikeCount</span>
-																	</div>
-
-																	@if (comment.UserId != _currentUserId)
-																	{
-																		<div class="d-flex align-items-center">
-																			<button class="btn-report" style="height:30px; width:30px">
-																				<i class="bi bi-exclamation-circle"></i>
-																			</button>
-																		</div>
-																	}
-																	@if (reply.UserId == _currentUserId && comment.IsActive || adminRoles.Contains(_userRoleId))
-																	{
-																		<div>
-																			<button class="btn-custom-orange-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyEditingAsync(comment.Id,reply.Id)">
-																				<i class="bi bi-pen"></i>
-																			</button>
-																		</div>
-
-																		<div>
-																			<button class="btn-custom-red-circle" style="height:30px; width:30px" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">
-																				<i class="bi bi-trash-fill"></i>
-																			</button>
-																		</div>
-																	}
-
-
-
-																</div>
-															}
-
-															@if (reply.ShowDeleteWarning)
-															{
-																<div class="" role="alert">
-																	<div>
-																		Yorumunuzu silmek istediğinize emin misiniz?
-																	</div>
-																	<div class="d-flex justify-content-start my-1 gap-2">
-																		<button class="btn-custom" @onclick="async ()=> await DisplayReplyDeleteWarningAsync(comment.Id,reply.Id)">Hayır</button>
-																		<button class="btn-custom-red" @onclick="async ()=> await DeleteCommentAsync(reply.Id)">Evet</button>
-																	</div>
-																</div>
-															}
-														</div>
-													</div>
-												}
-											</div>
-										}
-										<hr />
-									}
-								</div>
-							</div>
-						}
-						@if (_comments?.Count == null)
-						{
-							<div class="alert alert-info" role="alert">
-								@_commentErrorMessage
-							</div>
-
-							<EditForm Model="_commentModel"
-									  OnValidSubmit="async () => await AddCommentAsync()">
-								<DataAnnotationsValidator />
-								<div class="d-flex align-items-end mt-3">
-									<InputTextArea class="form-control message-textarea bg-primary bg-opacity-10 border border-primary p-2 border-opacity-25"
-												   placeholder="Yorum yazın..."
-												   rows="4"
-												   @bind-Value="_commentModel.Content">
-									</InputTextArea>
-
-									<div class="mx-2">
-										<button class="btn-custom-circle" disabled="@_isApiBusy">
-											<i class="bi bi-send-check text-white"></i>
-										</button>
-									</div>
-
-								</div>
-								<ValidationMessage For="@(() => _commentModel.Content)" />
-
-							</EditForm>
 						}
 						else if (_isCommentsHaveError)
 						{
-							<div class="alert alert-danger" role="alert">
+											<div class="alert alert-danger" role="alert">
 								@_commentErrorMessage
-							</div>
+											</div>
 						}
-					</div>
+								</div>
 				}
-			</div>
+					</div>
 		}
 	}
 </div>
 
-<ModalComponent @ref="_likesModel" Title="Beğeneler" TitleClass="mx-auto" ChildClass="mb-3">
+<ModalComponent @ref="_likesModal" Title="Beğeneler" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>
 		@if (_postReactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Like))
 		{
@@ -567,69 +576,69 @@
 			{
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Like)
 				{
-					<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
-						<div class="d-flex flex-column gap-2 my-3 mx-2">
-							<!-- Üst Bilgi Satırı -->
-							<div class="d-flex align-items-center gap-2 gap-md-4">
-								<!-- Profil Fotoğrafı -->
-								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-									 class="profile-photo rounded-circle"
-									 width="56" height="56">
-								<div class="d-flex flex-column">
-									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
-										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
-										<small>
+								<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
+									<div class="d-flex flex-column gap-2 my-3 mx-2">
+										<!-- Üst Bilgi Satırı -->
+										<div class="d-flex align-items-center gap-2 gap-md-4">
+											<!-- Profil Fotoğrafı -->
+											<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
+												 class="profile-photo rounded-circle"
+												 width="56" height="56">
+											<div class="d-flex flex-column">
+												<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
+													<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
+													<small>
 											@reaction.CreatedDate.ToString("HH:mm dd/MM/yyyy")
-										</small>
-									</div>
+													</small>
+												</div>
 
-									<div class="d-flex align-items-center justify-content-between">
+												<div class="d-flex align-items-center justify-content-between">
 
-										<div class="d-flex align-items-center gap-2">
-											<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+													<div class="d-flex align-items-center gap-2">
+														<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
 												@reaction.ReactingUserAge
-											</span>
+														</span>
 											@if (reaction.ReactingUserGenderId == (int)GenderEnum.Male)
 											{
-												<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-													<i class="bi bi-gender-male me-1"></i>Erkek
-												</span>
+																<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+																	<i class="bi bi-gender-male me-1"></i>Erkek
+																</span>
 											}
 											else if (reaction.ReactingUserGenderId == (int)GenderEnum.Female)
 											{
-												<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-													<i class="bi bi-gender-female me-1"></i>Kadın
-												</span>
+																<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+																	<i class="bi bi-gender-female me-1"></i>Kadın
+																</span>
 											}
 											@if (_currentUserId != reaction.ReactingUserId)
 											{
-												<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
-													<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-												</a>
+																<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
+																	<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+																</a>
 											}
 
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-						</div>
-					</div>
 				}
 			}
 		}
 		else
 		{
-			<div class="alert alert-info" role="alert">
-				Gönderiyi henüz kimse beğenmedi.
-			</div>
+				<div class="alert alert-info" role="alert">
+					Gönderiyi henüz kimse beğenmedi.
+				</div>
 		}
 	</ChildContent>
 	<FooterContent>
-		<button class="btn blue col text-white fw-medium" @onclick="_likesModel.Close">Kapat</button>
+		<button class="btn blue col text-white fw-medium" @onclick="_likesModal.Close">Kapat</button>
 	</FooterContent>
 </ModalComponent>
 
-<ModalComponent @ref="_dislikeModel" Title="Beğenmeyenler" TitleClass="mx-auto" ChildClass="mb-3">
+<ModalComponent @ref="_dislikeModal" Title="Beğenmeyenler" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>
 		@if (_postReactions.Any(r => r.ReactionTypeId == (int)ReactionTypeEnum.Dislike))
 		{
@@ -637,136 +646,136 @@
 			{
 				@if (reaction.ReactionTypeId == (int)ReactionTypeEnum.Dislike)
 				{
-					<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
-						<div class="d-flex flex-column gap-2 my-3 mx-2">
-							<!-- Üst Bilgi Satırı -->
-							<div class="d-flex align-items-center gap-2 gap-sm-4">
-								<!-- Profil Fotoğrafı -->
-								<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
-									 class="profile-photo rounded-circle"
-									 width="56" height="56">
-								<div class="d-flex flex-column">
-									<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
-										<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
-										<small>
+								<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
+									<div class="d-flex flex-column gap-2 my-3 mx-2">
+										<!-- Üst Bilgi Satırı -->
+										<div class="d-flex align-items-center gap-2 gap-sm-4">
+											<!-- Profil Fotoğrafı -->
+											<img src="@(string.IsNullOrEmpty(reaction.ReactingUserProfileImageUrl)? "/anonymousIcon.png" : reaction.ReactingUserProfileImageUrl)"
+												 class="profile-photo rounded-circle"
+												 width="56" height="56">
+											<div class="d-flex flex-column">
+												<div class="d-flex align-items-center gap-1 gap-sm-3 mb-2">
+													<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(reaction.ReactingUserId)">@reaction.ReactingUserUserName</h5>
+													<small>
 											@reaction.CreatedDate.ToString("HH:mm dd/MM/yyyy")
-										</small>
-									</div>
+													</small>
+												</div>
 
-									<div class="d-flex align-items-center justify-content-between">
+												<div class="d-flex align-items-center justify-content-between">
 
-										<div class="d-flex align-items-center gap-2">
-											<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+													<div class="d-flex align-items-center gap-2">
+														<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
 												@reaction.ReactingUserAge
-											</span>
+														</span>
 											@if (reaction.ReactingUserGenderId == (int)GenderEnum.Male)
 											{
-												<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-													<i class="bi bi-gender-male me-1"></i>Erkek
-												</span>
+																<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+																	<i class="bi bi-gender-male me-1"></i>Erkek
+																</span>
 											}
 											else if (reaction.ReactingUserGenderId == (int)GenderEnum.Female)
 											{
-												<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-													<i class="bi bi-gender-female me-1"></i>Kadın
-												</span>
+																<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+																	<i class="bi bi-gender-female me-1"></i>Kadın
+																</span>
 											}
 											@if (_currentUserId != reaction.ReactingUserId)
 											{
-												<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
-													<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-												</a>
+																<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(reaction.ReactingUserId)">
+																	<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+																</a>
 											}
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-						</div>
-					</div>
 				}
 			}
 		}
 		else
 		{
-			<div class="alert alert-info" role="alert">
-				Gönderiyi beğenmeyen yok.
-			</div>
+				<div class="alert alert-info" role="alert">
+					Gönderiyi beğenmeyen yok.
+				</div>
 		}
 	</ChildContent>
 	<FooterContent>
-		<button class="btn blue col text-white fw-medium" @onclick="_dislikeModel.Close">Kapat</button>
+		<button class="btn blue col text-white fw-medium" @onclick="_dislikeModal.Close">Kapat</button>
 	</FooterContent>
 </ModalComponent>
 
-<ModalComponent @ref="_viewerModel" Title="Okuyanlar" TitleClass="mx-auto" ChildClass="mb-3">
+<ModalComponent @ref="_viewerModal" Title="Okuyanlar" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>
 
 		@if (_viewers.Count == 0)
 		{
-			<div class="alert alert-info" role="alert">
-				Gönderiyi henüz kimse okumadı.
-			</div>
+				<div class="alert alert-info" role="alert">
+					Gönderiyi henüz kimse okumadı.
+				</div>
 		}
 		else
 		{
 			@foreach (var viewer in _viewers.OrderByDescending(x => x.ReadDate))
 			{
-				<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
-					<div class="d-flex flex-column gap-2 my-3 mx-2">
-						<!-- Üst Bilgi Satırı -->
-						<div class="d-flex align-items-center gap-2 gap-sm-4">
-							<!-- Profil Fotoğrafı -->
-							<img src="@(string.IsNullOrEmpty(viewer.PostViewerUserProfileImageUrl)? "/anonymousIcon.png" : viewer.PostViewerUserProfileImageUrl)"
-								 class="profile-photo rounded-circle"
-								 width="56" height="56"
-								 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-							<div class="d-flex flex-column">
-								<div class="d-flex align-items-center gap-1 gap-md-3 mb-2">
-									<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(viewer.PostViewerUserId)">@viewer.PostViewerUserName</h5>
-									<small>
+						<div class="card mb-4 shadow border-0" style="border-radius: 1rem;">
+							<div class="d-flex flex-column gap-2 my-3 mx-2">
+								<!-- Üst Bilgi Satırı -->
+								<div class="d-flex align-items-center gap-2 gap-sm-4">
+									<!-- Profil Fotoğrafı -->
+									<img src="@(string.IsNullOrEmpty(viewer.PostViewerUserProfileImageUrl)? "/anonymousIcon.png" : viewer.PostViewerUserProfileImageUrl)"
+										 class="profile-photo rounded-circle"
+										 width="56" height="56"
+										 style="object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+									<div class="d-flex flex-column">
+										<div class="d-flex align-items-center gap-1 gap-md-3 mb-2">
+											<h5 class="mb-0" style="font-weight: 700; color: #2d3436; cursor:pointer" @onclick="()=>ShowUserProfile(viewer.PostViewerUserId)">@viewer.PostViewerUserName</h5>
+											<small>
 										@viewer.ReadDate.ToString("HH:mm dd/MM/yyyy")
-									</small>
-								</div>
+											</small>
+										</div>
 
-								<div class="d-flex align-items-center justify-content-between">
+										<div class="d-flex align-items-center justify-content-between">
 
-									<div class="d-flex align-items-center gap-2">
-										<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+											<div class="d-flex align-items-center gap-2">
+												<span style="background: #f2f2f2; color: #636e72; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
 											@viewer.PostViewerAge
-										</span>
+												</span>
 										@if (viewer.PostViewerGenderId == (int)GenderEnum.Male)
 										{
-											<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-												<i class="bi bi-gender-male me-1"></i>Erkek
-											</span>
+														<span style="background: rgba(9, 132, 227, 0.1); color: #0984e3; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+															<i class="bi bi-gender-male me-1"></i>Erkek
+														</span>
 										}
 										else if (viewer.PostViewerGenderId == (int)GenderEnum.Female)
 										{
-											<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
-												<i class="bi bi-gender-female me-1"></i>Kadın
-											</span>
+														<span style="background: rgba(232, 67, 147, 0.1); color: #e84393; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem;">
+															<i class="bi bi-gender-female me-1"></i>Kadın
+														</span>
 										}
 										@if (_currentUserId != viewer.PostViewerUserId)
 										{
-											<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(viewer.PostViewerUserId)">
-												<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
-											</a>
+														<a style="text-decoration: none; color:lightseagreen; cursor:pointer" @onclick="()=>SendMessageAsync(viewer.PostViewerUserId)">
+															<i class="bi bi-chat-right-heart-fill" style="font-size: 1.25rem;"></i>
+														</a>
 										}
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>
 			}
 		}
 	</ChildContent>
 	<FooterContent>
-		<button class="btn blue col text-white fw-medium" @onclick="_viewerModel.Close">Kapat</button>
+		<button class="btn blue col text-white fw-medium" @onclick="_viewerModal.Close">Kapat</button>
 	</FooterContent>
 </ModalComponent>
 
-<ModalComponent @ref="_sendMessageErrorModel" Title="Hata" TitleClass="mx-auto" ChildClass="mb-3">
+<ModalComponent @ref="_sendMessageErrorModal" Title="Hata" TitleClass="mx-auto" ChildClass="mb-3">
 	<ChildContent>
 
 		<div class="alert alert-danger" role="alert">
@@ -775,8 +784,111 @@
 
 	</ChildContent>
 	<FooterContent>
-		<button class="btn blue col text-white fw-medium" @onclick="_sendMessageErrorModel.Close">Kapat</button>
+		<button class="btn blue col text-white fw-medium" @onclick="_sendMessageErrorModal.Close">Kapat</button>
 	</FooterContent>
+</ModalComponent>
+
+
+<ModalComponent @ref="_sendReportModal" Title="Şikayet Et" TitleClass="mx-auto" ChildClass="mb-2">
+	<ChildContent>
+
+		@if (!string.IsNullOrEmpty(_reportError))
+		{
+				<div class="alert alert-danger m-0 mt-2" role="alert">
+				@_reportError
+				</div>
+		}
+
+		@if (!string.IsNullOrEmpty(_reportsuccessMessage))
+		{
+					<div class="alert alert-success m-0 mt-2" role="alert">
+				@_reportsuccessMessage
+				</div>
+		}
+
+		<EditForm Model="_reportModel" OnValidSubmit="async () => await SendReportAsync()">
+			<DataAnnotationsValidator />
+
+
+			@* 
+			<div class="form-floating mt-0 mb-2">
+				<InputSelect class="form-select" @bind-Value="_reportModel.ReportTypeId" id="floatingSelect">
+					<option value="" disabled hidden selected> </option>
+					@foreach (var reportType in _reportTypes)
+					{
+						<option value="@reportType.Id"><i class="@reportType.IconUrl">@reportType.Name</i></option>
+					}
+				</InputSelect>
+
+				<label for="floatingSelect">Şikayet Türü Seçiniz</label>
+				<ValidationMessage For="()=> _reportModel.ReportTypeId" />
+
+			</div> *@
+
+
+
+			@* <div class="btn-group-vertical" role="group" aria-label="Vertical radio toggle button group">
+				@foreach (var reportType in _reportTypes)
+				{
+			<input type="radio"
+				   class="btn-check"
+				   name="vbtn-radio"
+				   id="reportType_@reportType.Id"
+				   autocomplete="off"
+				   @bind-value="_reportModel.ReportTypeId" />
+
+			<label class="btn btn-outline-danger" for="reportType_@reportType.Id">
+				<i class="@reportType.IconUrl me-2"></i>
+				<span>@reportType.Name</span>
+			</label>
+				}
+
+	<ValidationMessage For="@(() => _reportModel.ReportTypeId)" />
+</div>
+ *@
+			<div class="btn-group-vertical w-100 py-2" role="group" aria-label="Vertical radio toggle button group">
+				@foreach (var reportType in _reportTypes)
+				{
+						<input type="radio"
+							   class="btn-check"
+							   name="vbtn-radio"
+							   id="reportType_@reportType.Id"
+							   autocomplete="off"
+								   @onclick="() => _reportModel.ReportTypeId = reportType.Id"
+							   @bind-value="_reportModel.ReportTypeId"/>
+
+								<label class="ps-1 fs-5 btn btn-outline-dark rounded-0 border border-0 text-start d-flex align-items-center mb-1"
+							   for="reportType_@reportType.Id">
+							<i class="@reportType.IconUrl me-2"></i>
+							<span>@reportType.Name</span>
+						</label>
+				}
+
+					<ValidationMessage For="@(() => _reportModel.ReportTypeId)" />
+
+			</div>
+
+
+
+
+
+
+			<div class="form-floating mt-0 mb-2">
+				<InputTextArea @bind-Value="_reportModel.ReportExplanation" class="form-control" placeholder="" id="name" style="min-height: 120px;"/>
+				<label for="name">Açıklama</label>
+
+				<ValidationMessage For="()=> _reportModel.ReportExplanation" />
+			</div>
+
+			<div class="d-flex gap-2">
+				<button type="submit" class="btn-custom">Gönder</button>
+				<button type="button" class="btn-custom-red" @onclick="_sendReportModal.Close">Kapat</button>
+			</div>
+
+		</EditForm>
+
+	</ChildContent>
+
 </ModalComponent>
 
 @code {
@@ -796,10 +908,13 @@
 	private HubConnection? _commentHubConnection;
 	private HubConnection? _postViewHubConnection;
 	private CancellationTokenSource _cts = new();
-	private ModalComponent? _likesModel;
-	private ModalComponent? _dislikeModel;
-	private ModalComponent? _viewerModel;
-	private ModalComponent? _sendMessageErrorModel;
+	private ModalComponent? _likesModal;
+	private ModalComponent? _dislikeModal;
+	private ModalComponent? _viewerModal;
+	private ModalComponent? _sendMessageErrorModal;
+	private ModalComponent? _sendReportModal;
+	private List<CreateReportTypeViewModel>? _reportTypes = new();
+	private SendReportViewModel _reportModel = new();
 	private Guid? _currentUserId;
 	private List<string> allowedRoles = new List<string>
 	{
@@ -808,7 +923,6 @@
 		nameof(UserRoleEnum.Moderator),
 		nameof(UserRoleEnum.SuperUser)
 	};
-
 	private List<string> adminRoles = new List<string> {
 		nameof(UserRoleEnum.SuperAdmin),
 		nameof(UserRoleEnum.Admin),
@@ -828,8 +942,11 @@
 	private bool _isCommentsHaveError = false;
 	private bool _isPostHaveError = false;
 	private bool _showCommentReplies = false;
+
 	private string? _newCommentText;
 	private string? _errorMessage;
+	private string? _reportError;
+	private string? _reportsuccessMessage;
 	private string? _commentErrorMessage;
 	private string? _replyText;
 	private string? _userRoleId = null;
@@ -883,6 +1000,7 @@
 		await DisposeAsync();
 
 	}
+
 	private async Task StartReactionHubConnectionAsync()
 	{
 		try
@@ -990,6 +1108,7 @@
 
 
 	}
+
 	private async Task StartCommentHubConnectionAsync()
 	{
 		try
@@ -1214,11 +1333,67 @@
 		_isApiBusy = false;
 
 	}
-	private void ReportPost()
+	private async Task ReportAsync(ReportClassEnum reportClass, Guid reportedUserId, int? postId, int? commentId)
 	{
 		if (!_isUserLoggedIn)
 			NavigateToLogin();
+
+		_reportError = null;
+		_reportsuccessMessage = null;
+
+		try
+		{
+			var response = await ReportApi.GetAllActiveReportTypeAsync(reportClass);
+			if (response.IsSuccess)
+			{
+				_reportTypes = response.Data;
+				_reportModel = new();
+				_reportModel.ReportClass = (int)reportClass;
+				_reportModel.ReportedUserId = reportedUserId;
+				_reportModel.PostId = postId;
+				_reportModel.ComemntId = commentId;
+				_reportModel.ReportingUserId = _currentUserId.Value;
+
+			}
+			else
+				_reportError = response.ErrorMessage;
+
+		}
+		catch (Exception ex)
+		{
+			_reportError = ex.Message;
+		}
+		finally
+		{
+			_sendReportModal?.Open();
+			await InvokeAsync(StateHasChanged);
+		}
 	}
+	private async Task SendReportAsync()
+	{
+		_reportError = null;
+		_reportsuccessMessage = null;
+
+		try
+		{
+			var response = await ReportApi.CreateReportAsync(_reportModel);
+
+			if (!response.IsSuccess)
+				_reportError = response.ErrorMessage;
+			else
+				_reportsuccessMessage = "Şikayetiniz başarıyla iletildi. Teşekkür ederiz.";
+		}
+		catch (Exception ex)
+		{
+			_reportError = ex.Message;
+		}
+		finally
+		{
+			await InvokeAsync(StateHasChanged);
+		}
+
+	}
+
 	private async Task SendMessageAsync(Guid receiverUserId)
 	{
 
@@ -1232,7 +1407,7 @@
 			return;
 
 		var response = await MessageApi.GetConversationDtoAsync(_currentUserId.Value, receiverUserId);
-		_sendMessageErrorModel.Close();
+		_sendMessageErrorModal?.Close();
 		_sendMessageError = null;
 		try
 		{
@@ -1248,7 +1423,7 @@
 					NavigateToPricing();
 				else
 				{
-					_sendMessageErrorModel.Open();
+					_sendMessageErrorModal.Open();
 					_sendMessageError = response.ErrorMessage;
 				}
 
@@ -1256,7 +1431,7 @@
 		}
 		catch (Exception ex)
 		{
-			_sendMessageErrorModel.Open();
+			_sendMessageErrorModal.Open();
 			_sendMessageError = ex.Message;
 		}
 	}
@@ -1268,7 +1443,7 @@
 			return;
 		}
 
-		_likesModel.Open();
+		_likesModal?.Open();
 	}
 	private void ShowDislikes()
 	{
@@ -1278,7 +1453,7 @@
 			return;
 		}
 
-		_dislikeModel.Open();
+		_dislikeModal?.Open();
 	}
 	private void ShowComments()
 	{
@@ -1309,7 +1484,7 @@
 			NavigateToPricing();
 			return;
 		}
-		_viewerModel.Open();
+		_viewerModal.Open();
 	}
 	private async Task ReadPostAsync()
 	{

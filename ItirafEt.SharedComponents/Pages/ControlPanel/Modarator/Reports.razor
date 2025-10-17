@@ -1,0 +1,96 @@
+﻿@page "/admin/CheckReports"
+@inject IReportApi ReportApi
+
+
+<h3>Şikayet Listesi</h3>
+
+<div class="filters">
+	<label>Status:</label>
+	<select @bind="selectedStatus">
+		@foreach (var s in Enum.GetValues<ReportStatusEnum>())
+		{
+				<option value="@s">@s</option>
+		}
+	</select>
+
+	<label>Class:</label>
+	<select @bind="selectedClass">
+		<option value="">Tümü</option>
+		@foreach (var c in Enum.GetValues<ReportClassEnum>())
+		{
+				<option value="@c">@c</option>
+		}
+	</select>
+
+	<button class="btn btn-primary" @onclick="LoadReports">Listele</button>
+</div>
+
+@if (isLoading)
+{
+		<p><em>Yükleniyor...</em></p>
+}
+else if (reports is null || reports.Count == 0)
+{
+		<p>Hiç rapor bulunamadı.</p>
+}
+else
+{
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Class</th>
+					<th>PostId</th>
+					<th>CommentId</th>
+					<th>UserName</th>
+					<th>ReportedUserId</th>
+					<th>Status</th>
+					<th>Report Count</th>
+				</tr>
+			</thead>
+			<tbody>
+			@foreach (var r in reports)
+			{
+						<tr>
+							<td>@r.ReportClass</td>
+							<td>@r.PostId</td>
+							<td>@r.CommentId</td>
+							<td>@r.ReportedUserName</td>
+							<td>@r.ReportedUserId</td>
+							<td>@r.Status</td>
+							<td>@r.ReportCount</td>
+						</tr>
+			}
+			</tbody>
+		</table>
+}
+
+@code {
+	private bool isLoading = false;
+	private List<ReportListViewModel>? reports;
+	private ReportStatusEnum selectedStatus = ReportStatusEnum.All;
+	private ReportClassEnum? selectedClass = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadReports();
+	}
+
+	private async Task LoadReports()
+	{
+		try
+		{
+			isLoading = true;
+			var response = await ReportApi.GetReportsAsync(selectedStatus, selectedClass);
+			if (response.IsSuccess)
+				reports = response.Data;
+			else
+				reports = new();
+		}
+		finally
+		{
+			isLoading = false;
+		}
+	}
+
+}
+
